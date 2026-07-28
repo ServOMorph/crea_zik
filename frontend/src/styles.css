@@ -1,0 +1,6 @@
+:root { color: #e9eef7; background: #10151f; font-family: Inter, system-ui, sans-serif; }
+* { box-sizing: border-box; } body { margin: 0; } main { max-width: 980px; margin: auto; padding: 48px 24px; }
+header { display: flex; align-items: end; gap: 20px; border-bottom: 1px solid #273348; padding-bottom: 24px; } h1 { margin: 0; font-size: 3rem; } h2 { margin-top: 36px; } .eyebrow { color: #8ba5cf; margin: 0; } output { margin-left: auto; color: #9ee5bd; }
+form { display: flex; gap: 12px; align-items: end; } label { display: grid; gap: 6px; } input, button { border-radius: 8px; border: 1px solid #3a4a65; padding: 10px 12px; font: inherit; } input { background: #192233; color: inherit; min-width: 260px; } button { background: #5f8cff; color: #07101f; font-weight: 700; cursor: pointer; }
+.secondary { margin-top: 10px; display: block; background: #263653; color: #dce8ff; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; } article, .player, .create { background: #182233; border: 1px solid #273348; border-radius: 12px; padding: 20px; } article h3 { margin-top: 0; } audio { width: 100%; }

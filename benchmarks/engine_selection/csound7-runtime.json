@@ -1,0 +1,9 @@
+{
+  "engine": "Csound",
+  "version": "7.0.0-beta.17",
+  "commit": "2932c7fd14681493b5db83df3efdda175c1eb116",
+  "license": "LGPL-2.1-or-later",
+  "source_archive": "csound-windows-7.0.0-beta.17.zip",
+  "installation": "isolated under benchmarks/engine_selection/csound7-runtime/",
+  "used_assets": "none; the benchmark uses synthesis only"
+}

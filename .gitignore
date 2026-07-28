@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# Node / frontend
+node_modules/
+dist/
+*.tsbuildinfo
+projects/*/artifacts/
+projects/*/exports/
+projects/*/project.json
+
+# Benchmark runtimes and generated audio are reproducible locally.
+benchmarks/engine_selection/.venv-*/
+benchmarks/engine_selection/artifacts/
+benchmarks/engine_selection/csound7/
+benchmarks/engine_selection/csound7-runtime/
+benchmarks/engine_selection/csound7-unpacked/
+benchmarks/engine_selection/*.zip
+benchmarks/engine_selection/csound7-install.log
