@@ -173,7 +173,7 @@ But : établir les contrats stables avant de multiplier les fonctions et écrans
 Tâches :
 
 - [x] Créer l’arborescence `backend/`, `frontend/`, `audio/`, `projects/`, `tests/` et `tools/`.
-- [ ] Définir les schémas versionnés :
+- [x] Définir les schémas versionnés :
   - Project ;
   - Patch ;
   - Score ;
@@ -183,9 +183,9 @@ Tâches :
   - RenderJob ;
   - Artifact ;
   - QaReport.
-- [ ] Implémenter identifiants, seeds, résolution des chemins et migrations de schéma.
+- [x] Implémenter identifiants, seeds, résolution des chemins et migrations de schéma.
 - [x] Définir l’interface `RenderEngine` indépendante du moteur retenu.
-- [ ] Implémenter validation puis normalisation canonique des specs.
+- [x] Implémenter validation puis normalisation canonique des specs.
 - [x] Implémenter le calcul de hash de provenance.
 - [x] Créer les commandes CLI `new`, `validate`, `render`, `analyze` et `export`.
 - [ ] Gérer erreurs typées, timeouts, annulation et logs structurés.
@@ -223,13 +223,13 @@ Tâches frontend :
 - [ ] Créer le shell : navigation, espace central, inspecteur, transport et jobs.
 - [x] Créer l’écran Projets.
 - [x] Créer la Galerie d’exemples et son mécanisme « Ouvrir une copie ».
-- [ ] Créer un Sound Designer minimal avec paramètres, seed et bouton de rendu.
+- [x] Créer un Sound Designer minimal avec paramètres, seed et bouton de rendu.
 - [ ] Ajouter lecture, pause, stop, boucle, volume et indicateur de clipping.
 - [ ] Afficher waveform, durée, peak et hash.
 - [ ] Ajouter génération de dix variantes, favoris et comparaison A/B.
 - [x] Livrer les trois premiers exemples : clic, validation et erreur.
 - [ ] Exporter un WAV et son manifeste.
-- [ ] Ajouter états loading, empty, erreur et annulation.
+- [x] Ajouter états loading, empty, erreur et annulation.
 - [ ] Tester API, composants, clavier et parcours Playwright complet.
 
 Livrables :

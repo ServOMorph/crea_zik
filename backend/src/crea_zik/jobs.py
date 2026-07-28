@@ -2,22 +2,13 @@ from __future__ import annotations
 
 from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass, field
-from enum import StrEnum
 from threading import Condition, Event, RLock
 from pathlib import Path
 from uuid import UUID, uuid4
 
 from .engine import CsoundEngine, RenderCancelled, RenderEngine
-from .models import Patch
+from .models import JobState, Patch
 from .provenance import resolve_project_path
-
-
-class JobState(StrEnum):
-    QUEUED = "queued"
-    RUNNING = "running"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    CANCELLED = "cancelled"
 
 
 @dataclass

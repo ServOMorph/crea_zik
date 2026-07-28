@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.4 — 2026-07-28
+
+### Ajouté
+
+- Schémas de domaine versionnés, migration de lecture, validation et confinement d’écriture des projets.
+- Galerie rendable, Sound Designer minimal et liste de jobs avec progression, état et annulation.
+- Couverture des schémas et trois parcours E2E : clic, galerie et Sound Designer.
+
+### Modifié
+
+- Recette manuelle réduite au test résiduel d’annulation de rendu long.
+
 ## v0.3 — 2026-07-28
 
 ### Ajouté

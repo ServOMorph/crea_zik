@@ -19,6 +19,8 @@ def load_project(path: Path) -> Project:
 
 
 def save_project(project: Project, path: Path) -> None:
+    if PROJECT_ROOT.resolve() not in path.resolve().parents:
+        raise ValueError("project path must stay inside projects/")
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(project.model_dump_json(indent=2), encoding="utf-8")
 
