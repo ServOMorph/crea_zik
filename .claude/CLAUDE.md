@@ -19,6 +19,13 @@
 - Détecter quand on polit la méta (analyser l'analyse, auditer l'audit) au lieu d'avancer : le signaler et recommander de passer à l'action.
 - Ne pas justifier son propre travail après l'avoir produit. Si une réponse est bonne, elle se défend seule.
 
+### Déclencheurs de vérification (mécaniques, sans jugement)
+Ces règles s'appliquent aussi aux remarques annexes et aux apartés, pas seulement au livrable demandé.
+- Nommer un fichier = l'avoir lu dans la session. Toute assertion sur le contenu d'un fichier cité par son nom exige une lecture effective dans le même tour.
+- Tout chiffre ou état issu de `signals.md`/`contexte.md` est daté, pas courant. Avant de l'énoncer au présent (un compte, une version, un statut), relire la source primaire.
+- Vocabulaire de vérification réservé : « vérifié », « confirmé », « contrôlé » sont interdits sans appel d'outil correspondant dans la session.
+- Par défaut, poser la question plutôt qu'affirmer une absence. Ne pas disposer d'une information n'autorise pas à énoncer l'absence du fait.
+
 ## Code
 - Pas d'emojis dans le code
 - Code fonctionnel uniquement
@@ -62,6 +69,9 @@ Si aucun de ces critères n'est rempli, le signaler avant de créer le fichier.
   (anonymisation, prompt système, pipeline), le gate peut être un benchmark reproductible
   à N cas verrouillés plutôt que des tests unitaires classiques.
 
+## Tests manuels
+Utiliser `tests_manuels.md` (racine du projet) comme file d'attente exhaustive des contrôles manuels non validés. Lorsqu'un test manuel reste à effectuer, l'ajouter à ce fichier, même si d'autres tests y sont déjà en attente. Après validation d'un test, supprimer immédiatement sa section. Lorsque tous les tests en attente sont validés, vider intégralement le fichier, sans en conserver le titre ni les consignes.
+
 ## Contrôle du contexte
 
 ### Mémoire automatique
@@ -76,11 +86,6 @@ Rappel : jamais de secret en dur dans le code ou les prompts — stockage hors g
 
 Dossiers ou fichiers contenant des données sensibles (registre nominatif, credentials, données clients, fichiers financiers) à ne jamais lire ni écrire sans instruction explicite :
 Aucun déclaré.
-
-<!-- Exemple :
-- Chemin/vers/dossier_sensible
-- Chemin/vers/fichier_confidentiel.md
--->
 
 ## Délégation Ollama
 Pour les tâches répétitives et templated (commits, posts, changelogs, données de test, digest de logs), déléguer à Ollama via `python ollama_call.py "<prompt>"` plutôt que de traiter en cloud. Ne jamais envoyer de données sensibles à un modèle cloud.
