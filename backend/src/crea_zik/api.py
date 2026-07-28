@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 from .cli import PROJECT_ROOT, load_project, save_project
 from .engine import CsoundEngine
 from .gallery import examples
-from .jobs import JobState, RenderJob, jobs
+from .jobs import JobManager, JobState, RenderJob
 from .models import Patch, Project
 from .provenance import resolve_project_path
 
@@ -23,8 +23,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-PROJECT_ROOT.mkdir(exist_ok=True)
+PROJECT_ROOT.mkdir(parents=True, exist_ok=True)
 app.mount("/projects", StaticFiles(directory=PROJECT_ROOT), name="projects")
+jobs = JobManager(PROJECT_ROOT)
 
 
 class CreateProject(BaseModel):
@@ -144,10 +145,23 @@ def cancel_job(job_id: UUID) -> JobResponse:
 
 @app.get("/api/jobs/{job_id}/events")
 def job_events(job_id: UUID) -> StreamingResponse:
+    if jobs.get(job_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="job not found")
+
     def stream():
         job = jobs.get(job_id)
         if job is None:
             yield "event: error\ndata: job not found\n\n"
             return
-        yield f"data: {job_response(job).model_dump_json()}\n\n"
-    return StreamingResponse(stream(), media_type="text/event-stream")
+        version = -1
+        while True:
+            job, version = jobs.wait_for_update(job_id, version)
+            if job is None:
+                yield "event: error\ndata: job not found\n\n"
+                return
+            yield f"id: {version}\nevent: job\ndata: {job_response(job).model_dump_json()}\n\n"
+            if job.state in {JobState.COMPLETED, JobState.FAILED, JobState.CANCELLED}:
+                return
+    return StreamingResponse(
+        stream(), media_type="text/event-stream", headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"}
+    )

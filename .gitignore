@@ -10,6 +10,8 @@ dist/
 projects/*/artifacts/
 projects/*/exports/
 projects/*/project.json
+test-results/
+frontend/test-results/
 
 # Benchmark runtimes and generated audio are reproducible locally.
 benchmarks/engine_selection/.venv-*/

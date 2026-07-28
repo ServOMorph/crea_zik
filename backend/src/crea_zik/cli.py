@@ -2,13 +2,14 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 
 from .engine import CsoundEngine
 from .models import Patch, Project
 from .provenance import patch_hash, resolve_project_path
 
-PROJECT_ROOT = Path("projects")
+PROJECT_ROOT = Path(os.environ.get("CREA_ZIK_PROJECT_ROOT", "projects"))
 
 
 def load_project(path: Path) -> Project:

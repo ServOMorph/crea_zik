@@ -172,7 +172,7 @@ But : établir les contrats stables avant de multiplier les fonctions et écrans
 
 Tâches :
 
-- [ ] Créer l’arborescence `backend/`, `frontend/`, `audio/`, `projects/`, `tests/` et `tools/`.
+- [x] Créer l’arborescence `backend/`, `frontend/`, `audio/`, `projects/`, `tests/` et `tools/`.
 - [ ] Définir les schémas versionnés :
   - Project ;
   - Patch ;
@@ -184,12 +184,12 @@ Tâches :
   - Artifact ;
   - QaReport.
 - [ ] Implémenter identifiants, seeds, résolution des chemins et migrations de schéma.
-- [ ] Définir l’interface `RenderEngine` indépendante du moteur retenu.
+- [x] Définir l’interface `RenderEngine` indépendante du moteur retenu.
 - [ ] Implémenter validation puis normalisation canonique des specs.
-- [ ] Implémenter le calcul de hash de provenance.
-- [ ] Créer les commandes CLI `new`, `validate`, `render`, `analyze` et `export`.
+- [x] Implémenter le calcul de hash de provenance.
+- [x] Créer les commandes CLI `new`, `validate`, `render`, `analyze` et `export`.
 - [ ] Gérer erreurs typées, timeouts, annulation et logs structurés.
-- [ ] Fournir un projet exemple minimal sans fichier audio source.
+- [x] Fournir un projet exemple minimal sans fichier audio source.
 - [ ] Tester schémas, migrations, chemins hostiles, seeds, hashes et CLI de bout en bout.
 
 Livrables :
@@ -213,21 +213,21 @@ But : livrer tôt un parcours complet utilisable sans terminal.
 Tâches backend :
 
 - [ ] Créer l’API FastAPI pour projets, specs, jobs, artifacts et rapports.
-- [ ] Ajouter une file de jobs locale avec progression SSE et annulation.
-- [ ] Servir les rendus en lecture seule avec vérification de chemin.
-- [ ] Implémenter un patch de clic UI paramétrable et ses variantes.
+- [x] Ajouter une file de jobs locale avec progression SSE et annulation.
+- [x] Servir les rendus en lecture seule avec vérification de chemin.
+- [x] Implémenter un patch de clic UI paramétrable et ses variantes.
 
 Tâches frontend :
 
 - [ ] Initialiser React, TypeScript, Vite, lint, formatage et tests.
 - [ ] Créer le shell : navigation, espace central, inspecteur, transport et jobs.
-- [ ] Créer l’écran Projets.
-- [ ] Créer la Galerie d’exemples et son mécanisme « Ouvrir une copie ».
+- [x] Créer l’écran Projets.
+- [x] Créer la Galerie d’exemples et son mécanisme « Ouvrir une copie ».
 - [ ] Créer un Sound Designer minimal avec paramètres, seed et bouton de rendu.
 - [ ] Ajouter lecture, pause, stop, boucle, volume et indicateur de clipping.
 - [ ] Afficher waveform, durée, peak et hash.
 - [ ] Ajouter génération de dix variantes, favoris et comparaison A/B.
-- [ ] Livrer les trois premiers exemples : clic, validation et erreur.
+- [x] Livrer les trois premiers exemples : clic, validation et erreur.
 - [ ] Exporter un WAV et son manifeste.
 - [ ] Ajouter états loading, empty, erreur et annulation.
 - [ ] Tester API, composants, clavier et parcours Playwright complet.

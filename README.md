@@ -20,6 +20,7 @@ Csound 7 est le moteur de rendu offline, pyo le fallback et Faust la cible DSP p
 ## État actuel
 
 La phase 0 est terminée : le benchmark et l’ADR sont dans `benchmarks/engine_selection/`.
-Le noyau Python et l’API locale rendent déjà des WAV Csound déterministes ; la première UI React crée
-des projets, rend un clic, lit le résultat, copie trois exemples et génère des variantes.
-Les gates restantes des phases 1–2 portent sur SSE/annulation, export UI et tests E2E.
+Le noyau Python et l’API locale rendent des WAV Csound déterministes ; les jobs SSE sont annulables.
+La première UI React, lancée par `python run.py`, crée un projet, rend, lit et exporte un clic ; ce
+parcours est validé manuellement et par Playwright. Les gates restantes portent sur le domaine complet,
+la galerie régénérable et les fonctionnalités avancées de la phase 2.

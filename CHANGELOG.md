@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.3 — 2026-07-28
+
+### Ajouté
+
+- Jobs de rendu à progression SSE, annulation coopérative et tests de non-blocage de file.
+- Lanceur local `run.py`, recette manuelle et test E2E Playwright du parcours création/rendu/écoute/export.
+
+### Corrigé
+
+- Proxy Vite des fichiers WAV `/projects` : le lecteur HTML charge et lit désormais les rendus.
+
 ## v0.2 — 2026-07-28
 
 ### Ajouté
