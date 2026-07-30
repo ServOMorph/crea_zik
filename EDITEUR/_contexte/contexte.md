@@ -27,10 +27,10 @@ Music Composer, Adaptive Lab, Analyse & Export) et son backend de rendu, permett
   Csound réel restant avant de poursuivre la roadmap applicative.
 
 ## État actuel (réécrit intégralement à chaque /close)
-La roadmap de l’éditeur musical intégré est créée.
-Elle prévoit 15 phases fonctionnelles et 15 gates automatiques exécutés en une passe continue.
-Le seuil de livraison est fixé à 85 %, avec documentation obligatoire des 15 % non livrés.
-La phase 0 est en cours ; aucun code de l’éditeur n’a encore été implémenté.
+Le studio partagé fournit sept SFX, composition avec stems, simulation adaptative, QA/export et assistant Ollama.
+Le frontend partagé expose les parcours correspondants et sa suite de qualification actuelle réussit.
+La phase 0 de l’éditeur dédié reste en cours : son runner canonique et son gate V0 ne sont pas créés.
+La prochaine action est de créer `EDITEUR/test_editor.ps1`, verrouiller l’outillage puis exécuter V0.
 
 ## Décisions structurantes (append only — 10 entrées max, 5 lignes max/entrée, archiver au-delà)
 - 2026-07-30 : Initialisation de l'agent EDITEUR (mode création), périmètre étendu à frontend/ et
@@ -39,3 +39,5 @@ La phase 0 est en cours ; aucun code de l’éditeur n’a encore été impléme
 - 2026-07-30 : Roadmap dédiée à l’éditeur intégré : sidebar gauche, édition complète de `Lignes de
   nuit`, gates automatiques interphases, seuil fonctionnel de 85 % et documentation exhaustive des
   fonctions manquantes et des tests manuels.
+- 2026-07-30 : Les services et écrans partagés déjà livrés sont réutilisés comme fondations, sans
+  considérer la phase 0 de l’éditeur terminée avant la création du runner canonique et la réussite de V0.

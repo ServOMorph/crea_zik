@@ -166,6 +166,9 @@ Gate :
 - un moteur principal et un fallback sont choisis ;
 - les licences sont compatibles avec la distribution envisagée.
 
+**⏸ Checkpoint** — Demander à l’utilisateur de faire `/compact` avant de continuer.
+Attendre sa réponse écrite. Ne pas commencer la phase suivante sans confirmation.
+
 ## Phase 1 — Fondation du domaine et CLI [EN COURS]
 
 But : établir les contrats stables avant de multiplier les fonctions et écrans.
@@ -206,6 +209,9 @@ Gate :
 - une spec invalide échoue avant le moteur avec une erreur actionnable ;
 - aucun chemin ne peut sortir du projet autorisé.
 
+**⏸ Checkpoint** — Demander à l’utilisateur de faire `/compact` avant de continuer.
+Attendre sa réponse écrite. Ne pas commencer la phase suivante sans confirmation.
+
 ## Phase 2 — Première tranche verticale avec UI [TODO]
 
 But : livrer tôt un parcours complet utilisable sans terminal.
@@ -245,6 +251,9 @@ Gate :
 - les trois exemples se lisent et se régénèrent depuis l’UI ;
 - une annulation ne bloque pas les jobs suivants ;
 - l’application fonctionne sans Internet.
+
+**⏸ Checkpoint** — Demander à l’utilisateur de faire `/compact` avant de continuer.
+Attendre sa réponse écrite. Ne pas commencer la phase suivante sans confirmation.
 
 ## Phase 3 — Bibliothèque DSP et Sound Designer complet [TODO]
 
@@ -288,6 +297,9 @@ Gate :
 - aucun test ne produit NaN, infini, DC excessif ou clipping non signalé ;
 - les contrôles artistiques restent stables sur toute leur plage.
 
+**⏸ Checkpoint** — Demander à l’utilisateur de faire `/compact` avant de continuer.
+Attendre sa réponse écrite. Ne pas commencer la phase suivante sans confirmation.
+
 ## Phase 4 — Composition, instruments et Music Composer [TODO]
 
 But : créer une musique multipiste entièrement synthétique avec stems.
@@ -330,6 +342,9 @@ Gate :
 - deux rendus à seed identique sont bit-identiques.
 - les masters musicaux sortent directement du pipeline sans étape externe.
 
+**⏸ Checkpoint** — Demander à l’utilisateur de faire `/compact` avant de continuer.
+Attendre sa réponse écrite. Ne pas commencer la phase suivante sans confirmation.
+
 ## Phase 5 — Musique adaptative et Adaptive Lab [TODO]
 
 But : piloter musique et sons par des paramètres de gameplay.
@@ -369,6 +384,9 @@ Gate :
 - aucune transition non définie ne produit un silence ou un état incohérent.
 - le scénario de galerie peut être joué et modifié sans terminal.
 
+**⏸ Checkpoint** — Demander à l’utilisateur de faire `/compact` avant de continuer.
+Attendre sa réponse écrite. Ne pas commencer la phase suivante sans confirmation.
+
 ## Phase 6 — QA audio, mastering et exports [TODO]
 
 But : rendre la qualité mesurable et actionnable dans l’UI.
@@ -406,6 +424,9 @@ Gate :
 - chaque export est relié à sa spec, seed, version et rapport.
 - les onze exemples sortent prêts à l’emploi sans correction externe.
 
+**⏸ Checkpoint** — Demander à l’utilisateur de faire `/compact` avant de continuer.
+Attendre sa réponse écrite. Ne pas commencer la phase suivante sans confirmation.
+
 ## Phase 7 — Assistant de vibecoding dans l’UI [TODO]
 
 But : permettre des modifications en langage naturel sans perdre contrôle ni reproductibilité.
@@ -437,6 +458,9 @@ Gate :
 - aucun prompt ne peut déclencher une écriture arbitraire ;
 - une proposition refusée ne modifie aucun état persistant.
 
+**⏸ Checkpoint** — Demander à l’utilisateur de faire `/compact` avant de continuer.
+Attendre sa réponse écrite. Ne pas commencer la phase suivante sans confirmation.
+
 ## Phase 8 — Préécoute temps réel et DSP portable [TODO]
 
 But : rapprocher l’écoute UI du comportement réel dans une application ou un jeu.
@@ -465,6 +489,9 @@ Gate :
 - aucune coupure sur le scénario de stress de référence ;
 - les paramètres continus ne produisent pas de clic ;
 - les divergences offline/temps réel sont expliquées et bornées.
+
+**⏸ Checkpoint** — Demander à l’utilisateur de faire `/compact` avant de continuer.
+Attendre sa réponse écrite. Ne pas commencer la phase suivante sans confirmation.
 
 ## Phase 9 — Bibliothèque, historique et provenance [TODO]
 
@@ -496,6 +523,9 @@ Gate :
 - une restauration ne supprime jamais la version courante ;
 - une mise à jour moteur invalide visiblement les rendus concernés.
 - aucun exemple intégré ne peut être modifié ou supprimé par erreur.
+
+**⏸ Checkpoint** — Demander à l’utilisateur de faire `/compact` avant de continuer.
+Attendre sa réponse écrite. Ne pas commencer la phase suivante sans confirmation.
 
 ## Phase 10 — Intégration applications et jeux [TODO]
 
@@ -538,6 +568,9 @@ Gate :
 - aucun fichier source externe n’est requis au runtime ;
 - les budgets définis en phase 0 sont respectés ou renégociés explicitement.
 
+**⏸ Checkpoint** — Demander à l’utilisateur de faire `/compact` avant de continuer.
+Attendre sa réponse écrite. Ne pas commencer la phase suivante sans confirmation.
+
 ## Phase 11 — Packaging, accessibilité et livraison 1.0 [TODO]
 
 But : produire une application locale installable et une démonstration complète.
@@ -579,6 +612,9 @@ Gate :
 - zéro placeholder ou contrôle non fonctionnel ;
 - tous les tests automatiques verts ;
 - recette humaine acceptée.
+
+**⏸ Checkpoint** — Demander à l’utilisateur de faire `/compact` avant de continuer.
+Attendre sa réponse écrite. Ne pas commencer la phase suivante sans confirmation.
 
 ## Risques principaux
 

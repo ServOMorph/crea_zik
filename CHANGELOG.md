@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.8 — 2026-07-30
+
+### Ajouté
+
+- Sept familles SFX, variantes déterministes, métadonnées, QA et export depuis le studio local.
+- Composition de scores avec stems synchronisés et simulation de graphes musicaux adaptatifs.
+- Assistant Ollama local avec aperçu, acceptation, rejet et historique persistant.
+- Compaction automatique du contexte Codex à partir de 64 000 tokens.
+
+### Modifié
+
+- Interface enrichie avec transport, waveform, Composer, Adaptive Lab et métriques QA.
+- Qualification frontend isolée des sorties générées par Prettier.
+
 ## v0.7 — 2026-07-30
 
 ### Ajouté

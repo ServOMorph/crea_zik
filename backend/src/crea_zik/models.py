@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from copy import deepcopy
 from enum import StrEnum
+from math import isfinite
 from pathlib import PurePosixPath
-from typing import Any
+from typing import Any, Literal
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -20,6 +21,9 @@ class PatchKind(StrEnum):
     UI_CLICK = "ui_click"
     MODAL_IMPACT = "modal_impact"
     ENGINE = "continuous_engine"
+    WHOOSH = "whoosh"
+    MECHANICAL_AMBIENCE = "mechanical_ambience"
+    DRONE = "drone"
 
 
 class JobState(StrEnum):
@@ -69,8 +73,24 @@ class Patch(SeededModel):
     kind: PatchKind
     duration_seconds: float = Field(gt=0, le=120)
     gain: float = Field(default=0.18, gt=0, le=1)
+    parameters: dict[str, float] = Field(default_factory=dict, max_length=32)
+    tags: list[str] = Field(default_factory=list, max_length=16)
+    notes: str = Field(default="", max_length=500)
+    favorite: bool = False
 
     _normalize_name = field_validator("name")(_safe_name)
+
+    @field_validator("parameters")
+    @classmethod
+    def validate_parameters(cls, values: dict[str, float]) -> dict[str, float]:
+        if any(not key or not isfinite(value) for key, value in values.items()):
+            raise ValueError("parameters must have non-empty names and finite values")
+        return values
+
+    @field_validator("tags")
+    @classmethod
+    def validate_tags(cls, values: list[str]) -> list[str]:
+        return [_safe_name(value) for value in values]
 
 
 class Instrument(SeededModel):
@@ -173,6 +193,36 @@ class QaReport(IdentifiedModel):
     _normalize_profile = field_validator("profile")(_safe_name)
 
 
+class ProposalOperation(DomainModel):
+    op: Literal["replace"]
+    patch_id: UUID
+    path: str = Field(pattern=r"^(gain|duration_seconds|favorite|notes|tags|parameters\.[a-z][a-z0-9_]*)$")
+    value: Any
+
+
+class IntentProposal(DomainModel):
+    intent: str = Field(min_length=1, max_length=240)
+    rationale: str = Field(default="", max_length=300)
+    expected_impacts: list[str] = Field(default_factory=list, max_length=5)
+    operations: list[ProposalOperation] = Field(min_length=1, max_length=16)
+
+
+class IntentDecision(StrEnum):
+    ACCEPTED = "accepted"
+    REJECTED = "rejected"
+
+
+class IntentRecord(IdentifiedModel):
+    provider: str = Field(default="ollama", min_length=1, max_length=80)
+    model: str = Field(min_length=1, max_length=120)
+    project_schema_version: int = Field(ge=1)
+    decision: IntentDecision
+    proposal: IntentProposal
+
+    _normalize_provider = field_validator("provider")(_safe_name)
+    _normalize_model = field_validator("model")(_safe_name)
+
+
 class RenderJob(IdentifiedModel):
     project_id: UUID
     patch_id: UUID
@@ -192,7 +242,16 @@ def migrate_project_payload(payload: dict[str, Any]) -> dict[str, Any]:
     if version > CURRENT_SCHEMA_VERSION:
         raise SchemaMigrationError("project schema is newer than this application")
     data["schema_version"] = CURRENT_SCHEMA_VERSION
-    for key in ("patches", "instruments", "effect_chains", "scores", "adaptive_graphs", "artifacts", "qa_reports"):
+    for key in (
+        "patches",
+        "instruments",
+        "effect_chains",
+        "scores",
+        "adaptive_graphs",
+        "artifacts",
+        "qa_reports",
+        "intent_history",
+    ):
         data.setdefault(key, [])
     return data
 
@@ -209,6 +268,7 @@ class Project(IdentifiedModel):
     adaptive_graphs: list[AdaptiveGraph] = Field(default_factory=list)
     artifacts: list[Artifact] = Field(default_factory=list)
     qa_reports: list[QaReport] = Field(default_factory=list)
+    intent_history: list[IntentRecord] = Field(default_factory=list, max_length=200)
 
     _normalize_name = field_validator("name")(_safe_name)
     _normalize_engine = field_validator("engine")(_safe_name)

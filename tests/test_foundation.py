@@ -31,6 +31,22 @@ def test_hash_is_stable_for_same_spec() -> None:
     assert patch_hash(patch) == patch_hash(patch)
 
 
+def test_patch_parameters_are_finite() -> None:
+    patch = Patch(name="click", kind=PatchKind.UI_CLICK, seed=42, duration_seconds=.12, parameters={"pitch_hz": 900})
+    assert patch.parameters["pitch_hz"] == 900
+    with pytest.raises(ValidationError):
+        Patch(name="click", kind=PatchKind.UI_CLICK, seed=42, duration_seconds=.12, parameters={"pitch_hz": float("nan")})
+
+
+def test_patch_supports_all_sound_designer_families() -> None:
+    assert {PatchKind.UI_CLICK, PatchKind.MODAL_IMPACT, PatchKind.WHOOSH, PatchKind.ENGINE, PatchKind.MECHANICAL_AMBIENCE, PatchKind.DRONE} <= set(PatchKind)
+
+
+def test_patch_metadata_is_serializable() -> None:
+    patch = Patch(name="click", kind=PatchKind.UI_CLICK, seed=2, duration_seconds=.1, tags=["ui", "menu"], notes="Short click", favorite=True)
+    assert Patch.model_validate_json(patch.model_dump_json()) == patch
+
+
 def test_path_cannot_escape_project_root(tmp_path: Path) -> None:
     root = tmp_path / "projects"
     root.mkdir()
