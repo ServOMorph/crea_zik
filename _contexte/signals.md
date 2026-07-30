@@ -1,32 +1,29 @@
 # Signals — crea_zik (MAJ 2026-07-30)
 
 ## Actions ouvertes
-- [P1|ouvert] Clore le gate de phase 1 sur le rendu déterministe Csound.
-  fait quand: trois rendus Csound successifs d’une même spec produisent le même hash de sortie
-  réf: roadmap_studio_audio_procedural.md, backend/src/crea_zik/engine.py, backend/src/crea_zik/provenance.py
-- [P2|ouvert] Intégrer l’archivage versionné au futur Music Composer.
-  fait quand: l’éditeur produit un descripteur puis archive une version, ses stems et son rapport QA
-  réf: explo/archives/README.md, explo/archives/archive_piece.py, roadmap_studio_audio_procedural.md
+- [P1|ouvert] Auditer l'écart entre `roadmap_studio_audio_procedural.md` (phase 2) et l'état réel du code.
+  fait quand: chaque case de phase 2 est confirmée cochée/décochée après lecture effective des fichiers correspondants (api.py, frontend/)
+  réf: roadmap_studio_audio_procedural.md, backend/src/crea_zik/api.py, frontend/src/
+- [P2|ouvert] Intégrer l'archivage versionné au futur Music Composer.
+  fait quand: l'éditeur produit un descripteur puis archive une version, ses stems et son rapport QA
+  réf: EXPLO/archives/README.md, EXPLO/archives/archive_piece.py, roadmap_studio_audio_procedural.md
 
 ## Dernière session (2026-07-30)
 # Session du 2026-07-30
 
 ## Décisions prises
-- Les explorations musicales utilisent une archive versionnée, adressée par SHA-256 et dédupliquée.
-- Le premier morceau de référence est une composition électro instrumentale originale de 30 secondes.
+- Le gate de phase 1 (déterminisme du rendu Csound réel) est validé ; l'action P1 précédente est close.
 
 ## Livrables produits ou modifiés
-- `explo/morceau_electro/` : renderer, spec, master WAV, cinq stems, QA et fiche de création.
-- `explo/archives/` : catalogue, manifeste v001, archivage SHA-256, contrôle d’intégrité et tests.
+- Aucun fichier livrable : validation par rendus répétés, fichiers temporaires supprimés après contrôle.
 
 ## Hypothèses validées / invalidées
-- VALIDE : deux rendus successifs du morceau produisent le même SHA-256 ; durée de 30 s et WAV PCM 24 bits à 48 kHz.
-- VALIDE : l’archive refuse l’écrasement, déduplique les blobs identiques et détecte une corruption simulée.
-- EN ATTENTE : la répétabilité du rendu Csound réel reste à mesurer sur trois rendus.
+- VALIDE : trois rendus Csound indépendants du patch « UI click » (projet b1890ee0-af29-4683-a5d4-d54577cd0d52) produisent le même SHA-256 sur le WAV réel.
+- EN ATTENTE : le champ « hash » renvoyé par le CLI (`patch_hash`) est dérivé de la spec, pas du rendu ; il ne prouve pas seul le déterminisme audio.
+- EN ATTENTE : découverte en fin de session — `roadmap_studio_audio_procedural.md` semble en décalage avec le code réel de phase 2 (API FastAPI complète dans `api.py`, frontend existant avec une structure différente de celle décrite) ; non auditée en détail.
 
 ## Prochaine étape exacte
-Rendre trois fois la même spec avec Csound et comparer les hashes de sortie.
-Lors de la phase Music Composer, remplacer l’arrangement codé de l’exploration par des événements versionnés puis appeler l’archive.
+Auditer l'écart entre la phase 2 du roadmap et l'état réel du code avant de cocher ou démarrer une nouvelle tâche.
 
 ## Question bloquante pour la session suivante
-Aucune.
+Le roadmap phase 2 doit-il être réaudité/réécrit avant reprise du développement, ou une tâche précise doit-elle démarrer malgré l'écart constaté ?

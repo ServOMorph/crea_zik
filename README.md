@@ -24,5 +24,6 @@ L’éditeur dispose des contrats versionnés, de la persistance des révisions,
 Le transport et la préécoute sont implémentés ; leur contrôle d’écoute post-correctif reste à valider.
 Le moteur rend cinq stems instrumentaux distincts, la réverbération et un mix normalisé.
 Le runner actuel passe sur les contrats, le rendu, le frontend et le parcours E2E.
-La phase 0 reste ouverte tant que ses exigences exhaustives de qualification ne sont pas toutes couvertes.
+Le gate de déterminisme Csound réel de la phase 1 est validé (trois rendus indépendants, même SHA-256 du WAV).
+La phase 2 de `roadmap_studio_audio_procedural.md` semble en décalage avec le code réel et reste à auditer avant reprise.
 Explo prépare un premier plugin d’instrument (kick) avec manifeste de paramètres JSON, en vue d’un banc de test dans l’UI globale et d’une promotion ultérieure vers le dossier plugins applicatif.

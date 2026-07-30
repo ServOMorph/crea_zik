@@ -10,10 +10,9 @@ Créer de la musique et des effets sonores pour des applications et des jeux vid
 
 ## État actuel (réécrit intégralement à chaque /close)
 Les phases 0 et 1 couvrent le benchmark, les schémas métier v1, la provenance, la CLI, Csound et l’API.
-La CLI émet des erreurs typées et des logs JSON ; elle exporte le WAV avec un manifeste de provenance.
-La tranche UI de phase 2 crée des projets, rend une galerie copiée, propose un Sound Designer et affiche les jobs SSE.
-`explo/` contient un premier morceau de 30 s et son archive versionnée avec master, stems, sources et QA.
-Reste le gate de déterminisme Csound réel avant de poursuivre la roadmap applicative.
+Le gate de déterminisme Csound réel est validé : trois rendus indépendants du même patch produisent un WAV au SHA-256 identique.
+`EXPLO/` contient un premier morceau de 30 s et son archive versionnée avec master, stems, sources et QA.
+`roadmap_studio_audio_procedural.md` (phase 2) semble en décalage avec le code réel (API FastAPI et frontend déjà présents sous une forme différente de celle décrite) ; un audit reste à faire avant de reprendre les tâches de phase 2.
 
 ## Décisions structurantes (append only — 10 entrées max, 5 lignes max/entrée, archiver au-delà)
 - 2026-07-28 : Initialisation du protocole vibecoding.
@@ -30,3 +29,5 @@ Reste le gate de déterminisme Csound réel avant de poursuivre la roadmap appli
   comprend un manifeste de provenance déterministe.
 - 2026-07-30 : Les explorations musicales conservent leurs sources, rendus, stems, QA et documentation
   dans une archive versionnée adressée par SHA-256 ; l’éditeur devra produire ce même descripteur.
+- 2026-07-30 : Le rendu Csound réel est confirmé déterministe par hachage du WAV produit sur trois
+  rendus indépendants (pas seulement le hash de spec renvoyé par le CLI).

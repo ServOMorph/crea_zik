@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.11 — 2026-07-30
+
+### Corrigé
+
+- Gate de déterminisme Csound réel de la phase 1 validé par hachage du WAV rendu (trois rendus indépendants), et non plus seulement du hash de spec renvoyé par le CLI.
+
 ## v0.10 — 2026-07-30
 
 ### Ajouté

@@ -169,7 +169,7 @@ Gate :
 **⏸ Checkpoint** — Demander à l’utilisateur de faire `/compact` avant de continuer.
 Attendre sa réponse écrite. Ne pas commencer la phase suivante sans confirmation.
 
-## Phase 1 — Fondation du domaine et CLI [EN COURS]
+## Phase 1 — Fondation du domaine et CLI [TERMINÉ]
 
 But : établir les contrats stables avant de multiplier les fonctions et écrans.
 
@@ -212,7 +212,11 @@ Gate :
 **⏸ Checkpoint** — Demander à l’utilisateur de faire `/compact` avant de continuer.
 Attendre sa réponse écrite. Ne pas commencer la phase suivante sans confirmation.
 
-## Phase 2 — Première tranche verticale avec UI [TODO]
+## Phase 2 — Première tranche verticale avec UI [EN COURS]
+
+⚠️ Les cases ci-dessous n'ont pas été réauditées après la clôture de la phase 1 : une lecture rapide de
+`backend/src/crea_zik/api.py` et de `frontend/` montre une API FastAPI et un frontend déjà substantiels,
+sous une structure différente de celle décrite ici. Auditer avant de cocher ou de démarrer une tâche.
 
 But : livrer tôt un parcours complet utilisable sans terminal.
 
