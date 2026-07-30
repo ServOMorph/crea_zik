@@ -25,3 +25,4 @@ Le transport et la préécoute sont implémentés ; leur contrôle d’écoute p
 Le moteur rend cinq stems instrumentaux distincts, la réverbération et un mix normalisé.
 Le runner actuel passe sur les contrats, le rendu, le frontend et le parcours E2E.
 La phase 0 reste ouverte tant que ses exigences exhaustives de qualification ne sont pas toutes couvertes.
+Explo prépare un premier plugin d’instrument (kick) avec manifeste de paramètres JSON, en vue d’un banc de test dans l’UI globale et d’une promotion ultérieure vers le dossier plugins applicatif.

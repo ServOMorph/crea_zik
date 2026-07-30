@@ -22,9 +22,12 @@ Recherches déjà produites côté crea_zik, à consulter avant de dupliquer :
 Le premier morceau est archivé sous `archives/morceaux/lignes-de-nuit/versions/v001/`.
 Il comprend source, spec, master WAV, cinq stems, rapport QA et fiche pédagogique.
 Le stockage est adressé par SHA-256, dédupliqué et contrôlable par commande.
-L’arrangement note par note reste codé dans le renderer ; il sera déplacé vers une spec éditable.
+Une roadmap plugins est ouverte (`roadmap_plugins.md`) : premier plugin kick, contrat par manifeste
+JSON, moteur one-shot, phase 1 en cours (schéma, moteur, presets, tests non commencés).
 
 ## Décisions structurantes (append only — 10 entrées max, 5 lignes max/entrée, archiver au-delà)
 - 2026-07-30 : Création de l'agent explo via /create_agent.
 - 2026-07-30 : Les archives de morceaux sont immuables par version, adressées par SHA-256 et contiennent
   l’intention, l’inspiration traduite, les sources, les rendus, les stems et les mesures QA.
+- 2026-07-30 : Les plugins explo exposent un manifeste JSON générique comme contrat d'UI ; aucune UI
+  n'est codée dans explo. La promotion vers le dossier plugins applicatif est faite par la zone crea_zik.

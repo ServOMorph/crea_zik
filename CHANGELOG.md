@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.10 — 2026-07-30
+
+### Ajouté
+
+- Roadmap `explo/roadmap_plugins.md` : contrat de plugin par manifeste JSON, moteur kick (couches corps,
+  sub, transitoire, bruit), trois presets (techno, 808_sub, acoustique), promotion prévue via crea_zik.
+
 ## v0.9 — 2026-07-30
 
 ### Ajouté
