@@ -17,7 +17,7 @@ promus vers le dossier plugins applicatif. Premier plugin : kick.
   dossier plugins applicatif sont réalisés par la zone `crea_zik`, sur la base du manifeste
   figé par explo.
 
-## Phase 1 — Contrat de plugin et moteur kick [EN COURS]
+## Phase 1 — Contrat de plugin et moteur kick [FAIT]
 
 Zone : explo
 
@@ -42,7 +42,7 @@ Zone : explo
 **⏸ Checkpoint** — Demander à l'utilisateur de faire `/compact` avant de continuer.
 Attendre sa réponse écrite. Ne pas commencer la phase suivante sans confirmation.
 
-## Phase 2 — Banc de test dans l'UI globale [TODO]
+## Phase 2 — Banc de test dans l'UI globale [EN COURS]
 
 Zone : crea_zik
 

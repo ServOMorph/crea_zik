@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.12 — 2026-07-30
+
+### Ajouté
+
+- Phase 1 de `explo/roadmap_plugins.md` livrée : schéma de manifeste JSON générique, moteur kick
+  (corps, sub, transitoire, bruit), trois presets (techno, 808_sub, acoustique) avec WAV et
+  empreintes SHA-256 de référence, 11 tests (schéma, bornes, déterminisme, non-clipping, non-régression).
+
 ## v0.11 — 2026-07-30
 
 ### Corrigé

@@ -26,4 +26,4 @@ Le moteur rend cinq stems instrumentaux distincts, la réverbération et un mix 
 Le runner actuel passe sur les contrats, le rendu, le frontend et le parcours E2E.
 Le gate de déterminisme Csound réel de la phase 1 est validé (trois rendus indépendants, même SHA-256 du WAV).
 La phase 2 de `roadmap_studio_audio_procedural.md` semble en décalage avec le code réel et reste à auditer avant reprise.
-Explo prépare un premier plugin d’instrument (kick) avec manifeste de paramètres JSON, en vue d’un banc de test dans l’UI globale et d’une promotion ultérieure vers le dossier plugins applicatif.
+Explo a livré la phase 1 du plugin kick (schéma de manifeste générique, moteur one-shot, trois presets, WAV et empreintes SHA-256 de référence, tests verts). La phase 2, banc de test dans l’UI globale, revient à crea_zik.

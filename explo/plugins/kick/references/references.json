@@ -1,0 +1,17 @@
+{
+  "techno": {
+    "sha256": "ffa80bac5989075f466dd87c13f4e76325a63bfd67491579740c2b238685f494",
+    "sample_rate": 48000,
+    "velocity": 1.0
+  },
+  "808_sub": {
+    "sha256": "9835af7423874b673be2cb91db85b40a51a64f2583956728445a000af1854e89",
+    "sample_rate": 48000,
+    "velocity": 1.0
+  },
+  "acoustique": {
+    "sha256": "3104b5be81de96a227ba6665d8300d1caffcd72d8f1b725c195b296b0a43dcaa",
+    "sample_rate": 48000,
+    "velocity": 1.0
+  }
+}
