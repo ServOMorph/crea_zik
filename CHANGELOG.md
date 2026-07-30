@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.14 — 2026-07-30
+
+### Ajouté
+
+- Zones `DOCUMENTATION/` et `WORKFLOW/` créées pour la documentation des styles musicaux et l'agent
+  de création de musique, développés en parallèle. Modèle de fiche de style validé, roadmap dédiée
+  `roadmap_creation_musique.md` (Phase 1 terminée).
+
 ## v0.13 — 2026-07-30
 
 ### Ajouté

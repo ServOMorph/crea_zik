@@ -27,3 +27,4 @@ Le runner actuel passe sur les contrats, le rendu, le frontend et le parcours E2
 Le gate de déterminisme Csound réel de la phase 1 est validé (trois rendus indépendants, même SHA-256 du WAV).
 La phase 2 de `roadmap_studio_audio_procedural.md` semble en décalage avec le code réel et reste à auditer avant reprise.
 Explo a livré la phase 1 du plugin kick (schéma de manifeste générique, moteur one-shot, trois presets, WAV et empreintes SHA-256 de référence, tests verts). La phase 2 (banc de test dans l’UI globale, écran « Plugins ») est livrée côté crea_zik ; sa validation manuelle en navigateur reste à faire.
+Une zone `DOCUMENTATION/` et une zone `WORKFLOW/` ont été créées pour bâtir en parallèle l’inventaire des styles musicaux (modèle de fiche défini) et l’agent de création de musique associé ; voir `roadmap_creation_musique.md`.
