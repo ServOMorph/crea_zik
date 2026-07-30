@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 .venv/
+.coverage
 
 # Node / frontend
 node_modules/
@@ -12,6 +13,8 @@ projects/*/exports/
 projects/*/project.json
 test-results/
 frontend/test-results/
+frontend/coverage/
+frontend/reports/
 
 # Benchmark runtimes and generated audio are reproducible locally.
 benchmarks/engine_selection/.venv-*/

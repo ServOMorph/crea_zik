@@ -27,11 +27,12 @@ Music Composer, Adaptive Lab, Analyse & Export) et son backend de rendu, permett
   Csound réel restant avant de poursuivre la roadmap applicative.
 
 ## État actuel (réécrit intégralement à chaque /close)
-Le code couvre déjà des éléments fonctionnels des phases 0 à 5 : contrats, persistance, rendu, shell, historique et transport.
-La phase 0 reste en cours car toutes ses exigences de qualification ne sont pas encore exécutées.
-Le moteur produit cinq stems instrumentaux distincts, applique la réverbération et normalise le mix.
-Le runner actuel passe sur les contrats, le rendu, le frontend et le parcours E2E, mais ne couvre pas encore tout V0 à V4.
-Le contrôle d’écoute post-correctif reste en attente.
+Phase 0 et gate V0 de la roadmap éditeur sont [FAIT] : runner canonique couvrant lint, typage,
+contrats, déterminisme Csound, couverture bloquante, fuzzing OpenAPI (Schemathesis), a11y (axe-core),
+mutation (Stryker sur `transport.ts`), régression visuelle (Playwright) et markdownlint, chacun avec
+une preuve de blocage volontaire. Rendu instrumental et transport validés à l'écoute par l'utilisateur.
+Réserve documentée : mutmut verrouillé mais inexécutable nativement sous Windows (WSL/CI requis).
+Phase 1 (domaine compositionnel, migration de `Lignes de nuit`) reste à démarrer.
 
 ## Décisions structurantes (append only — 10 entrées max, 5 lignes max/entrée, archiver au-delà)
 - 2026-07-30 : Initialisation de l'agent EDITEUR (mode création), périmètre étendu à frontend/ et
@@ -46,3 +47,8 @@ Le contrôle d’écoute post-correctif reste en attente.
   toute copie remappe aussi les références du mixer.
 - 2026-07-30 : La préécoute lit des plages de révision via Web Audio et le rendu utilise des voix DSP
   spécialisées par famille instrumentale.
+- 2026-07-30 : Seuil de couverture frontend abaissé temporairement (60 %/75 %) pour
+  `TransportBar.tsx`/`EditorLanding.tsx`, non testés en profondeur ; à remonter à 80 % après les
+  phases V3/V5 dédiées, pour éviter la couverture artificielle interdite par la roadmap.
+- 2026-07-30 : mutmut reste verrouillé en dépendance mais son exécution est bloquée nativement sous
+  Windows (WSL requis) ; traité comme réserve d'infrastructure documentée, pas comme gate contourné.

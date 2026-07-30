@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.15 — 2026-07-30
+
+### Ajouté
+
+- Gate V0 de l'éditeur musical complété : fuzzing OpenAPI (Schemathesis), couverture bloquante
+  Python/frontend, accessibilité (axe-core), mutation testing (Stryker sur `transport.ts`),
+  régression visuelle (Playwright) et markdownlint, chacun avec preuve de blocage volontaire dans
+  `EDITEUR/test_editor.ps1`. Rendu instrumental et transport validés à l'écoute par l'utilisateur.
+
+### Corrigé
+
+- Correctifs lint/typage sur `backend/src/crea_zik/api.py` (tri d'imports, variance de `dict`) pour
+  débloquer le runner de qualification.
+
 ## v0.14 — 2026-07-30
 
 ### Ajouté

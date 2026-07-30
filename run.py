@@ -26,8 +26,8 @@ FRONTEND = ROOT / "frontend"
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Launch the local Crea Zik UI.")
     parser.add_argument("--host", default="127.0.0.1", help="Local address to bind (default: 127.0.0.1).")
-    parser.add_argument("--api-port", type=int, default=8002, help="API port (default: 8002).")
-    parser.add_argument("--ui-port", type=int, default=5174, help="UI port (default: 5174).")
+    parser.add_argument("--api-port", type=int, default=8003, help="API port (default: 8003).")
+    parser.add_argument("--ui-port", type=int, default=5175, help="UI port (default: 5175).")
     parser.add_argument("--no-browser", action="store_true", help="Do not open the UI in the default browser.")
     return parser.parse_args()
 

@@ -13,9 +13,10 @@
     "test:unit": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:mutation": "stryker run",
-    "test:a11y": "vitest run src/**/*.a11y.test.tsx",
+    "test:a11y": "vitest run .a11y.test.",
     "test:visual": "playwright test --grep @visual",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test --grep-invert @visual",
+    "lint:md": "markdownlint-cli2 \"../EDITEUR/**/*.md\" \"!../EDITEUR/_contexte\" \"!../EDITEUR/agent_role.md\""
   },
   "dependencies": {
     "react": "^19.0.0",
@@ -39,6 +40,7 @@
     "eslint-plugin-react-refresh": "^0.4.26",
     "fast-check": "^4.0.0",
     "jsdom": "^26.0.0",
+    "markdownlint-cli2": "^0.23.2",
     "prettier": "^3.9.6",
     "typescript": "^5.8.0",
     "typescript-eslint": "^8.65.0",
