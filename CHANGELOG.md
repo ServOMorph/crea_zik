@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.13 — 2026-07-30
+
+### Ajouté
+
+- Phase 2 de `EXPLO/roadmap_plugins.md` livrée : endpoints `/api/plugins` (liste, manifeste, preset,
+  rendu synchrone), écran « Plugins » avec contrôles générés depuis le manifeste JSON, non-régression
+  du rendu kick vérifiée contre la référence SHA-256 de la phase 1.
+
 ## v0.12 — 2026-07-30
 
 ### Ajouté

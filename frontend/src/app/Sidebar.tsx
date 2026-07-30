@@ -1,4 +1,4 @@
-type RouteName = "studio" | "editor";
+type RouteName = "studio" | "editor" | "plugins";
 
 type SidebarProps = {
   route: RouteName;
@@ -44,6 +44,17 @@ export function Sidebar({ route, collapsed, onToggle, onNavigate }: SidebarProps
         >
           <span aria-hidden="true">E</span>
           <span className="sidebar__label">Éditeur musical</span>
+        </a>
+        <a
+          aria-current={route === "plugins" ? "page" : undefined}
+          href="/plugins"
+          onClick={(event) => {
+            event.preventDefault();
+            onNavigate("plugins");
+          }}
+        >
+          <span aria-hidden="true">P</span>
+          <span className="sidebar__label">Plugins</span>
         </a>
       </nav>
     </aside>

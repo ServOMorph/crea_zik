@@ -1,9 +1,10 @@
 import { ReactNode, useCallback, useEffect, useState } from "react";
 
 import { EditorLanding } from "../editor/EditorLanding";
+import { PluginBench } from "../plugins/PluginBench";
 import { Sidebar } from "./Sidebar";
 
-type RouteName = "studio" | "editor";
+type RouteName = "studio" | "editor" | "plugins";
 
 type BrowserLocation = {
   pathname: string;
@@ -18,7 +19,10 @@ function readLocation(): BrowserLocation {
 }
 
 function routeFromPath(pathname: string): RouteName {
-  return pathname.replace(/\/+$/, "") === "/editor" ? "editor" : "studio";
+  const trimmed = pathname.replace(/\/+$/, "");
+  if (trimmed === "/editor") return "editor";
+  if (trimmed === "/plugins") return "plugins";
+  return "studio";
 }
 
 export function Application({ studioPage }: { studioPage: ReactNode }) {
@@ -65,7 +69,9 @@ export function Application({ studioPage }: { studioPage: ReactNode }) {
     <div className="application-shell">
       <Sidebar
         collapsed={collapsed}
-        onNavigate={(target) => navigate(target === "editor" ? "/editor" : "/")}
+        onNavigate={(target) =>
+          navigate(target === "editor" ? "/editor" : target === "plugins" ? "/plugins" : "/")
+        }
         onToggle={() => setCollapsed((current) => !current)}
         route={route}
       />
@@ -74,6 +80,7 @@ export function Application({ studioPage }: { studioPage: ReactNode }) {
         {route === "editor" && (
           <EditorLanding onDirtyChange={setHasUnsavedChanges} onNavigate={navigate} search={location.search} />
         )}
+        {route === "plugins" && <PluginBench />}
       </div>
     </div>
   );

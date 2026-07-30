@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
+from typing import cast
 from uuid import NAMESPACE_URL, UUID, uuid4, uuid5
 
 from fastapi import FastAPI, HTTPException, Request, status
@@ -16,6 +17,7 @@ from .adaptive import GameplayEvent, simulate_adaptive_graph
 from .audio_info import wav_info
 from .cli import PROJECT_ROOT, load_project, replace_composition, save_project
 from .composer import render_score
+from .composition_dsp import write_wav
 from .compositions import copy_composition
 from .errors import (
     CompositionNotFoundError,
@@ -48,6 +50,7 @@ from .models import (
     Track,
 )
 from .ollama import OllamaProposalError, generate_proposal
+from .plugins import list_plugin_ids, load_manifest, render_plugin, resolve_params
 from .provenance import patch_hash, resolve_project_path
 from .qa import evaluate_wav
 from .variants import DEFAULT_RANGES, vary_patch
@@ -162,6 +165,19 @@ class IntentRequest(BaseModel):
 class QaRequest(BaseModel):
     profile: str = Field(default="sfx", min_length=1, max_length=80)
     loop: bool = False
+
+
+class PluginSummary(BaseModel):
+    plugin_id: str
+    name: str
+    version: str
+    presets: list[str]
+
+
+class PluginRenderRequest(BaseModel):
+    preset: str = Field(min_length=1)
+    overrides: dict[str, float | int | bool | str] = Field(default_factory=dict)
+    velocity: float = Field(default=1.0, ge=0.0, le=1.0)
 
 
 @app.exception_handler(CreaZikError)
@@ -639,6 +655,60 @@ def export_project_patch(project_id: UUID, patch_id: UUID) -> ExportResponse:
         wav=destination.resolve().relative_to(PROJECT_ROOT.resolve()).as_posix(),
         manifest=manifest.resolve().relative_to(PROJECT_ROOT.resolve()).as_posix(),
     )
+
+
+@app.get("/api/plugins", response_model=list[PluginSummary])
+def list_plugins() -> list[PluginSummary]:
+    summaries = []
+    for plugin_id in list_plugin_ids():
+        manifest = load_manifest(plugin_id)
+        summaries.append(
+            PluginSummary(
+                plugin_id=manifest["plugin_id"],
+                name=manifest["name"],
+                version=manifest["version"],
+                presets=manifest["presets"],
+            )
+        )
+    return summaries
+
+
+@app.get("/api/plugins/{plugin_id}/manifest")
+def read_plugin_manifest(plugin_id: str) -> dict[str, object]:
+    try:
+        return load_manifest(plugin_id)
+    except ValueError as error:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from error
+
+
+@app.get("/api/plugins/{plugin_id}/presets/{preset}")
+def read_plugin_preset(plugin_id: str, preset: str) -> dict[str, object]:
+    try:
+        load_manifest(plugin_id)
+        return resolve_params(plugin_id, preset, {})
+    except ValueError as error:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from error
+
+
+@app.post("/api/plugins/{plugin_id}/render", response_model=ArtifactResponse)
+def render_plugin_endpoint(plugin_id: str, request: PluginRenderRequest) -> ArtifactResponse:
+    try:
+        load_manifest(plugin_id)
+        params = resolve_params(plugin_id, request.preset, cast(dict[str, object], request.overrides))
+        audio, sample_rate = render_plugin(plugin_id, params, request.velocity)
+    except ValueError as error:
+        message = str(error)
+        code = (
+            status.HTTP_404_NOT_FOUND
+            if "inconnu" in message
+            else status.HTTP_422_UNPROCESSABLE_CONTENT
+        )
+        raise HTTPException(status_code=code, detail=message) from error
+    path = resolve_project_path(PROJECT_ROOT, "plugins", plugin_id, f"{uuid4()}.wav")
+    write_wav(path, audio, sample_rate, "wav_pcm24")
+    payload = wav_info(path)
+    payload["wav"] = path.resolve().relative_to(PROJECT_ROOT.resolve()).as_posix()
+    return ArtifactResponse.model_validate(payload)
 
 
 @app.get("/api/jobs/{job_id}", response_model=JobResponse)

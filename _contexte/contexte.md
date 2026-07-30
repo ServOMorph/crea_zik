@@ -12,6 +12,9 @@ Créer de la musique et des effets sonores pour des applications et des jeux vid
 Les phases 0 et 1 couvrent le benchmark, les schémas métier v1, la provenance, la CLI, Csound et l’API.
 Le gate de déterminisme Csound réel est validé : trois rendus indépendants du même patch produisent un WAV au SHA-256 identique.
 `EXPLO/` contient un premier morceau de 30 s et son archive versionnée avec master, stems, sources et QA.
+Phase 2 de `EXPLO/roadmap_plugins.md` livrée : endpoints `/api/plugins`, écran « Plugins » avec contrôles
+générés depuis le manifeste, non-régression du rendu kick vérifiée contre la référence de phase 1.
+Validation manuelle navigateur du banc de test en attente (`tests_manuels.md`).
 `roadmap_studio_audio_procedural.md` (phase 2) semble en décalage avec le code réel (API FastAPI et frontend déjà présents sous une forme différente de celle décrite) ; un audit reste à faire avant de reprendre les tâches de phase 2.
 
 ## Décisions structurantes (append only — 10 entrées max, 5 lignes max/entrée, archiver au-delà)
@@ -31,3 +34,6 @@ Le gate de déterminisme Csound réel est validé : trois rendus indépendants d
   dans une archive versionnée adressée par SHA-256 ; l’éditeur devra produire ce même descripteur.
 - 2026-07-30 : Le rendu Csound réel est confirmé déterministe par hachage du WAV produit sur trois
   rendus indépendants (pas seulement le hash de spec renvoyé par le CLI).
+- 2026-07-30 : Les rendus de plugins explo (numpy, sub-seconde) passent par un endpoint synchrone dédié,
+  sans passer par la file de jobs Csound ; les contrôles UI sont entièrement générés depuis le manifeste
+  JSON, jamais câblés en dur par plugin.

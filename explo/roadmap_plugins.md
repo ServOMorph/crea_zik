@@ -42,7 +42,7 @@ Zone : explo
 **⏸ Checkpoint** — Demander à l'utilisateur de faire `/compact` avant de continuer.
 Attendre sa réponse écrite. Ne pas commencer la phase suivante sans confirmation.
 
-## Phase 2 — Banc de test dans l'UI globale [EN COURS]
+## Phase 2 — Banc de test dans l'UI globale [FAIT]
 
 Zone : crea_zik
 
