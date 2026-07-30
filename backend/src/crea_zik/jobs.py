@@ -7,7 +7,9 @@ from pathlib import Path
 from uuid import UUID, uuid4
 
 from .engine import CsoundEngine, RenderCancelled, RenderEngine
-from .models import JobState, Patch
+from .errors import error_detail
+from .logging import log_event
+from .models import ErrorDetail, JobState, Patch
 from .provenance import resolve_project_path
 
 
@@ -18,7 +20,7 @@ class RenderJob:
     patch_id: UUID = field(default_factory=uuid4)
     state: JobState = JobState.QUEUED
     progress: int = 0
-    error: str | None = None
+    error: ErrorDetail | None = None
     wav: str | None = None
     future: Future[None] | None = None
     cancel_requested: Event = field(default_factory=Event, repr=False)
@@ -43,6 +45,7 @@ class JobManager:
             self._jobs[job.id] = job
             job.future = self._executor.submit(self._render, job, patch)
             self._changed(job)
+        log_event("render_queued", job_id=job.id, project_id=project_id, patch_id=patch.id)
         return job
 
     def _render(self, job: RenderJob, patch: Patch) -> None:
@@ -51,6 +54,7 @@ class JobManager:
                 return
             job.state, job.progress = JobState.RUNNING, 10
             self._changed(job)
+        log_event("render_started", job_id=job.id, project_id=job.project_id, patch_id=job.patch_id)
         try:
             output = resolve_project_path(self._project_root, str(job.project_id), "artifacts", f"{patch.id}.wav")
             def report_progress(progress: int) -> None:
@@ -65,21 +69,29 @@ class JobManager:
             with self._condition:
                 if job.cancel_requested.is_set():
                     artifact.wav_path.unlink(missing_ok=True)
+                    outcome = "render_cancelled"
                 else:
                     job.wav = artifact.wav_path.resolve().relative_to(self._project_root.resolve()).as_posix()
                     job.progress, job.state = 100, JobState.COMPLETED
+                    outcome = "render_completed"
                 self._changed(job)
+            log_event(outcome, job_id=job.id, project_id=job.project_id, patch_id=job.patch_id)
         except RenderCancelled:
             with self._condition:
                 job.state = JobState.CANCELLED
                 self._changed(job)
-        except Exception as error:  # recorded and returned as an actionable job failure
+            log_event("render_cancelled", job_id=job.id, project_id=job.project_id, patch_id=job.patch_id)
+        except Exception as error:
             with self._condition:
                 if job.cancel_requested.is_set():
                     job.state = JobState.CANCELLED
                 else:
-                    job.error, job.state = str(error), JobState.FAILED
+                    job.error, job.state = error_detail(error), JobState.FAILED
                 self._changed(job)
+            log_event(
+                "render_failed", job_id=job.id, project_id=job.project_id, patch_id=job.patch_id,
+                error_code=error_detail(error).code,
+            )
 
     def get(self, job_id: UUID) -> RenderJob | None:
         with self._condition:
@@ -97,6 +109,7 @@ class JobManager:
                 job.future.cancel()
             job.state = JobState.CANCELLED
             self._changed(job)
+            log_event("render_cancel_requested", job_id=job.id, project_id=job.project_id, patch_id=job.patch_id)
             return job
 
     def wait_for_update(self, job_id: UUID, version: int, timeout: float = 15) -> tuple[RenderJob | None, int]:

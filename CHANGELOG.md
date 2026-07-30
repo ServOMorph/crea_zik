@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.5 — 2026-07-30
+
+### Ajouté
+
+- Erreurs typées, logs JSON, timeout Csound et couverture des erreurs de rendu.
+- Parcours CLI testé de bout en bout et manifeste de provenance JSON créé à chaque export.
+
+### Modifié
+
+- Les erreurs de jobs structurées sont affichées par l’interface.
+- La recette manuelle non reproductible a été retirée après validation de la reprise automatique.
+
 ## v0.4 — 2026-07-28
 
 ### Ajouté

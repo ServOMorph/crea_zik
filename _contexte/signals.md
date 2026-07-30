@@ -1,29 +1,28 @@
-# Signals — crea_zik (MAJ 2026-07-28)
+# Signals — crea_zik (MAJ 2026-07-30)
 
 ## Actions ouvertes
-- [P1|ouvert] Clore les gates restants des phases 1 et 2 : validation CLI, erreurs et logs structurés, annulation manuelle d’un rendu long et manifeste d’export.
-  fait quand: la CLI est testée de bout en bout, les erreurs et logs sont structurés, l’annulation est observée sur le rendu de deux minutes et chaque export produit son manifeste
-  réf: roadmap_studio_audio_procedural.md, backend/src/crea_zik/cli.py, backend/src/crea_zik/jobs.py, tests_manuels.md
+- [P1|ouvert] Clore le gate de phase 1 sur le rendu déterministe Csound.
+  fait quand: trois rendus Csound successifs d’une même spec produisent le même hash de sortie
+  réf: roadmap_studio_audio_procedural.md, backend/src/crea_zik/engine.py, backend/src/crea_zik/provenance.py
 
-## Dernière session (2026-07-28)
+## Dernière session (2026-07-30)
 ### Décisions prises
-- Les schémas de domaine v1 sont validés et migrés à la lecture des projets.
-- La galerie rend une copie dans le projet sélectionné ; les jobs restent visibles jusqu’à leur état terminal.
+- Les exports CLI produisent systématiquement un WAV et un manifeste de provenance JSON.
 
 ### Livrables produits ou modifiés
-- `backend/src/crea_zik/models.py` : schémas Project, Patch, Score, Instrument, EffectChain, AdaptiveGraph, RenderJob, Artifact et QaReport.
-- `frontend/src/main.tsx` : galerie rendable, file de jobs visible et Sound Designer minimal paramétrable.
-- `tests/test_foundation.py`, `frontend/e2e/studio.spec.ts` : couverture de domaine et trois parcours E2E.
-- `tests_manuels.md` : recette résiduelle d’annulation de rendu long.
+- `backend/src/crea_zik/errors.py`, `logging.py`, `exports.py` : erreurs typées, logs JSON et manifeste d’export.
+- `backend/src/crea_zik/cli.py`, `engine.py`, `jobs.py` : timeout Csound, erreurs structurées et commandes CLI actionnables.
+- `tests/test_cli.py`, `tests/test_foundation.py`, `tests/test_jobs.py` : parcours CLI et contrôles d’erreurs, timeout et binaire absent.
+- `tests_manuels.md` : vidé ; l’annulation longue était non reproductible et la reprise a réussi.
 
 ### Hypothèses validées / invalidées
-- VALIDE : 15 tests Python, le build frontend et les trois parcours Playwright sont verts.
-- VALIDE : les exemples de galerie sont copiés, rendus et régénérés depuis l’UI.
-- EN ATTENTE : l’annulation du rendu de deux minutes n’a pas été observée manuellement ; le non-blocage est couvert par test automatisé.
+- VALIDE : 19 tests Python, le build frontend et trois parcours Playwright passent.
+- VALIDE : l’annulation non bloquante est couverte automatiquement ; la recette longue peut être non reproductible sur une machine rapide.
+- EN ATTENTE : la répétabilité du rendu Csound réel reste à mesurer sur trois rendus.
 
 ### Prochaine étape exacte
-Exécuter la recette manuelle d’annulation sur le rendu de deux minutes.
-Compléter les erreurs et logs structurés, les tests CLI de bout en bout et le manifeste d’export.
+Rendre trois fois la même spec avec Csound et comparer les hashes de sortie.
+Si le gate est satisfait, clôturer la phase 1 avant de reprendre la phase 2.
 
 ### Question bloquante pour la session suivante
 Aucune.

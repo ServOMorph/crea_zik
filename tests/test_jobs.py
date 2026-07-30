@@ -1,8 +1,10 @@
 from pathlib import Path
+import logging
 from threading import Event
 from uuid import uuid4
 
 from crea_zik.engine import Artifact, RenderCancelled
+from crea_zik.errors import RenderTimeoutError
 from crea_zik.jobs import JobManager, JobState
 from crea_zik.models import Patch, PatchKind
 
@@ -46,6 +48,11 @@ class ProgressEngine:
         return Artifact(output, "test-hash", "test")
 
 
+class TimeoutEngine:
+    def render(self, patch, output: Path, cancelled=None, progress=None) -> Artifact:
+        raise RenderTimeoutError("Render exceeded its allowed duration.")
+
+
 def patch() -> Patch:
     return Patch(name="click", kind=PatchKind.UI_CLICK, seed=42, duration_seconds=.12)
 
@@ -85,4 +92,18 @@ def test_job_updates_are_versioned_and_include_progress(tmp_path: Path) -> None:
     assert final.state is JobState.COMPLETED
     assert final.progress == 100
     assert final_version > version
+    manager.shutdown()
+
+
+def test_timed_out_job_exposes_a_typed_error_and_structured_log(tmp_path: Path, caplog) -> None:
+    caplog.set_level(logging.INFO, logger="crea_zik")
+    manager = JobManager(tmp_path, TimeoutEngine)
+    job = manager.submit(uuid4(), patch())
+    job.future.result(timeout=1)
+    completed = manager.get(job.id)
+    assert completed is not None
+    assert completed.state is JobState.FAILED
+    assert completed.error is not None
+    assert completed.error.code == "render_timeout"
+    assert any('"event": "render_failed"' in record.message for record in caplog.records)
     manager.shutdown()

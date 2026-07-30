@@ -4,6 +4,8 @@ from uuid import uuid4
 import pytest
 
 from crea_zik.cli import PROJECT_ROOT, load_project, save_project
+from crea_zik.errors import RenderEngineUnavailableError
+from crea_zik.engine import CsoundEngine
 from pydantic import ValidationError
 
 from crea_zik.models import (
@@ -107,3 +109,8 @@ def test_save_project_rejects_external_path(tmp_path: Path, monkeypatch: pytest.
     monkeypatch.setattr("crea_zik.cli.PROJECT_ROOT", root)
     with pytest.raises(ValueError):
         save_project(Project(name="demo"), tmp_path / "outside.json")
+
+
+def test_csound_engine_reports_a_typed_error_when_the_binary_is_missing(tmp_path: Path) -> None:
+    with pytest.raises(RenderEngineUnavailableError):
+        CsoundEngine(executable=tmp_path / "missing-csound.exe")

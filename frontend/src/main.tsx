@@ -4,7 +4,7 @@ import "./styles.css";
 
 type Patch = { id: string; name: string; kind: string; seed: number; duration_seconds: number };
 type Project = { id: string; name: string; patches: Patch[] };
-type Job = { id: string; state: "queued" | "running" | "completed" | "failed" | "cancelled"; progress: number; error?: string; wav?: string };
+type Job = { id: string; state: "queued" | "running" | "completed" | "failed" | "cancelled"; progress: number; error?: { code: string; message: string }; wav?: string };
 type TrackedJob = Job & { label: string };
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -55,7 +55,7 @@ function App() {
     } else if (job.state === "cancelled") {
       setStatus("Render cancelled");
     } else if (job.state === "failed") {
-      setStatus(job.error ?? "Render failed");
+      setStatus(job.error?.message ?? "Render failed");
     } else {
       setStatus(`Rendering ${job.progress} %...`);
     }
@@ -155,7 +155,7 @@ function App() {
     <section><h2>Projects</h2>{projects.length === 0 ? <p>No projects yet. Create one to get started.</p> : <div className="grid">{projects.map(project => <article key={project.id}><h3>{project.name}</h3><p>{project.patches.length} patch{project.patches.length > 1 ? "es" : ""}</p><button onClick={() => createAndRender(project)}>Create and render a click</button><button className="secondary" onClick={() => createCancellationDemo(project)}>Render 2-minute cancellation demo</button>{project.patches.length > 0 && <div className="patches">{project.patches.map(patch => <div key={patch.id}><span>{patch.name}</span><button className="secondary" onClick={() => void renderPatch(project, patch)}>Render</button></div>)}</div>}<button className="secondary" onClick={() => createVariants(project)}>Create 10 variants</button></article>)}</div>}</section>
     <section><h2>Sound Designer</h2>{designerProject ? <form className="designer" onSubmit={createDesignerPatch}><label>Project <select value={designerProject.id} onChange={event => setDesignerProjectId(event.target.value)}>{projects.map(project => <option key={project.id} value={project.id}>{project.name}</option>)}</select></label><label>Patch name <input value={designerName} onChange={event => setDesignerName(event.target.value)} /></label><label>Type <select value={designerKind} onChange={event => setDesignerKind(event.target.value)}><option value="ui_click">UI click</option><option value="modal_impact">Modal impact</option><option value="continuous_engine">Continuous engine</option></select></label><label>Seed <input type="number" min="0" max="9223372036854775807" value={designerSeed} onChange={event => setDesignerSeed(event.target.value)} /></label><label>Duration (s) <input type="number" min="0.01" max="120" step="0.01" value={designerDuration} onChange={event => setDesignerDuration(event.target.value)} /></label><label>Gain <input type="number" min="0.01" max="1" step="0.01" value={designerGain} onChange={event => setDesignerGain(event.target.value)} /></label><button>Create and render</button></form> : <p>Create a project to use the Sound Designer.</p>}</section>
     <section><h2>Example gallery</h2><p>Each example is copied into the selected project, then rendered for listening.</p>{galleryProject && <label>Destination project <select value={galleryProject.id} disabled={creatingProject} onChange={event => { const destination = projects.find(project => project.id === event.target.value) ?? null; galleryProjectRef.current = destination; setGalleryProjectId(event.target.value); }}>{projects.map(project => <option key={project.id} value={project.id}>{project.name}</option>)}</select></label>}<div className="grid">{gallery.map(example => <article key={example.id}><h3>{example.name}</h3><p>{example.kind} / {example.duration_seconds}s</p>{galleryProject && <button disabled={creatingProject} onClick={() => void copyExample(galleryProject, example)}>Open, render and listen</button>}</article>)}</div></section>
-    <section><h2>Render jobs</h2>{jobs.length === 0 ? <p>No render jobs yet.</p> : <div className="jobs">{jobs.map(job => <article key={job.id}><h3>{job.label}</h3><p>{job.state} · {job.progress} %</p>{["queued", "running"].includes(job.state) && <><progress value={job.progress} max="100" /><button className="secondary" onClick={() => void cancelRender(job)}>Cancel render</button></>}{job.error && <p className="error">{job.error}</p>}</article>)}</div>}</section>
+    <section><h2>Render jobs</h2>{jobs.length === 0 ? <p>No render jobs yet.</p> : <div className="jobs">{jobs.map(job => <article key={job.id}><h3>{job.label}</h3><p>{job.state} · {job.progress} %</p>{["queued", "running"].includes(job.state) && <><progress value={job.progress} max="100" /><button className="secondary" onClick={() => void cancelRender(job)}>Cancel render</button></>}{job.error && <p className="error">{job.error.message}</p>}</article>)}</div>}</section>
     {audio && <section className="player"><h2>Latest render</h2><audio controls src={audio} /><p><a href={audio} download>Download WAV</a></p></section>}
   </main>;
 }

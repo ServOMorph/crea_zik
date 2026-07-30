@@ -13,7 +13,7 @@ from .cli import PROJECT_ROOT, load_project, save_project
 from .engine import CsoundEngine
 from .gallery import examples
 from .jobs import JobManager, JobState, RenderJob
-from .models import Patch, Project
+from .models import ErrorDetail, Patch, Project
 from .provenance import resolve_project_path
 
 app = FastAPI(title="Crea Zik", version="0.1.0")
@@ -36,7 +36,7 @@ class JobResponse(BaseModel):
     id: UUID
     state: JobState
     progress: int
-    error: str | None = None
+    error: ErrorDetail | None = None
     wav: str | None = None
 
 

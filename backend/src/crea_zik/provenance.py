@@ -4,6 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 
+from .errors import ProjectPathError
 from .models import Patch
 
 ENGINE_VERSION = "csound-7.0.0-beta.17"
@@ -21,5 +22,5 @@ def patch_hash(patch: Patch) -> str:
 def resolve_project_path(root: Path, *parts: str) -> Path:
     candidate = root.joinpath(*parts).resolve()
     if root.resolve() not in candidate.parents and candidate != root.resolve():
-        raise ValueError("path escapes the authorized project root")
+        raise ProjectPathError("Path escapes the authorized project root.")
     return candidate

@@ -30,6 +30,12 @@ class JobState(StrEnum):
     CANCELLED = "cancelled"
 
 
+class ErrorDetail(BaseModel):
+    code: str = Field(pattern="^[a-z][a-z0-9_]{2,63}$")
+    message: str = Field(min_length=1, max_length=240)
+    details: dict[str, str] = Field(default_factory=dict)
+
+
 class DomainModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -172,7 +178,7 @@ class RenderJob(IdentifiedModel):
     patch_id: UUID
     state: JobState = JobState.QUEUED
     progress: int = Field(default=0, ge=0, le=100)
-    error: str | None = None
+    error: ErrorDetail | None = None
     artifact_id: UUID | None = None
 
 

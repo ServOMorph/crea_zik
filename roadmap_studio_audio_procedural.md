@@ -188,9 +188,9 @@ Tâches :
 - [x] Implémenter validation puis normalisation canonique des specs.
 - [x] Implémenter le calcul de hash de provenance.
 - [x] Créer les commandes CLI `new`, `validate`, `render`, `analyze` et `export`.
-- [ ] Gérer erreurs typées, timeouts, annulation et logs structurés.
+- [x] Gérer erreurs typées, timeouts, annulation et logs structurés.
 - [x] Fournir un projet exemple minimal sans fichier audio source.
-- [ ] Tester schémas, migrations, chemins hostiles, seeds, hashes et CLI de bout en bout.
+- [x] Tester schémas, migrations, chemins hostiles, seeds, hashes et CLI de bout en bout.
 
 Livrables :
 
@@ -206,7 +206,7 @@ Gate :
 - une spec invalide échoue avant le moteur avec une erreur actionnable ;
 - aucun chemin ne peut sortir du projet autorisé.
 
-## Phase 2 — Première tranche verticale avec UI [EN COURS]
+## Phase 2 — Première tranche verticale avec UI [TODO]
 
 But : livrer tôt un parcours complet utilisable sans terminal.
 

@@ -21,6 +21,6 @@ Csound 7 est le moteur de rendu offline, pyo le fallback et Faust la cible DSP p
 
 La phase 0 est terminée : le benchmark et l’ADR sont dans `benchmarks/engine_selection/`.
 Le noyau Python couvre les schémas métier v1, migrations, validation, provenance, CLI et rendu Csound.
+La CLI produit des erreurs typées, des logs JSON et un manifeste de provenance à chaque export.
 L’UI locale crée des projets, rend une galerie copiée, propose un Sound Designer minimal et affiche les
-jobs SSE jusqu’à leur état terminal. Restent les tests CLI, erreurs/logs structurés, manifeste d’export,
-QA et la recette manuelle de l’annulation longue.
+jobs SSE jusqu’à leur état terminal. Reste le gate de déterminisme du rendu Csound réel, puis la phase 2.
