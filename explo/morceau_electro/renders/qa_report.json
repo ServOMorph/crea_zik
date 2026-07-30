@@ -1,0 +1,22 @@
+{
+  "sample_rate": 48000,
+  "channels": 2,
+  "duration_seconds": 30.0,
+  "sample_peak": 0.8900000000000001,
+  "sample_peak_dbfs": -1.0121998671017431,
+  "rms_dbfs": [
+    -16.058099007846003,
+    -16.143438824959652
+  ],
+  "dc_offset": [
+    0.0010012896872317457,
+    0.0009951754784780675
+  ],
+  "stereo_correlation": 0.9919680854338698,
+  "finite": true,
+  "clipping": false,
+  "master_sha256": "68544991d97b3a2868fa83e8e3c9da6882991b40338d13a50187a520b17c73fb",
+  "title": "Lignes de nuit",
+  "seed": 20260730,
+  "spec_sha256": "200fffcdc772a78a3ad5b34b011f4095083649a197bc1cee28c2f73b999c393e"
+}

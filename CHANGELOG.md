@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.6 — 2026-07-30
+
+### Ajouté
+
+- Premier morceau électro procédural de 30 secondes avec master WAV, stems, spec, renderer et QA.
+- Archivage musical versionné : catalogue, manifestes SHA-256, déduplication, documentation et contrôle d’intégrité.
+
 ## v0.5 — 2026-07-30
 
 ### Ajouté

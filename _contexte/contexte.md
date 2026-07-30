@@ -9,11 +9,11 @@ Créer de la musique et des effets sonores pour des applications et des jeux vid
 - Csound 7.0.0-beta.17 pour le rendu offline ; pyo 1.0.5 comme fallback ; Faust comme cible DSP portable.
 
 ## État actuel (réécrit intégralement à chaque /close)
-La phase 0 est terminée et documentée dans `benchmarks/engine_selection/` et l’ADR 0001.
-La phase 1 fournit les schémas métier v1, validation, provenance, CLI, moteur Csound et API.
+Les phases 0 et 1 couvrent le benchmark, les schémas métier v1, la provenance, la CLI, Csound et l’API.
 La CLI émet des erreurs typées et des logs JSON ; elle exporte le WAV avec un manifeste de provenance.
 La tranche UI de phase 2 crée des projets, rend une galerie copiée, propose un Sound Designer et affiche les jobs SSE.
-Les 19 tests Python, le build frontend et les trois parcours Playwright passent ; reste le gate de déterminisme Csound réel.
+`explo/` contient un premier morceau de 30 s et son archive versionnée avec master, stems, sources et QA.
+Reste le gate de déterminisme Csound réel avant de poursuivre la roadmap applicative.
 
 ## Décisions structurantes (append only — 10 entrées max, 5 lignes max/entrée, archiver au-delà)
 - 2026-07-28 : Initialisation du protocole vibecoding.
@@ -28,3 +28,5 @@ Les 19 tests Python, le build frontend et les trois parcours Playwright passent 
   sont copiés vers un projet avant rendu et restent immuables dans la galerie.
 - 2026-07-30 : Les erreurs de rendu et de CLI sont typées et journalisées en JSON ; tout export CLI
   comprend un manifeste de provenance déterministe.
+- 2026-07-30 : Les explorations musicales conservent leurs sources, rendus, stems, QA et documentation
+  dans une archive versionnée adressée par SHA-256 ; l’éditeur devra produire ce même descripteur.

@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "piece_id": "lignes-de-nuit",
+  "title": "Lignes de nuit",
+  "version": "v001",
+  "created_at": "2026-07-30",
+  "parent_version": null,
+  "status": "prototype",
+  "summary": "Premier morceau complet de 30 secondes et premier cas de référence pour le futur éditeur.",
+  "inspiration": {
+    "request": "Musique électro instrumentale avec Moby comme repère initial.",
+    "translation": "Composition originale fondée sur une pulsation régulière, une harmonie mineure, des textures chaudes, un arpège et une construction progressive.",
+    "constraints": [
+      "Aucune parole.",
+      "Aucun sample ni asset audio externe.",
+      "Aucune reproduction de mélodie ou de signature sonore identifiable.",
+      "Durée exacte de 30 secondes.",
+      "Sortie WAV."
+    ]
+  },
+  "technical": {
+    "engine": "Python, NumPy et SciPy",
+    "sample_rate": 48000,
+    "channels": 2,
+    "sample_format": "PCM 24 bits",
+    "tempo_bpm": 120,
+    "time_signature": "4/4",
+    "key": "A minor",
+    "seed": 20260730,
+    "duration_seconds": 30.0,
+    "mastering": "Réverbération algorithmique, saturation tanh, normalisation à 0,89"
+  },
+  "files": [
+    {"path": "archive.json", "role": "archive_descriptor", "description": "Métadonnées et inventaire de la version."},
+    {"path": "CREATION.md", "role": "creation_document", "description": "Explication synthétique, pédagogique et technique."},
+    {"path": "README.md", "role": "render_guide", "description": "Commande de rendu et organisation des sources."},
+    {"path": "spec.json", "role": "music_spec", "description": "Paramètres musicaux, pistes, arrangement et seed."},
+    {"path": "render.py", "role": "renderer", "description": "Synthèse, séquençage, mixage, stems, QA et export WAV."},
+    {"path": "test_render.py", "role": "renderer_tests", "description": "Tests de durée, format logique et déterminisme."},
+    {"path": "renders/lignes_de_nuit_30s.wav", "role": "master", "description": "Master stéréo WAV PCM 24 bits."},
+    {"path": "renders/qa_report.json", "role": "qa_report", "description": "Mesures techniques et empreintes du rendu."},
+    {"path": "renders/stems/drums.wav", "role": "stem_drums", "description": "Stem de batterie synthétique."},
+    {"path": "renders/stems/bass.wav", "role": "stem_bass", "description": "Stem de basse synthétique."},
+    {"path": "renders/stems/pad.wav", "role": "stem_pad", "description": "Stem de nappe harmonique."},
+    {"path": "renders/stems/arp.wav", "role": "stem_arp", "description": "Stem d'arpège."},
+    {"path": "renders/stems/lead.wav", "role": "stem_lead", "description": "Stem mélodique."}
+  ]
+}

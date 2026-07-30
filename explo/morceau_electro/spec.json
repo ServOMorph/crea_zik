@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "title": "Lignes de nuit",
+  "seed": 20260730,
+  "sample_rate": 48000,
+  "duration_seconds": 30.0,
+  "tempo_bpm": 120,
+  "time_signature": [4, 4],
+  "key": "A minor",
+  "tracks": [
+    {"id": "drums", "kind": "drum_machine", "gain": 0.78, "pan": 0.0},
+    {"id": "bass", "kind": "subtractive_bass", "gain": 0.70, "pan": 0.0},
+    {"id": "pad", "kind": "warm_pad", "gain": 0.36, "pan": 0.0},
+    {"id": "arp", "kind": "pluck_arpeggio", "gain": 0.48, "pan": 0.0},
+    {"id": "lead", "kind": "soft_lead", "gain": 0.38, "pan": 0.0}
+  ],
+  "arrangement": {
+    "intro_bars": [0, 1],
+    "groove_bars": [2, 5],
+    "lift_bars": [6, 9],
+    "peak_bars": [10, 13],
+    "outro_bars": [14, 14]
+  },
+  "harmony_midi": [45, 41, 48, 43],
+  "license": "Composition et synthese originales creees localement; aucun asset audio externe."
+}
