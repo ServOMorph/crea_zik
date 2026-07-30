@@ -1,0 +1,815 @@
+# Roadmap — éditeur musical intégré
+
+Créée le : 2026-07-30
+
+## Objectif
+
+Ajouter à l’UI de Crea Zik un onglet `Éditeur musical`, accessible depuis une sidebar fixe à gauche,
+permettant d’ouvrir une copie de `Lignes de nuit` et d’en modifier l’intégralité depuis l’interface :
+structure, tempo, métrique, tonalité, pistes, patterns, notes, vélocités, instruments procéduraux,
+automations, mixage, effets, mastering, seed, rendu et export.
+
+L’expérience reprend les concepts utiles de FL Studio — Channel Rack, séquenceur pas à pas, Playlist,
+Piano Roll, Automation Clips et Mixer — sans chercher à reproduire son interface ni à devenir un DAW
+généraliste.
+
+Le chantier est exécuté en une seule passe continue. Il ne contient aucune pause de protocole ni
+validation intermédiaire demandée à l’utilisateur. Une phase fonctionnelle ne débloque la suivante
+que lorsque sa phase de validation automatique associée réussit intégralement.
+
+## Périmètre
+
+### Inclus
+
+- shell applicatif avec sidebar gauche et routage par onglet ;
+- onglet `Éditeur musical` desktop-first ;
+- copie éditable de l’exemple immuable `Lignes de nuit` ;
+- arrangement multipiste par patterns et clips ;
+- séquenceur pas à pas pour les percussions ;
+- Piano Roll pour toutes les pistes mélodiques ;
+- instruments procéduraux et paramètres de synthèse ;
+- automations de paramètres ;
+- mixer avec mute, solo, gain, pan, bus, sends et effets ;
+- transport, boucle, scrubbing, zoom et préécoute ;
+- undo/redo, sauvegarde explicite et détection des changements non sauvegardés ;
+- rendu déterministe, stems, QA et export WAV ;
+- raccourcis clavier, accessibilité et parcours Playwright.
+
+### Hors périmètre
+
+- import de samples, SoundFonts ou réponses impulsionnelles ;
+- enregistrement microphone ou audio ;
+- hébergement de plugins VST tiers ;
+- collaboration temps réel ;
+- reproduction visuelle ou comportementale exacte de FL Studio ;
+- édition complète sur smartphone.
+
+## Invariants
+
+- La source de vérité est une spec JSON versionnée et validée par Pydantic.
+- Aucune note, séquence, automation ou valeur artistique de `Lignes de nuit` ne reste codée en dur
+  dans le renderer.
+- Les générateurs DSP restent séparés des données musicales éditables.
+- Toute opération aléatoire dépend d’une seed explicite.
+- Les exemples de galerie restent immuables ; l’utilisateur modifie toujours une copie.
+- L’état d’édition local est séparé de l’état sauvegardé.
+- Aucun changement de projet n’est perdu silencieusement.
+- Le frontend ne fournit aucun chemin arbitraire au backend ou au moteur.
+- Le rendu reste à 48 kHz et conserve spec, seed, versions, hash et rapport QA.
+- Chaque phase fonctionnelle est suivie d’une phase de validation automatique bloquante.
+- Aucun test n’est contourné, neutralisé ou affaibli pour faire passer un gate.
+- Un échec arrête l’avancement, déclenche la correction puis la réexécution complète du gate.
+- L’utilisateur n’a aucun test, réglage technique ou commande de diagnostic à exécuter.
+
+## Définition mesurable du « fonctionnel à 85 % »
+
+Une suite de tests finie ne peut pas démontrer l’absence absolue de défaut. L’objectif vérifiable est :
+
+- au moins 85 % des critères fonctionnels planifiés sont livrés, utilisables et validés ;
+- 100 % des parcours critiques couverts de bout en bout dans un vrai navigateur ;
+- 100 % de couverture lignes et branches sur le domaine, les migrations, le store d’édition,
+  l’historique de commandes, les conversions temporelles et le routage audio ;
+- seuil minimal global de 90 % des lignes et 85 % des branches pour le backend et le frontend ;
+- tests de propriétés et tests de mutation sur les algorithmes critiques afin d’éviter une couverture
+  artificielle ;
+- validation déterministe du rendu, des stems, des manifests et des métriques audio ;
+- zéro erreur console, requête réseau inattendue, test ignoré ou défaut bloquant à la livraison ;
+- inspection visuelle et écoute critique finales exécutées par l’agent, sans action demandée à
+  l’utilisateur.
+
+Le taux fonctionnel est calculé depuis une matrice d’exigences identifiées et pondérées avant le
+développement. Un critère ne compte comme livré que si son comportement, son test et sa documentation
+sont présents. Les critères partiels comptent comme non livrés.
+
+Les fonctions essentielles ne peuvent pas être imputées aux 15 % manquants :
+
+- lancement de l’UI ;
+- sidebar et accès à l’onglet `Éditeur musical` ;
+- chargement d’une copie de `Lignes de nuit` ;
+- édition des notes, patterns, arrangement, paramètres d’instrument et mix de base ;
+- lecture, sauvegarde et réouverture ;
+- rendu du master et export WAV.
+
+Les 15 % non livrés au maximum sont documentés individuellement avec identifiant, fonctionnalité
+prévue, état réel, raison, impact utilisateur, contournement éventuel, risque, priorité et test
+d’acceptation restant à satisfaire. Une fonction manquante ne doit pas être représentée par un bouton
+factice.
+
+## Outillage automatique obligatoire
+
+### Backend et domaine
+
+- `pytest` pour les tests unitaires, intégration et API ;
+- `pytest-cov` avec couverture de branches et seuils bloquants ;
+- `Hypothesis` pour les propriétés, bornes, migrations, timelines et routages ;
+- `Schemathesis` pour tester automatiquement le contrat OpenAPI FastAPI ;
+- `mutmut` sur le domaine, les migrations et le planificateur ;
+- `Ruff` et `mypy` pour lint et typage statique bloquants ;
+- NumPy/SciPy et analyse WAV pour les tests DSP, métriques, golden specs et comparaison des stems.
+
+### Frontend
+
+- `Vitest` avec couverture V8 ;
+- React Testing Library, `user-event` et `jest-dom` pour les composants et interactions ;
+- `MSW` pour simuler les contrats API sans faux couplage au réseau ;
+- `fast-check` pour les propriétés du store, des commandes et de la géométrie temporelle ;
+- `axe-core` pour les violations d’accessibilité automatisables ;
+- ESLint et TypeScript en mode strict comme gates statiques ;
+- Stryker sur le store d’édition et les fonctions temporelles critiques.
+
+### Intégration réelle
+
+- Playwright sur Chromium pour les parcours complets, le clavier, le drag-and-drop et Web Audio ;
+- snapshots Playwright pour les régressions visuelles des vues principales ;
+- traces, captures et vidéo conservées automatiquement uniquement en cas d’échec ;
+- serveurs backend et frontend isolés, racine de projets temporaire et réseau externe interdit ;
+- contrôle des erreurs console, réponses HTTP, fuites de requêtes et ressources manquantes.
+
+### Documentation
+
+- `markdownlint-cli2` pour la structure Markdown ;
+- un vérificateur de liens locaux pour les références et captures ;
+- un validateur de la matrice exigences → tests automatiques → tests manuels → état livré ;
+- un contrôle d’unicité et de complétude des identifiants de cas manuels.
+
+### Exécution unique
+
+- créer `EDITEUR/test_editor.ps1` comme commande canonique de qualification ;
+- faire exécuter par ce script lint, typage, build, tests Python, tests frontend, mutations ciblées,
+  Playwright, accessibilité, régression visuelle, DSP et test hors ligne ;
+- produire `EDITEUR/test-results/editor-report.json` avec commandes, durées, couvertures, mutations,
+  hashes DSP et résultat final ;
+- retourner un code non nul au premier gate en échec et un code nul uniquement si toute la suite
+  réussit ;
+- créer une commande de lancement de l’UI qui ne demande aucune installation ou configuration après
+  la qualification finale.
+
+## Protocole d’exécution continue
+
+Ordre obligatoire :
+
+```text
+Phase 0 → V0 → Phase 1 → V1 → Phase 2 → V2 → ... → Phase 13 → V13 → Phase 14 → V14 → livraison
+```
+
+Chaque phase `Vn` :
+
+1. installe ou utilise uniquement les dépendances verrouillées ;
+2. exécute ses tests ciblés pour fournir un retour rapide ;
+3. exécute ensuite toute la suite de non-régression déjà acquise ;
+4. bloque immédiatement la phase suivante si une commande échoue ;
+5. exige la correction de la cause, pas la modification opportuniste du test ;
+6. enregistre son résultat dans le rapport de qualification.
+
+
+## Architecture cible
+
+```text
+Sidebar gauche
+  └── Éditeur musical
+        ├── Barre de transport globale
+        ├── Navigateur de projet et de patterns
+        ├── Playlist / arrangement
+        ├── Channel Rack / séquenceur pas à pas
+        ├── Piano Roll
+        ├── Automations
+        ├── Inspecteur instrument / effets
+        └── Mixer
+                    ↓
+Store d’édition local + historique de commandes
+                    ↓
+API de compositions versionnées + sauvegarde atomique
+                    ↓
+Planificateur beat → événements → moteur DSP
+                    ↓
+Préécoute / rendu offline / stems / QA / export
+```
+
+## Modèle métier cible
+
+- `Composition` : métadonnées, seed, tempo, métrique, tonalité, durée, marqueurs et boucle.
+- `Track` : type, nom, couleur, état, instrument, canal mixer et ordre.
+- `Pattern` : longueur, résolution, notes ou pas de batterie.
+- `Clip` : référence de pattern, piste, position, longueur, répétition et transposition.
+- `NoteEvent` : hauteur, début, durée, vélocité, probabilité et décalage micro-temporel.
+- `InstrumentPreset` : type de synthèse et paramètres complets, bornés et typés.
+- `AutomationLane` : cible stable et points d’automation avec interpolation.
+- `MixerChannel` : gain, pan, mute, solo, routage, sends et chaîne d’effets.
+- `EffectInstance` : type, paramètres, ordre et bypass.
+- `RenderSettings` : plage, boucle, stems, format et profil QA.
+- `Revision` : version de schéma et révision de sauvegarde pour prévenir les écrasements.
+
+## Critère global de livraison
+
+La fonctionnalité est terminée lorsqu’un utilisateur peut, sans terminal :
+
+1. lancer l’UI par la commande de lancement livrée ;
+2. voir la sidebar gauche et l’onglet `Éditeur musical` sans configuration préalable ;
+3. charger depuis l’UI une copie de `Lignes de nuit` ;
+4. modifier les familles essentielles : notes, patterns, arrangement, instruments et mix ;
+5. écouter une sélection ou le morceau entier ;
+6. annuler/rétablir puis sauvegarder et rouvrir le projet sans perte ;
+7. rendre le master et les cinq stems ;
+8. exporter un WAV et son manifeste ;
+9. obtenir un morceau audiblement différent dont le rendu est reproductible à spec et seed identiques.
+
+La livraison exige en plus un taux fonctionnel calculé supérieur ou égal à 85 % et la documentation
+exhaustive de tous les critères non livrés.
+
+## Phases de validation automatique interphase
+
+### Phase V0 — Qualification de l’outillage et des contrats [TODO]
+
+- [ ] Installer et verrouiller tous les outils listés dans les manifests Python et frontend.
+- [ ] Créer le runner canonique, les dossiers temporaires et le rapport JSON.
+- [ ] Exécuter lint, typage, build minimal, tests de contrat et gate de déterminisme Csound.
+- [ ] Faire échouer volontairement un test de chaque famille pour prouver que le runner bloque.
+- [ ] Refuser la phase 1 si un outil est absent, non verrouillé ou silencieusement ignoré.
+
+### Phase V1 — Qualification domaine, migration et DSP [TODO]
+
+- [ ] Exécuter tests unitaires, propriétés Hypothesis, round-trip et migrations.
+- [ ] Vérifier références hostiles, bornes, stabilité et invariants de timeline.
+- [ ] Rendre trois fois la spec de référence et comparer master, stems et hashes.
+- [ ] Exécuter les mutations ciblées du domaine et du planificateur avec seuil bloquant.
+- [ ] Exécuter toute la non-régression V0 avant d’autoriser la phase 2.
+
+### Phase V2 — Qualification API et persistance [TODO]
+
+- [ ] Tester chaque route nominale et chaque erreur typée.
+- [ ] Fuzzer le contrat OpenAPI, les révisions concurrentes et les entrées invalides.
+- [ ] Simuler écriture interrompue, annulation, reprise et chemins hostiles.
+- [ ] Vérifier l’isolation des projets et l’absence de sortie du dossier autorisé.
+- [ ] Exécuter V0 à V1 avant d’autoriser la phase 3.
+
+### Phase V3 — Qualification shell, sidebar et routage [TODO]
+
+- [ ] Tester composants, états de page et navigation avec Vitest et React Testing Library.
+- [ ] Tester clavier, focus et accessibilité avec `axe-core`.
+- [ ] Tester URL directe, historique, sidebar active et conservation du projet avec Playwright.
+- [ ] Comparer les snapshots visuels du shell aux références approuvées.
+- [ ] Exécuter V0 à V2 avant d’autoriser la phase 4.
+
+### Phase V4 — Qualification store, commandes et sauvegarde [TODO]
+
+- [ ] Atteindre 100 % lignes et branches sur store, commandes et historique.
+- [ ] Générer avec `fast-check` des séquences d’actions et vérifier tous leurs inverses.
+- [ ] Tester cent opérations suivies de cent undo/redo et comparer les états exacts.
+- [ ] Exécuter Stryker sur les transformations critiques avec seuil bloquant.
+- [ ] Exécuter V0 à V3 avant d’autoriser la phase 5.
+
+### Phase V5 — Qualification transport et Web Audio [TODO]
+
+- [ ] Tester la machine d’état avec horloge contrôlée et wrapper audio simulé.
+- [ ] Tester lecture, pause, stop, seek, boucle et fin de média dans Chromium réel.
+- [ ] Mesurer la dérive playhead/audio sur des scénarios verrouillés.
+- [ ] Tester cache, invalidation, annulation et concurrence des préécoutes.
+- [ ] Exécuter V0 à V4 avant d’autoriser la phase 6.
+
+### Phase V6 — Qualification Channel Rack [TODO]
+
+- [ ] Tester toutes les opérations de grille, résolutions et longueurs de pattern.
+- [ ] Générer des patterns valides et hostiles avec `fast-check`.
+- [ ] Vérifier clavier, souris, drag-and-drop et undo/redo dans Playwright.
+- [ ] Prouver par rendu et hash que chaque modification de pas affecte la bonne piste.
+- [ ] Exécuter V0 à V5 avant d’autoriser la phase 7.
+
+### Phase V7 — Qualification Piano Roll [TODO]
+
+- [ ] Tester les conversions beat/pixel et pixel/beat par propriétés réversibles.
+- [ ] Tester création, déplacement, resize, quantification, transposition et polyphonie.
+- [ ] Vérifier chaque note de référence de `Lignes de nuit` dans la spec et dans l’UI.
+- [ ] Exécuter le parcours Playwright d’édition d’une mélodie puis comparer le rendu.
+- [ ] Exécuter V0 à V6 avant d’autoriser la phase 8.
+
+### Phase V8 — Qualification Playlist et arrangement [TODO]
+
+- [ ] Tester clips, répétitions, overlaps, ripple, groupes, marqueurs et durée calculée.
+- [ ] Générer des timelines complexes et vérifier absence de perte ou double rendu invisible.
+- [ ] Mesurer fluidité et mémoire sur le budget de densité maximal.
+- [ ] Tester dans Playwright une restructuration complète du morceau.
+- [ ] Exécuter V0 à V7 avant d’autoriser la phase 9.
+
+### Phase V9 — Qualification instruments et paramètres [TODO]
+
+- [ ] Tester chaque paramètre aux minima, maxima, défauts et valeurs invalides.
+- [ ] Générer des combinaisons valides avec Hypothesis et vérifier finitude et absence de crash.
+- [ ] Mesurer clipping, DC, silence inattendu, aliasing budgété et continuité.
+- [ ] Vérifier la parité exacte des métadonnées de paramètres entre backend et UI.
+- [ ] Exécuter V0 à V8 avant d’autoriser la phase 10.
+
+### Phase V10 — Qualification automations [TODO]
+
+- [ ] Tester les interpolations par valeurs analytiques attendues.
+- [ ] Générer points, courbes et limites de clips avec tests de propriétés.
+- [ ] Vérifier résolution moteur, continuité et absence de zipper noise mesurable.
+- [ ] Tester dans Playwright création, déplacement, suppression et undo/redo d’une automation.
+- [ ] Exécuter V0 à V9 avant d’autoriser la phase 11.
+
+### Phase V11 — Qualification mixer et routage [TODO]
+
+- [ ] Tester mute, solo, gain, pan, sends, bypass et ordre d’effets.
+- [ ] Générer des graphes de routage et refuser automatiquement tous les cycles invalides.
+- [ ] Recombiner les stems et comparer au mix selon la tolérance numérique verrouillée.
+- [ ] Vérifier vu-mètres, clipping et actions mixer dans Chromium.
+- [ ] Exécuter V0 à V10 avant d’autoriser la phase 12.
+
+### Phase V12 — Qualification rendu, QA et export [TODO]
+
+- [ ] Tester toutes les plages, formats, stems et profils d’export.
+- [ ] Valider WAV, durée, fréquence, profondeur, canaux, manifestes et rapports JSON.
+- [ ] Tester hashes, révisions périmées, annulation et rendus concurrents.
+- [ ] Vérifier que chaque défaut QA pointe vers une action d’éditeur.
+- [ ] Exécuter V0 à V11 avant d’autoriser la phase 13.
+
+### Phase V13 — Recette automatique complète et livrable [TODO]
+
+- [ ] Exécuter le runner canonique depuis un environnement propre.
+- [ ] Lancer le parcours réel : UI → sidebar → éditeur → chargement de `Lignes de nuit`.
+- [ ] Modifier au moins un élément de chaque famille, écouter, sauvegarder, rouvrir et comparer.
+- [ ] Rendre puis valider automatiquement master, cinq stems, manifeste et rapport QA.
+- [ ] Tester hors ligne, erreurs console, ressources manquantes, accessibilité et snapshots.
+- [ ] Vérifier que la commande de lancement suffit sur un projet propre, sans préparation manuelle.
+- [ ] Produire le rapport final avec 100 % des exigences reliées à un état et au moins 85 % des
+  critères fonctionnels livrés et réussis.
+
+### Phase V14 — Qualification de la documentation et des tests manuels [TODO]
+
+- [ ] Exécuter le lint Markdown et le contrôle des liens locaux.
+- [ ] Vérifier que chaque écran, commande et comportement livré apparaît dans le guide utilisateur.
+- [ ] Vérifier que chaque exigence possède un état, une preuve et au moins un test automatique ou
+  manuel pertinent.
+- [ ] Vérifier que chaque cas manuel possède un identifiant unique, des prérequis, des étapes, un
+  résultat attendu et un emplacement de preuve.
+- [ ] Recalculer le taux fonctionnel depuis la matrice et bloquer sous 85 %.
+- [ ] Vérifier que tous les critères non livrés figurent dans la documentation des limites.
+- [ ] Exécuter V0 à V13 avant d’autoriser la livraison.
+
+## Phase 0 — Contrats, UX et gate technique [EN COURS]
+
+But : verrouiller les contrats avant de construire des vues couplées à un modèle incomplet.
+
+Tâches :
+
+- [ ] Ajouter et verrouiller les dépendances Python de test, couverture, propriétés, contrats,
+  mutations, lint et typage.
+- [ ] Ajouter et verrouiller les dépendances frontend de test unitaire, composants, propriétés,
+  accessibilité, mutations et couverture.
+- [ ] Ajouter les scripts frontend `lint`, `typecheck`, `test:unit`, `test:coverage`,
+  `test:mutation`, `test:a11y`, `test:visual` et `test:e2e`.
+- [ ] Configurer les seuils de couverture bloquants et exclure uniquement le code généré ou
+  explicitement non exécutable.
+- [ ] Créer `EDITEUR/test_editor.ps1`, les fixtures isolées et l’agrégation du rapport JSON.
+- [ ] Configurer Playwright pour interdire le réseau externe, collecter les diagnostics d’échec et
+  utiliser un dossier de projets temporaire.
+- [ ] Créer les golden specs DSP à partir des sources versionnées de `Lignes de nuit`.
+- [ ] Exécuter le gate de déterminisme Csound réel déjà requis par le projet et consigner le résultat.
+- [ ] Cartographier les responsabilités actuelles entre modèle métier, API, renderer de démonstration,
+  moteur principal et UI.
+- [ ] Inventorier chaque valeur actuellement codée dans le rendu de `Lignes de nuit` : événements,
+  patterns, enveloppes, filtres, oscillateurs, panoramiques, réverbération et master.
+- [ ] Définir le schéma de composition cible et ses identifiants stables.
+- [ ] Définir les bornes, unités, valeurs par défaut et règles de validation de chaque paramètre.
+- [ ] Définir les contrats API de lecture, création depuis la galerie, mise à jour, sauvegarde,
+  rendu de plage, rendu complet et export.
+- [ ] Produire les wireframes du shell, de la sidebar et des espaces Playlist, Channel Rack,
+  Piano Roll, Automations, Inspecteur et Mixer.
+- [ ] Définir les raccourcis clavier sans collision et les règles d’accessibilité.
+- [ ] Fixer les budgets de performance : chargement, interaction, densité de notes et temps de
+  préécoute.
+- [ ] Écrire les tests de contrat du schéma et un benchmark reproductible du gate Csound.
+
+Gate :
+
+- le rendu Csound réel satisfait le déterminisme attendu ou un blocage documenté empêche la suite ;
+- aucune donnée audible de `Lignes de nuit` n’est oubliée dans le schéma cible ;
+- les contrats permettent une sauvegarde atomique et détectent les révisions concurrentes ;
+- les wireframes couvrent le parcours global de livraison.
+
+## Phase 1 — Domaine compositionnel et migration de `Lignes de nuit` [TODO]
+
+But : rendre le morceau entièrement pilotable par données avant de créer ses éditeurs graphiques.
+
+Tâches :
+
+- [ ] Ajouter les modèles Pydantic `Composition`, `Track`, `Pattern`, `Clip`, `NoteEvent`,
+  `InstrumentPreset`, `AutomationLane`, `MixerChannel`, `EffectInstance` et `RenderSettings`.
+- [ ] Passer le schéma projet à la version suivante avec migration aller et rejet explicite des
+  versions futures.
+- [ ] Ajouter les validations de références, bornes, longueurs, positions, routages et cibles
+  d’automation.
+- [ ] Déplacer dans la spec tous les rythmes, notes, accords, mélodies et sections du morceau.
+- [ ] Déplacer dans la spec tous les paramètres de synthèse des cinq pistes.
+- [ ] Déplacer dans la spec les gains, panoramiques, routages, réverbération et paramètres master.
+- [ ] Adapter le planificateur pour transformer patterns, clips et automations en événements moteur.
+- [ ] Adapter le renderer afin qu’il ne connaisse plus l’arrangement de `Lignes de nuit`.
+- [ ] Produire un exemple de galerie immuable et une opération de copie avec nouveaux identifiants.
+- [ ] Conserver master, stems, manifeste et rapport QA de référence.
+- [ ] Tester migrations, round-trip JSON, références invalides, bornes, rendu des cinq pistes,
+  alignement des stems et déterminisme.
+
+Gate :
+
+- modifier une note, un pattern, un paramètre de synthèse ou de mix dans la spec modifie le rendu ;
+- le renderer ne contient plus de données musicales propres à `Lignes de nuit` ;
+- trois rendus d’une même spec et d’une même seed produisent le même hash ;
+- l’exemple source reste immuable et sa copie est indépendante.
+
+## Phase 2 — API de composition et persistance sûre [TODO]
+
+But : exposer un contrat complet de chargement et de sauvegarde à l’éditeur.
+
+Tâches :
+
+- [ ] Ajouter les endpoints de lecture d’une composition et de ses ressources.
+- [ ] Ajouter la création d’une composition depuis l’exemple `Lignes de nuit`.
+- [ ] Ajouter la sauvegarde complète conditionnée par le numéro de révision.
+- [ ] Ajouter les mutations ciblées nécessaires sans multiplier les écritures partielles fragiles.
+- [ ] Implémenter l’écriture atomique et la récupération après fichier temporaire incomplet.
+- [ ] Retourner des erreurs typées et localisables par champ.
+- [ ] Ajouter les endpoints de rendu d’une plage, d’une piste, du mix et des stems.
+- [ ] Relier les rendus aux jobs SSE existants avec progression et annulation.
+- [ ] Ajouter l’accès sécurisé aux artifacts, manifestes et rapports QA.
+- [ ] Tester API, conflits de révision, sauvegarde interrompue, chemins hostiles, annulation et reprise.
+
+Gate :
+
+- une composition peut être créée, chargée, modifiée, sauvegardée puis rechargée sans perte ;
+- deux sauvegardes concurrentes ne s’écrasent pas silencieusement ;
+- chaque rendu est relié à la révision exacte de sa spec ;
+- aucune route ne permet de sortir du dossier projet autorisé.
+
+## Phase 3 — Shell applicatif, sidebar et nouvel onglet [TODO]
+
+But : intégrer l’éditeur à l’UI existante avec une navigation durable.
+
+Tâches :
+
+- [ ] Découper l’application frontend monolithique en shell, pages, composants et couche de requêtes.
+- [ ] Ajouter une sidebar verticale fixe à gauche avec libellé, icône accessible et état actif.
+- [ ] Migrer les écrans existants vers des onglets routés sans régression fonctionnelle.
+- [ ] Ajouter l’onglet `Éditeur musical`.
+- [ ] Conserver le projet courant lors des changements d’onglet.
+- [ ] Ajouter états chargement, vide, erreur, hors ligne et projet introuvable.
+- [ ] Ajouter un mécanisme de confirmation si un changement d’onglet ou de projet risque de perdre
+  des modifications locales.
+- [ ] Rendre la sidebar repliable sur fenêtre étroite sans prétendre fournir un éditeur mobile.
+- [ ] Tester routage direct, retour navigateur, état actif, clavier, focus et non-régression des pages
+  existantes.
+
+Gate :
+
+- tous les écrans sont accessibles depuis la sidebar gauche ;
+- une URL ouvre directement l’éditeur et le projet demandé ;
+- la navigation ne perd ni sélection ni modifications sans confirmation ;
+- les parcours Playwright existants restent fonctionnels après adaptation.
+
+## Phase 4 — Noyau d’édition, sélection et historique [TODO]
+
+But : fournir une base cohérente à toutes les vues d’édition.
+
+Tâches :
+
+- [ ] Créer un store d’édition local distinct du cache serveur.
+- [ ] Définir les commandes atomiques d’édition utilisées par toutes les vues.
+- [ ] Implémenter undo/redo multi-niveaux, transactions de glisser-déposer et regroupement des
+  frappes continues.
+- [ ] Implémenter sélection simple, multiple, rectangle, tout sélectionner et désélection.
+- [ ] Ajouter couper, copier, coller, dupliquer et supprimer avec remappage sûr des identifiants.
+- [ ] Ajouter grille temporelle, snap configurable, zoom horizontal/vertical et défilement.
+- [ ] Ajouter dirty state, sauvegarde explicite, raccourci `Ctrl+S` et retour d’erreurs de validation.
+- [ ] Ajouter une stratégie de virtualisation pour les grandes listes de pistes et d’événements.
+- [ ] Tester chaque commande, les inverses undo/redo, les transactions et les changements de
+  sélection sur données verrouillées.
+
+Gate :
+
+- toute mutation visible passe par une commande annulable ;
+- cent opérations puis cent undo/redo restaurent des états identiques ;
+- une sauvegarde réussie nettoie le dirty state et une sauvegarde échouée le conserve ;
+- les erreurs ciblent le contrôle ou l’objet concerné.
+
+## Phase 5 — Transport et préécoute [TODO]
+
+But : écouter et naviguer dans le morceau pendant l’édition.
+
+Tâches :
+
+- [ ] Créer une barre de transport persistante : lecture, pause, stop, retour début et position.
+- [ ] Ajouter affichage mesures/temps, tempo, métrique et mode pattern/morceau.
+- [ ] Ajouter playhead cliquable, scrubbing, boucle et lecture d’une sélection.
+- [ ] Ajouter volume de monitoring, mute global et indicateur de clipping.
+- [ ] Utiliser Web Audio API pour la lecture, la synchronisation visuelle et le gain de monitoring.
+- [ ] Ajouter un rendu de préécoute de plage annulable et mis en cache par hash.
+- [ ] Invalider uniquement les plages affectées par une modification.
+- [ ] Définir un comportement explicite lorsqu’une édition survient pendant la lecture.
+- [ ] Tester machine d’état du transport, boucles, seek, fin de média, cache et annulation.
+
+Gate :
+
+- lecture, pause, stop, seek et boucle restent synchronisés au playhead ;
+- une plage modifiée peut être préécoutée sans rendre systématiquement les 30 secondes ;
+- aucun rendu périmé ne remplace une préécoute plus récente ;
+- le monitoring ne modifie pas le fichier exporté.
+
+## Phase 6 — Channel Rack et séquenceur pas à pas [TODO]
+
+But : éditer rapidement les patterns et les pistes rythmiques.
+
+Tâches :
+
+- [ ] Créer le Channel Rack avec ordre, couleur, nom, mute, solo et accès à l’instrument.
+- [ ] Créer le séquenceur pas à pas avec résolution configurable et regroupement visuel par temps.
+- [ ] Ajouter activation, vélocité, probabilité, accent et micro-décalage de chaque pas.
+- [ ] Ajouter longueur de pattern, duplication, renommage, variation et suppression sûre.
+- [ ] Ajouter paint, effacement par glisser, sélection multiple et remplissages usuels.
+- [ ] Ajouter préécoute d’une piste et d’un pattern.
+- [ ] Reconstituer et éditer les patterns kick, clap et charleston de `Lignes de nuit`.
+- [ ] Tester opérations de grille, changement de résolution, longueurs atypiques, undo/redo et rendu
+  déterministe des patterns.
+
+Gate :
+
+- chaque événement de batterie de `Lignes de nuit` est visible et modifiable ;
+- créer ou déplacer un pas modifie la préécoute à l’instant attendu ;
+- les patterns de longueurs différentes bouclent sans dérive ;
+- toutes les opérations souris disposent d’un équivalent clavier essentiel.
+
+## Phase 7 — Piano Roll et outils mélodiques [TODO]
+
+But : éditer précisément basse, pad, arpège et lead.
+
+Tâches :
+
+- [ ] Créer le Piano Roll avec clavier vertical, grille, playhead et notes redimensionnables.
+- [ ] Ajouter création, déplacement, duplication, suppression et redimensionnement des notes.
+- [ ] Ajouter vélocité, panoramique de note, probabilité et micro-timing dans des lanes inférieures.
+- [ ] Ajouter quantification paramétrable, swing et humanisation seedée.
+- [ ] Ajouter transposition par note, octave, sélection et pattern.
+- [ ] Afficher gamme et tonalité avec surbrillance sans bloquer les notes hors gamme.
+- [ ] Ajouter outils accords, legato, durée uniforme et inversion.
+- [ ] Ajouter ghost notes des autres pistes et audition optionnelle des notes.
+- [ ] Reconstituer toutes les notes de basse, pad, arpège et lead de `Lignes de nuit`.
+- [ ] Tester conversions beat/pixel, bornes MIDI, redimensionnement, quantification, transposition,
+  polyphonie et déterminisme.
+
+Gate :
+
+- chaque note audible de `Lignes de nuit` est visible et éditable ;
+- positions et durées restent exactes après zoom, snap et round-trip JSON ;
+- une transposition de sélection produit le résultat musical et numérique attendu ;
+- les outils seedés sont reproductibles.
+
+## Phase 8 — Playlist, arrangement et marqueurs [TODO]
+
+But : construire et restructurer le morceau sur une timeline multipiste.
+
+Tâches :
+
+- [ ] Créer une Playlist multipiste avec en-têtes synchronisés au Channel Rack.
+- [ ] Afficher clips de patterns, régions, marqueurs, playhead et zone de boucle.
+- [ ] Ajouter placement, déplacement, duplication, répétition, découpe et redimensionnement de clips.
+- [ ] Ajouter insert/delete time et déplacement avec ou sans ripple.
+- [ ] Ajouter verrouillage, groupe, mute de clip et transposition de clip.
+- [ ] Ajouter création, renommage et réorganisation de pistes.
+- [ ] Représenter intro, groove, montée, climax et outro de `Lignes de nuit` par marqueurs éditables.
+- [ ] Gérer clips chevauchants selon une règle explicite et visible.
+- [ ] Tester collision, overlap, répétition, ripple, changements de durée, marqueurs et gros projets.
+
+Gate :
+
+- la structure complète de `Lignes de nuit` est reconstruite uniquement par clips et marqueurs ;
+- déplacer ou redimensionner une section recalcule correctement durée et rendu ;
+- aucun clip n’est tronqué ou rendu deux fois sans que l’UI le montre ;
+- la Playlist reste fluide avec le budget de densité défini en phase 0.
+
+## Phase 9 — Instruments procéduraux et inspecteur [TODO]
+
+But : rendre modifiable la fabrication sonore de chaque piste.
+
+Tâches :
+
+- [ ] Créer un registre typé des instruments procéduraux et de leurs paramètres.
+- [ ] Créer l’inspecteur contextuel avec contrôles adaptés, unités, bornes et valeurs par défaut.
+- [ ] Exposer oscillateurs, harmoniques, accordage, enveloppe, filtre, modulation et polyphonie.
+- [ ] Exposer les paramètres propres aux drums, basse, pad, arpège et lead.
+- [ ] Ajouter reset de paramètre, saisie précise, modulation et comparaison avant/après.
+- [ ] Ajouter bypass sûr et protection contre NaN, infini, instabilité et valeurs hors bande.
+- [ ] Ajouter préécoute de note, pattern et piste depuis l’inspecteur.
+- [ ] Tester chaque paramètre aux bornes, stabilité numérique, clics, aliasing, polyphonie et
+  cohérence entre UI, spec et rendu.
+
+Gate :
+
+- chaque constante de synthèse audible du morceau est exposée ou justifiée comme invariant moteur ;
+- modifier un contrôle met à jour la spec et la préécoute correspondante ;
+- les bornes UI et backend sont identiques ;
+- aucun réglage valide ne produit de valeur non finie ou de crash moteur.
+
+## Phase 10 — Automations [TODO]
+
+But : faire évoluer les paramètres dans le temps.
+
+Tâches :
+
+- [ ] Ajouter la création d’une automation depuis tout paramètre automatisable.
+- [ ] Créer des lanes et clips d’automation dans la Playlist.
+- [ ] Ajouter points, déplacement, suppression et courbes step, linéaire et lissée.
+- [ ] Ajouter snap, copie, duplication, mise à l’échelle et inversion.
+- [ ] Définir la priorité entre valeur de base, automation et mute/bypass.
+- [ ] Appliquer les automations au moteur avec une résolution documentée et sans zipper noise.
+- [ ] Afficher la valeur évaluée sous le playhead.
+- [ ] Ajouter des automations démonstratives à la copie éditable sans modifier la référence immuable.
+- [ ] Tester interpolation, points superposés, limites de clip, précision temporelle et rendu
+  déterministe.
+
+Gate :
+
+- gain, pan, filtre, paramètres d’instrument et effets admissibles peuvent être automatisés ;
+- la courbe affichée correspond aux valeurs reçues par le moteur ;
+- aucun saut non demandé ne survient aux limites de clips ;
+- une automation supprimée restaure la valeur de base.
+
+## Phase 11 — Mixer, routage et effets [TODO]
+
+But : contrôler tout le chemin audio du morceau.
+
+Tâches :
+
+- [ ] Créer les tranches des cinq pistes, des bus, des sends et du master.
+- [ ] Ajouter fader, pan, mute, solo, vu-mètre, peak hold et indicateur de clipping.
+- [ ] Ajouter routage validé sans cycle interdit.
+- [ ] Ajouter chaînes d’effets ordonnées, bypass, déplacement et suppression.
+- [ ] Exposer égalisation, saturation, dynamique, délai et réverbération algorithmique disponibles.
+- [ ] Représenter la réverbération et la chaîne master de `Lignes de nuit` dans la spec et le mixer.
+- [ ] Ajouter comparaison A/B du mix avec loudness matching lorsque la métrique est disponible.
+- [ ] Garantir stems pré-fader ou post-fader selon un choix d’export explicite.
+- [ ] Tester solo/mute, sommation, routage, sends, ordre d’effets, latence, stems et sécurité
+  numérique.
+
+Gate :
+
+- tout chemin audio de `Lignes de nuit` est visible et modifiable ;
+- mute, solo, gain, pan, sends et bypass correspondent au rendu ;
+- les stems se recombinent au mix selon la tolérance définie ;
+- les cycles invalides sont refusés avant le moteur.
+
+## Phase 12 — Rendu final, QA et export [TODO]
+
+But : livrer les résultats utilisables directement depuis l’éditeur.
+
+Tâches :
+
+- [ ] Ajouter rendu du morceau entier, de la boucle, de la sélection et des pistes choisies.
+- [ ] Ajouter choix master, stems, WAV float 32 bits et PCM 24 bits.
+- [ ] Afficher progression, annulation, échec actionnable et reprise.
+- [ ] Afficher waveform, durée, sample peak, true peak, LUFS, RMS, DC et clipping.
+- [ ] Ajouter comparaison du dernier rendu avec la révision courante et signaler un rendu périmé.
+- [ ] Produire manifeste, hash, seed, versions moteur, spec et rapport QA.
+- [ ] Ajouter téléchargement individuel et bundle d’export.
+- [ ] Empêcher la promotion en master si le profil QA bloque, sauf dérogation tracée.
+- [ ] Tester formats, durées, métadonnées, hashes, annulation, rendu concurrent et profils QA.
+
+Gate :
+
+- master et cinq stems sont exportables sans terminal ;
+- chaque artifact pointe vers la bonne révision de composition ;
+- les erreurs QA sont visibles et renvoient au contrôle concerné ;
+- aucun export ne nécessite de retouche externe.
+
+## Phase 13 — Durcissement, accessibilité et livraison [TODO]
+
+But : valider le parcours complet et éliminer les défauts de production.
+
+Tâches :
+
+- [ ] Créer le parcours Playwright complet : galerie → copie → édition → écoute → sauvegarde →
+  réouverture → rendu → export.
+- [ ] Créer des scénarios couvrant batterie, notes, arrangement, automation, synthèse et mixer.
+- [ ] Verrouiller un benchmark reproductible comparant une modification par famille de paramètres.
+- [ ] Tester navigation clavier, focus, lecteurs d’écran, contraste et réduction des animations.
+- [ ] Tester projets volumineux, zoom extrême, longues sessions et usage mémoire.
+- [ ] Tester fermeture/rechargement avec modifications non sauvegardées.
+- [ ] Tester fonctionnement entièrement hors ligne et lancement local empaqueté.
+- [ ] Corriger tous les défauts bloquants et supprimer boutons factices, placeholders et TODO
+  fonctionnels.
+- [ ] Documenter raccourcis, sauvegarde, rendu, export et limites assumées.
+- [ ] Exécuter avant livraison l’inspection visuelle et l’écoute critique résiduelles ; elles sont à
+  la charge de l’agent d’exécution, jamais de l’utilisateur.
+
+Gate :
+
+- le critère global de livraison est satisfait de bout en bout ;
+- tous les tests Python, frontend, Playwright, DSP et benchmarks passent ;
+- aucun défaut critique ou majeur n’est ouvert ;
+- l’écoute critique valide un morceau réellement modifié sans clic, coupure ni artefact ;
+- l’application fonctionne sans Internet et sans terminal après lancement.
+
+## Phase 14 — Documentation du projet et recette manuelle exhaustive [TODO]
+
+But : livrer une documentation fidèle au produit réel, documenter les 15 % éventuels non livrés et
+fournir une série de tests manuels permettant de contrôler tout l’éditeur.
+
+Livrables documentaires :
+
+- `EDITEUR/docs/index.md` : point d’entrée et état de la version ;
+- `EDITEUR/docs/guide_utilisateur.md` : lancement, chargement de `Lignes de nuit` et workflows ;
+- `EDITEUR/docs/reference_fonctionnelle.md` : écrans, commandes, raccourcis et comportements ;
+- `EDITEUR/docs/architecture.md` : frontend, API, domaine, persistance, jobs et moteur audio ;
+- `EDITEUR/docs/rendu_et_export.md` : préécoute, rendu, stems, QA, formats et manifests ;
+- `EDITEUR/docs/depannage.md` : erreurs connues, diagnostic et récupération ;
+- `EDITEUR/docs/matrice_exigences.md` : pondération, état, tests et preuve de chaque exigence ;
+- `EDITEUR/docs/limites_connues.md` : totalité des critères non livrés dans les 15 % autorisés ;
+- `EDITEUR/docs/tests_manuels.md` : catalogue permanent et exhaustif de recette manuelle.
+
+Tâches :
+
+- [ ] Rédiger la documentation depuis le comportement effectivement livré, jamais depuis les seules
+  intentions de la roadmap.
+- [ ] Ajouter des captures d’écran à jour pour la sidebar, l’éditeur, le Channel Rack, le Piano Roll,
+  la Playlist, les automations, le mixer et l’export.
+- [ ] Documenter le parcours minimal : lancer l’UI, ouvrir l’éditeur et charger `Lignes de nuit`.
+- [ ] Documenter création, édition, écoute, undo/redo, sauvegarde, réouverture, rendu et export.
+- [ ] Documenter l’architecture, les formats de données, la migration et les garanties de
+  déterminisme sans exposer de détails inutiles à l’utilisateur final.
+- [ ] Construire la matrice pondérée des exigences et calculer le taux fonctionnel livré.
+- [ ] Refuser la livraison si le taux est inférieur à 85 %.
+- [ ] Documenter chaque critère non livré avec identifiant, état réel, raison, impact, contournement,
+  risque, priorité et test d’acceptation restant.
+- [ ] Vérifier que les fonctions manquantes ne laissent aucun bouton factice ou comportement trompeur.
+- [ ] Créer le catalogue permanent des tests manuels selon le format défini ci-dessous.
+- [ ] Exécuter la recette manuelle avant livraison et joindre les preuves utiles.
+- [ ] Reporter dans le `tests_manuels.md` de la racine uniquement les contrôles encore non validés ;
+  supprimer chaque section de cette file dès sa validation, conformément au protocole projet.
+
+Format obligatoire de chaque cas manuel :
+
+```text
+ID :
+Fonction couverte :
+Priorité :
+Prérequis :
+Données de test :
+Étapes numérotées :
+Résultat attendu :
+Preuve à conserver :
+Résultat / date :
+```
+
+Série minimale de tests manuels :
+
+1. `TM-LANCEMENT` — lancement sur environnement propre, attente backend, ouverture navigateur et
+   fonctionnement hors ligne ;
+2. `TM-SIDEBAR` — affichage, réduction, navigation clavier, état actif et accès direct à l’éditeur ;
+3. `TM-DEMO` — présence de `Lignes de nuit`, création d’une copie, chargement des cinq pistes et
+   protection de l’exemple source ;
+4. `TM-PROJET` — création, renommage, sauvegarde, fermeture, réouverture et conflit de révision ;
+5. `TM-TRANSPORT` — lecture, pause, stop, seek, boucle, sélection, volume et clipping ;
+6. `TM-CHANNEL-RACK` — pas de batterie, vélocité, probabilité, résolution, mute, solo et patterns ;
+7. `TM-PIANO-ROLL` — notes, resize, déplacement, quantification, transposition, vélocité et ghost
+   notes ;
+8. `TM-PLAYLIST` — clips, répétition, découpe, overlap, ripple, marqueurs, groupes et durée ;
+9. `TM-INSTRUMENTS` — paramètres de synthèse, bornes, reset, bypass et préécoute ;
+10. `TM-AUTOMATIONS` — création, points, courbes, copie, suppression et valeur au playhead ;
+11. `TM-MIXER` — gain, pan, mute, solo, sends, bus, effets, routage et master ;
+12. `TM-HISTORIQUE` — undo/redo, copier/coller, suppression, dirty state et confirmation de sortie ;
+13. `TM-RENDU` — rendu de sélection, piste, morceau, annulation, reprise et état périmé ;
+14. `TM-EXPORT` — master, cinq stems, WAV, manifeste, hashes, rapport QA et téléchargement ;
+15. `TM-ERREURS` — API indisponible, projet invalide, rendu échoué, récupération et messages
+    actionnables ;
+16. `TM-ACCESSIBILITE` — clavier seul, ordre de focus, contraste, zoom système et lecteur d’écran ;
+17. `TM-PERFORMANCE` — gros projet, zoom extrême, longue session, mémoire et fluidité ;
+18. `TM-AUDIO` — absence de clics, coupures, silence inattendu, clipping et différence audible après
+    modification ;
+19. `TM-LIMITES` — correspondance exacte entre les fonctions absentes et
+    `EDITEUR/docs/limites_connues.md`.
+
+Gate :
+
+- la documentation décrit la version livrée et ses commandes réelles ;
+- le taux fonctionnel calculé est supérieur ou égal à 85 % ;
+- les fonctions essentielles sont toutes livrées, indépendamment du taux global ;
+- les critères non livrés sont tous documentés et représentent au maximum 15 % du score ;
+- chaque fonction livrée est couverte par au moins un test automatique et un cas manuel pertinent ;
+- la série manuelle permet de tester l’intégralité des écrans et workflows disponibles ;
+- aucun contrôle manuel en attente n’est dissimulé hors de la file projet prévue à cet effet ;
+- V14 réussit avant la livraison.
+
+## Matrice de couverture de `Lignes de nuit`
+
+| Élément actuel | Éditeur cible | Phase |
+|---|---|---:|
+| Tempo, métrique, tonalité, durée, seed | Transport et propriétés de composition | 5 |
+| Sections intro, groove, lift, peak, outro | Playlist et marqueurs | 8 |
+| Kick, clap, charleston | Channel Rack et séquenceur pas à pas | 6 |
+| Basse, accords, arpège, mélodie | Piano Roll | 7 |
+| Oscillateurs, harmoniques, enveloppes, filtres, vibrato | Inspecteur instrument | 9 |
+| Évolutions temporelles de paramètres | Automations | 10 |
+| Gains, pans, réverbération, saturation et master | Mixer | 11 |
+| Master, cinq stems, QA et hash | Rendu et export | 12 |
+
+## Références fonctionnelles
+
+- Spécification UI interne du studio audio.
+- Roadmap générale du studio audio procédural.
+- Manuel officiel FL Studio : Playlist, Channel Rack, Piano Roll, Automation Clips et Mixer.

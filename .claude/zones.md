@@ -4,3 +4,4 @@
 |-------|---------|
 | crea_zik | D:\ServOMorph\crea_zik |
 | explo | D:\ServOMorph\crea_zik\explo |
+| editeur | D:\ServOMorph\crea_zik\EDITEUR |

@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.7 — 2026-07-30
+
+### Ajouté
+
+- Roadmap complète de l’éditeur musical intégré avec sidebar gauche et édition de `Lignes de nuit`.
+- Gates automatiques interphases, seuil fonctionnel de 85 % et phase finale de documentation et de
+  recette manuelle exhaustive.
+
 ## v0.6 — 2026-07-30
 
 ### Ajouté

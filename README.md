@@ -23,5 +23,7 @@ La phase 0 est terminée : le benchmark et l’ADR sont dans `benchmarks/engine_
 Le noyau Python couvre les schémas métier v1, migrations, validation, provenance, CLI et rendu Csound.
 La CLI produit des erreurs typées, des logs JSON et un manifeste de provenance à chaque export.
 L’UI locale crée des projets, rend une galerie copiée, propose un Sound Designer minimal et affiche les jobs SSE.
-`explo/` contient un morceau de 30 s avec sources, master, stems, QA et archive versionnée.
+`EXPLO/` contient un morceau de 30 s avec sources, master, stems, QA et archive versionnée.
 Reste le gate de déterminisme du rendu Csound réel avant de poursuivre la roadmap applicative.
+La zone `EDITEUR/` contient désormais la roadmap de l’éditeur musical intégré : sidebar gauche,
+chargement de `Lignes de nuit`, qualification automatique interphase et seuil fonctionnel de 85 %.
