@@ -1,9 +1,9 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("a user creates, renders, listens to and exports a click", async ({ page }) => {
   const projectName = `E2E click ${Date.now()}`;
   await page.goto("/");
-  await page.getByRole("textbox", { name: "Name" }).fill(projectName);
+  await page.getByRole("textbox", { name: "Name", exact: true }).fill(projectName);
   await page.getByRole("button", { name: "Create", exact: true }).click();
   const project = page.getByRole("article").filter({
     has: page.getByRole("heading", { name: projectName, exact: true }),
@@ -31,7 +31,7 @@ test("a user creates, renders, listens to and exports a click", async ({ page })
 test("a gallery example is copied, rendered and listened to", async ({ page }) => {
   const projectName = `E2E gallery ${Date.now()}`;
   await page.goto("/");
-  await page.getByRole("textbox", { name: "Name" }).fill(projectName);
+  await page.getByRole("textbox", { name: "Name", exact: true }).fill(projectName);
   await page.getByRole("button", { name: "Create", exact: true }).click();
   const project = page.getByRole("article").filter({
     has: page.getByRole("heading", { name: projectName, exact: true }),
@@ -53,7 +53,7 @@ test("a gallery example is copied, rendered and listened to", async ({ page }) =
 test("the Sound Designer creates and renders a parameterized patch", async ({ page }) => {
   const projectName = `E2E designer ${Date.now()}`;
   await page.goto("/");
-  await page.getByRole("textbox", { name: "Name" }).fill(projectName);
+  await page.getByRole("textbox", { name: "Name", exact: true }).fill(projectName);
   await page.getByRole("button", { name: "Create", exact: true }).click();
   await page.getByLabel("Patch name").fill("Designer impact");
   await page.getByLabel("Type").selectOption("modal_impact");
@@ -72,7 +72,7 @@ test("the Sound Designer creates and renders a parameterized patch", async ({ pa
 test("a user creates a short theme with a synchronized stem", async ({ page }) => {
   const projectName = `E2E theme ${Date.now()}`;
   await page.goto("/");
-  await page.getByRole("textbox", { name: "Name" }).fill(projectName);
+  await page.getByRole("textbox", { name: "Name", exact: true }).fill(projectName);
   await page.getByRole("button", { name: "Create", exact: true }).click();
   const project = page.getByRole("article").filter({
     has: page.getByRole("heading", { name: projectName, exact: true }),
@@ -136,7 +136,7 @@ test("an assistant proposal is previewed before explicit acceptance", async ({ p
     });
   });
   await page.goto("/");
-  await page.getByRole("textbox", { name: "Name" }).fill(projectName);
+  await page.getByRole("textbox", { name: "Name", exact: true }).fill(projectName);
   await page.getByRole("button", { name: "Create", exact: true }).click();
   await page.getByRole("textbox", { name: "Intention" }).fill("plus lumineux");
   await page.getByRole("button", { name: "Proposer" }).click();
@@ -154,7 +154,7 @@ test("an assistant proposal is previewed before explicit acceptance", async ({ p
 test("an adaptive graph is created and simulated at the next bar", async ({ page }) => {
   const projectName = `E2E adaptive ${Date.now()}`;
   await page.goto("/");
-  await page.getByRole("textbox", { name: "Name" }).fill(projectName);
+  await page.getByRole("textbox", { name: "Name", exact: true }).fill(projectName);
   await page.getByRole("button", { name: "Create", exact: true }).click();
   await page.getByRole("button", { name: "Créer le graphe exploration/tension" }).click();
 
@@ -162,4 +162,37 @@ test("an adaptive graph is created and simulated at the next bar", async ({ page
   await expect(page.getByRole("button", { name: "Simuler à la mesure" })).toBeEnabled();
   await page.getByRole("button", { name: "Simuler à la mesure" }).click();
   await expect(page.getByText("intensity >= 0.5 : transition planifiée à 4 beats")).toBeVisible();
+});
+
+test("the music editor opens a project composition from a direct route", async ({ page }) => {
+  const projectName = `E2E editor ${Date.now()}`;
+  await page.goto("/");
+  await page.getByRole("textbox", { name: "Name", exact: true }).fill(projectName);
+  await page.getByRole("button", { name: "Create", exact: true }).click();
+  await page.getByRole("link", { name: "Éditeur musical" }).click();
+  await expect(page.getByRole("heading", { name: "Éditeur musical" })).toBeVisible();
+  await page.getByRole("button", { name: "Créer une copie éditable" }).click();
+  await expect(page).toHaveURL(/\/editor\?project=.*&composition=.*/);
+  await expect(page.getByRole("heading", { name: "Lignes de nuit" })).toBeVisible();
+
+  await page.getByRole("textbox", { name: "Titre de la composition" }).fill("Nuit sauvegardée");
+  await expect(page.getByText("Modifications non enregistrées")).toBeVisible();
+  await page.getByRole("button", { name: "Sauvegarder" }).click();
+  await expect(page.getByText("Enregistré")).toBeVisible();
+
+  await page.getByLabel("Fin de sélection").fill("8");
+  await page.getByRole("button", { name: "Lire la sélection" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "Préécoute prête" })).toBeVisible({ timeout: 35_000 });
+  await page.getByRole("button", { name: "Stop" }).click();
+  await page.getByLabel("Position de lecture").fill("4");
+  await expect(page.getByLabel("Position de lecture")).toHaveValue("4");
+  await page.getByRole("checkbox").check();
+  await expect(page.getByRole("checkbox")).toBeChecked();
+
+  const directUrl = page.url();
+  await page.goto(directUrl);
+  await expect(page.getByRole("heading", { name: "Nuit sauvegardée" })).toBeVisible();
+  await page.getByRole("link", { name: "Studio" }).click();
+  await page.getByRole("link", { name: "Éditeur musical" }).click();
+  await expect(page).toHaveURL(directUrl);
 });

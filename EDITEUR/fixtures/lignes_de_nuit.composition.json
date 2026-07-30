@@ -1,0 +1,77 @@
+{
+  "schema_version": 2,
+  "id": "9b11b2f0-9cbe-4c85-8d5e-f967cc3d5c01",
+  "revision": 0,
+  "title": "Lignes de nuit",
+  "seed": 20260730,
+  "sample_rate": 48000,
+  "tempo_bpm": 120,
+  "time_signature": [4, 4],
+  "tracks": [
+    {
+      "id": "bc0f4f11-fac7-4d89-b4f0-48789a667101",
+      "name": "drums",
+      "kind": "drums",
+      "gain": 0.78,
+      "pan": 0,
+      "instrument": {
+        "kick": {"frequency_hz": {"base": 47, "drop": 112, "decay": 30}, "body_decay": 9.5, "click_hz": 1900, "click_decay": 65, "click_gain": 0.09},
+        "clap": {"duration_seconds": 0.22, "bandpass_hz": [850, 9000], "bursts_seconds": [0, 0.018, 0.036], "burst_width_seconds": 0.011, "decay": 7},
+        "hat": {"duration_seconds": 0.085, "highpass_hz": 6800, "decay": 52}
+      },
+      "processors": []
+    },
+    {
+      "id": "bc0f4f11-fac7-4d89-b4f0-48789a667102",
+      "name": "bass",
+      "kind": "bass",
+      "gain": 0.7,
+      "pan": 0,
+      "instrument": {"oscillators": [{"ratio": 1, "gain": 1}, {"ratio": 2, "gain": 0.33}, {"ratio": 3, "gain": 0.12}], "lowpass_hz": 620, "envelope": {"attack": 0.008, "decay": 0.12, "sustain": 0.72, "release": 0.07}},
+      "processors": []
+    },
+    {
+      "id": "bc0f4f11-fac7-4d89-b4f0-48789a667103",
+      "name": "pad",
+      "kind": "pad",
+      "gain": 0.36,
+      "pan": 0,
+      "instrument": {"oscillators": [{"detune_semitones": -0.004, "gain": 0.18}, {"detune_semitones": 0, "gain": 0.3}, {"detune_semitones": 0.003, "gain": 0.18}, {"ratio": 2, "gain": 0.16}], "lowpass_hz": 2400, "envelope": {"attack": 0.65, "decay": 1.2, "sustain": 0.7, "release": 0.8}},
+      "processors": []
+    },
+    {
+      "id": "bc0f4f11-fac7-4d89-b4f0-48789a667104",
+      "name": "arp",
+      "kind": "arp",
+      "gain": 0.48,
+      "pan": 0,
+      "instrument": {"oscillators": [{"ratio": 1, "gain": 1}, {"ratio": 2, "gain": 0.34}, {"ratio": 3, "gain": 0.14}], "decay": 4.5, "envelope": {"attack": 0.006, "decay": 0.11, "sustain": 0.4, "release": 0.22}},
+      "processors": []
+    },
+    {
+      "id": "bc0f4f11-fac7-4d89-b4f0-48789a667105",
+      "name": "lead",
+      "kind": "lead",
+      "gain": 0.38,
+      "pan": 0,
+      "instrument": {"vibrato": {"depth_semitones": 0.004, "rate_hz": 5.2}, "oscillators": [{"ratio": 1, "gain": 1}, {"ratio": 2, "gain": 0.23}, {"ratio": 3, "gain": 0.07}], "envelope": {"attack": 0.025, "decay": 0.18, "sustain": 0.68, "release": 0.2}},
+      "processors": []
+    }
+  ],
+  "patterns": [
+    {"id": "7cbcaec4-a91c-42ae-ae7d-4d33209aa101", "track_id": "bc0f4f11-fac7-4d89-b4f0-48789a667101", "events": [{"kind": "kick", "from_bar": 2, "beats": [0, 2], "gain": {"before_bar": 6, "value": 0.72, "from_bar": 6, "value_after": 0.92}, "pan": 0}, {"kind": "clap", "from_bar": 2, "beats": [1, 3], "gain": 0.23, "seed": "seed_plus_absolute_beat", "pan": 0}, {"kind": "hat", "from_bar": 4, "beats": [0.5, 1.5], "gain": 0.075, "seed": "seed_plus_1000_plus_event_index", "pan": [-0.28, 0.28]}]},
+    {"id": "7cbcaec4-a91c-42ae-ae7d-4d33209aa102", "track_id": "bc0f4f11-fac7-4d89-b4f0-48789a667102", "events": [{"kind": "bass", "from_bar": 4, "roots_midi": [45, 41, 48, 43], "notes_per_bar": [0, 12], "duration_beats": 0.42, "gain": 0.3, "pan": 0}]},
+    {"id": "7cbcaec4-a91c-42ae-ae7d-4d33209aa103", "track_id": "bc0f4f11-fac7-4d89-b4f0-48789a667103", "events": [{"kind": "pad", "until_bar": 14, "roots_midi": [45, 41, 48, 43], "intervals": [12, 15, 19], "duration_beats": 4.8, "gain": {"before_bar": 2, "value": 0.12, "from_bar": 2, "value_after": 0.19}, "pan": 0}]},
+    {"id": "7cbcaec4-a91c-42ae-ae7d-4d33209aa104", "track_id": "bc0f4f11-fac7-4d89-b4f0-48789a667104", "events": [{"kind": "arp", "from_bar": 6, "roots_midi": [45, 41, 48, 43], "intervals": [12, 15, 19, 22], "pattern": [0, 2, 1, 3, 2, 1, 0, 1], "step_beats": 0.5, "duration_beats": 0.42, "gain": 0.23, "pan": [-0.42, 0.42]}]},
+    {"id": "7cbcaec4-a91c-42ae-ae7d-4d33209aa105", "track_id": "bc0f4f11-fac7-4d89-b4f0-48789a667105", "events": [{"kind": "lead", "notes": [[10, 69], [10.75, 72], [11.5, 76], [12.5, 74], [13, 72], [13.75, 69], [14.5, 72], [15, 77], [15.75, 76], [16.5, 72], [17, 69], [18, 72], [19, 76], [20, 79], [21, 76], [22, 74], [23, 72], [24, 69], [25, 72], [26, 76], [27, 74]], "duration_beats": 0.56, "gain": 0.19, "pan": -0.12}]}
+  ],
+  "clips": [
+    {"id": "8d9f21ad-9d4f-4c40-8a10-01a122e1e101", "pattern_id": "7cbcaec4-a91c-42ae-ae7d-4d33209aa101", "start_beat": 0, "length_beats": 60},
+    {"id": "8d9f21ad-9d4f-4c40-8a10-01a122e1e102", "pattern_id": "7cbcaec4-a91c-42ae-ae7d-4d33209aa102", "start_beat": 0, "length_beats": 60},
+    {"id": "8d9f21ad-9d4f-4c40-8a10-01a122e1e103", "pattern_id": "7cbcaec4-a91c-42ae-ae7d-4d33209aa103", "start_beat": 0, "length_beats": 60},
+    {"id": "8d9f21ad-9d4f-4c40-8a10-01a122e1e104", "pattern_id": "7cbcaec4-a91c-42ae-ae7d-4d33209aa104", "start_beat": 0, "length_beats": 60},
+    {"id": "8d9f21ad-9d4f-4c40-8a10-01a122e1e105", "pattern_id": "7cbcaec4-a91c-42ae-ae7d-4d33209aa105", "start_beat": 0, "length_beats": 60}
+  ],
+  "mixer": {"master_gain": 1.16, "limiter": {"kind": "tanh", "normalization_peak": 0.89, "fade_seconds": 0.035}, "effects": [{"kind": "reverb", "send_tracks": ["bc0f4f11-fac7-4d89-b4f0-48789a667103", "bc0f4f11-fac7-4d89-b4f0-48789a667104", "bc0f4f11-fac7-4d89-b4f0-48789a667105"], "taps": [[0.073, 0.28, -0.32], [0.113, 0.22, 0.25], [0.167, 0.17, -0.18], [0.241, 0.12, 0.16]]}]},
+  "render_settings": {"duration_seconds": 30, "format": "wav_pcm24", "channels": 2}
+}

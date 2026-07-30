@@ -1,36 +1,51 @@
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
-from uuid import UUID, uuid4
+from uuid import NAMESPACE_URL, UUID, uuid4, uuid5
 
 from fastapi import FastAPI, HTTPException, Request, status
+from fastapi import Path as ApiPath
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from .audio_info import wav_info
-from .cli import PROJECT_ROOT, load_project, save_project
 from .adaptive import GameplayEvent, simulate_adaptive_graph
+from .audio_info import wav_info
+from .cli import PROJECT_ROOT, load_project, replace_composition, save_project
 from .composer import render_score
-from .engine import CsoundEngine
-from .errors import CreaZikError, ExportArtifactMissingError, PatchNotFoundError, error_detail
+from .compositions import copy_composition
+from .errors import (
+    CompositionNotFoundError,
+    CompositionRevisionConflictError,
+    CreaZikError,
+    ExportArtifactMissingError,
+    PatchNotFoundError,
+    error_detail,
+)
 from .exports import export_patch
-from .gallery import examples
-from .jobs import JobManager, JobState, RenderJob
+from .gallery import composition_example, composition_examples, examples
 from .intent import IntentProposal, preview_proposal
+from .jobs import JobManager, JobState, RenderJob
 from .models import (
     AdaptiveGraph,
     Artifact,
+    AutomationLane,
+    Clip,
+    Composition,
     ErrorDetail,
     Instrument,
     IntentDecision,
     IntentRecord,
+    MixerChannel,
     Patch,
+    Pattern,
     Project,
     QaReport,
     Score,
+    Track,
 )
 from .ollama import OllamaProposalError, generate_proposal
 from .provenance import patch_hash, resolve_project_path
@@ -59,6 +74,9 @@ class JobResponse(BaseModel):
     progress: int
     error: ErrorDetail | None = None
     wav: str | None = None
+    artifacts: dict[str, str] = Field(default_factory=dict)
+    composition_id: UUID | None = None
+    composition_revision: int | None = None
 
 
 class ExportResponse(BaseModel):
@@ -100,6 +118,21 @@ class ScoreRenderResponse(BaseModel):
     frame_count: int
 
 
+class CompositionCreate(BaseModel):
+    example_id: UUID
+
+
+class CompositionSave(BaseModel):
+    expected_revision: int = Field(ge=0)
+    composition: Composition
+
+
+class CompositionRenderRequest(BaseModel):
+    track_ids: set[UUID] | None = None
+    start_beat: float = Field(default=0, ge=0)
+    end_beat: float | None = Field(default=None, gt=0)
+
+
 class GameplayEventRequest(BaseModel):
     at_beats: float = Field(ge=0)
     values: dict[str, float]
@@ -136,8 +169,22 @@ async def crea_zik_error_handler(_: Request, error: CreaZikError):
     return JSONResponse(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, content={"detail": error_detail(error).model_dump()})
 
 
+@app.exception_handler(CompositionRevisionConflictError)
+async def composition_revision_conflict_handler(_: Request, error: CompositionRevisionConflictError):
+    return JSONResponse(status_code=status.HTTP_409_CONFLICT, content={"detail": error_detail(error).model_dump()})
+
+
 def job_response(job: RenderJob) -> JobResponse:
-    return JobResponse(id=job.id, state=job.state, progress=job.progress, error=job.error, wav=job.wav)
+    return JobResponse(
+        id=job.id,
+        state=job.state,
+        progress=job.progress,
+        error=job.error,
+        wav=job.wav,
+        artifacts=job.artifacts,
+        composition_id=job.composition_id,
+        composition_revision=job.composition_revision,
+    )
 
 
 def project_path(project_id: UUID) -> Path:
@@ -156,6 +203,26 @@ def get_patch(project: Project, patch_id: UUID) -> Patch:
     if patch is None:
         raise PatchNotFoundError("patch not found")
     return patch
+
+
+def get_composition(project: Project, composition_id: UUID) -> Composition:
+    composition = next((item for item in project.compositions if item.id == composition_id), None)
+    if composition is None:
+        raise CompositionNotFoundError("composition not found")
+    return composition
+
+
+def composition_render_directory(
+    project: Project, composition_id: UUID, revision: int
+) -> Path:
+    get_composition(project, composition_id)
+    return resolve_project_path(
+        PROJECT_ROOT,
+        str(project.id),
+        "compositions",
+        str(composition_id),
+        f"revision-{revision}",
+    )
 
 
 def record_proposal_decision(project: Project, proposal: IntentProposal, decision: IntentDecision) -> None:
@@ -191,11 +258,65 @@ def gallery() -> list[Patch]:
     return examples()
 
 
+@app.get("/api/composition-gallery", response_model=list[Composition])
+def composition_gallery() -> list[Composition]:
+    return composition_examples()
+
+
+@app.get("/api/projects/{project_id}/compositions/{composition_id}", response_model=Composition)
+def read_composition(project_id: UUID, composition_id: UUID) -> Composition:
+    return get_composition(get_project(project_id), composition_id)
+
+
+@app.get("/api/projects/{project_id}/compositions/{composition_id}/tracks", response_model=list[Track])
+def read_composition_tracks(project_id: UUID, composition_id: UUID) -> list[Track]:
+    return get_composition(get_project(project_id), composition_id).tracks
+
+
+@app.get("/api/projects/{project_id}/compositions/{composition_id}/patterns", response_model=list[Pattern])
+def read_composition_patterns(project_id: UUID, composition_id: UUID) -> list[Pattern]:
+    return get_composition(get_project(project_id), composition_id).patterns
+
+
+@app.get("/api/projects/{project_id}/compositions/{composition_id}/clips", response_model=list[Clip])
+def read_composition_clips(project_id: UUID, composition_id: UUID) -> list[Clip]:
+    return get_composition(get_project(project_id), composition_id).clips
+
+
+@app.get("/api/projects/{project_id}/compositions/{composition_id}/automation", response_model=list[AutomationLane])
+def read_composition_automation(project_id: UUID, composition_id: UUID) -> list[AutomationLane]:
+    return get_composition(get_project(project_id), composition_id).automation_lanes
+
+
+@app.get("/api/projects/{project_id}/compositions/{composition_id}/mixer", response_model=list[MixerChannel])
+def read_composition_mixer(project_id: UUID, composition_id: UUID) -> list[MixerChannel]:
+    return get_composition(get_project(project_id), composition_id).mixer_channels
+
+
 @app.post("/api/projects", response_model=Project, status_code=status.HTTP_201_CREATED)
 def create_project(payload: CreateProject) -> Project:
     project = Project(name=payload.name)
     save_project(project, project_path(project.id))
     return project
+
+
+@app.post("/api/projects/{project_id}/compositions", response_model=Composition, status_code=status.HTTP_201_CREATED)
+def create_composition(project_id: UUID, payload: CompositionCreate) -> Composition:
+    project = get_project(project_id)
+    source = composition_example(payload.example_id)
+    if source is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="composition gallery example not found")
+    composition = copy_composition(source)
+    project.compositions.append(composition)
+    save_project(project, project_path(project.id))
+    return composition
+
+
+@app.put("/api/projects/{project_id}/compositions/{composition_id}", response_model=Composition)
+def save_composition(project_id: UUID, composition_id: UUID, payload: CompositionSave) -> Composition:
+    return replace_composition(
+        project_path(project_id), composition_id, payload.expected_revision, payload.composition
+    )
 
 
 @app.post("/api/projects/{project_id}/patches", response_model=Project)
@@ -287,6 +408,106 @@ def render_project_score(project_id: UUID, score_id: UUID) -> ScoreRenderRespons
     )
 
 
+@app.post(
+    "/api/projects/{project_id}/compositions/{composition_id}/render",
+    response_model=JobResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+)
+def render_project_composition(
+    project_id: UUID,
+    composition_id: UUID,
+    request: CompositionRenderRequest | None = None,
+) -> JobResponse:
+    composition = get_composition(get_project(project_id), composition_id)
+    request = request or CompositionRenderRequest()
+    if request.track_ids is not None and not request.track_ids <= {track.id for track in composition.tracks}:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="unknown composition track")
+    job = jobs.submit_composition(
+        project_id,
+        composition,
+        track_ids=request.track_ids,
+        start_beat=request.start_beat,
+        end_beat=request.end_beat,
+    )
+    return job_response(job)
+
+
+@app.get(
+    "/api/projects/{project_id}/compositions/{composition_id}/renders/{revision}/artifact",
+    response_model=ArtifactResponse,
+)
+def read_composition_artifact(
+    project_id: UUID, composition_id: UUID, revision: int = ApiPath(ge=0)
+) -> ArtifactResponse:
+    project = get_project(project_id)
+    path = composition_render_directory(project, composition_id, revision) / "mix.wav"
+    if not path.is_file():
+        raise ExportArtifactMissingError(
+            "Render the composition before reading its artifact.",
+            {"composition_id": str(composition_id), "revision": str(revision)},
+        )
+    payload = wav_info(path)
+    payload["wav"] = path.resolve().relative_to(PROJECT_ROOT.resolve()).as_posix()
+    return ArtifactResponse.model_validate(payload)
+
+
+@app.get("/api/projects/{project_id}/compositions/{composition_id}/renders/{revision}/manifest")
+def read_composition_manifest(
+    project_id: UUID, composition_id: UUID, revision: int = ApiPath(ge=0)
+) -> dict[str, object]:
+    project = get_project(project_id)
+    path = composition_render_directory(project, composition_id, revision) / "manifest.json"
+    if not path.is_file():
+        raise ExportArtifactMissingError(
+            "Render the composition before reading its manifest.",
+            {"composition_id": str(composition_id), "revision": str(revision)},
+        )
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+@app.post(
+    "/api/projects/{project_id}/compositions/{composition_id}/renders/{revision}/analyze",
+    response_model=QaReport,
+)
+def analyze_composition_render(
+    project_id: UUID,
+    composition_id: UUID,
+    revision: int = ApiPath(ge=0),
+    request: QaRequest | None = None,
+) -> QaReport:
+    project = get_project(project_id)
+    directory = composition_render_directory(project, composition_id, revision)
+    mix_path = directory / "mix.wav"
+    if not mix_path.is_file():
+        raise ExportArtifactMissingError(
+            "Render the composition before analyzing it.",
+            {"composition_id": str(composition_id), "revision": str(revision)},
+        )
+    request = request or QaRequest(profile="music")
+    report = evaluate_wav(
+        uuid5(NAMESPACE_URL, f"crea-zik:{project_id}:{composition_id}:{revision}"),
+        mix_path,
+        request.profile,
+        request.loop,
+    )
+    (directory / "qa.json").write_text(report.model_dump_json(indent=2), encoding="utf-8")
+    return report
+
+
+@app.get(
+    "/api/projects/{project_id}/compositions/{composition_id}/renders/{revision}/qa",
+    response_model=QaReport,
+)
+def read_composition_qa(
+    project_id: UUID, composition_id: UUID, revision: int = ApiPath(ge=0)
+) -> QaReport:
+    project = get_project(project_id)
+    path = composition_render_directory(project, composition_id, revision) / "qa.json"
+    if not path.is_file():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="composition QA report not found")
+    return QaReport.model_validate_json(path.read_text(encoding="utf-8"))
+
+
 @app.post("/api/projects/{project_id}/adaptive-graphs", response_model=Project)
 def add_adaptive_graph(project_id: UUID, graph: AdaptiveGraph) -> Project:
     project = get_project(project_id)
@@ -324,6 +545,17 @@ def copy_gallery_example(project_id: UUID, example_id: UUID) -> Project:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="gallery example not found")
     copy = source.model_copy(update={"id": uuid4()})
     project.patches.append(copy)
+    save_project(project, project_path(project.id))
+    return project
+
+
+@app.post("/api/projects/{project_id}/composition-gallery/{example_id}", response_model=Project)
+def copy_composition_gallery_example(project_id: UUID, example_id: UUID) -> Project:
+    project = get_project(project_id)
+    source = composition_example(example_id)
+    if source is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="composition gallery example not found")
+    project.compositions.append(copy_composition(source))
     save_project(project, project_path(project.id))
     return project
 
@@ -374,7 +606,8 @@ def read_artifact(project_id: UUID, patch_id: UUID) -> ArtifactResponse:
 
 
 @app.post("/api/projects/{project_id}/patches/{patch_id}/analyze", response_model=QaReport)
-def analyze_patch(project_id: UUID, patch_id: UUID, request: QaRequest = QaRequest()) -> QaReport:
+def analyze_patch(project_id: UUID, patch_id: UUID, request: QaRequest | None = None) -> QaReport:
+    request = request or QaRequest()
     project = get_project(project_id)
     patch = get_patch(project, patch_id)
     path = resolve_project_path(PROJECT_ROOT, str(project.id), "artifacts", f"{patch.id}.wav")

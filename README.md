@@ -19,10 +19,9 @@ Csound 7 est le moteur de rendu offline, pyo le fallback et Faust la cible DSP p
 
 ## État actuel
 
-La phase 0 est terminée : le benchmark et l’ADR sont dans `benchmarks/engine_selection/`.
-Le noyau Python couvre les schémas métier v1, migrations, validation, provenance, CLI et rendu Csound.
-L’API couvre les rendus, variantes, métadonnées, QA, exports, scores avec stems et graphes adaptatifs.
-L’UI locale propose sept SFX, transport et waveform, Sound Designer, Composer, Adaptive Lab et assistant Ollama.
-Les propositions Ollama passent par un aperçu, une acceptation explicite et un historique persistant.
-`EXPLO/` contient un morceau de 30 s avec sources, master, stems, QA et archive versionnée.
-La zone `EDITEUR/` reste en phase 0 : le runner canonique et le gate V0 doivent encore être livrés.
+Le socle CLI, worker local, galerie, promotion, validation et archivage reste opérationnel.
+L’éditeur dispose des contrats versionnés, de la persistance des révisions, du rendu borné, du shell et d’un store avec historique.
+Le transport et la préécoute sont implémentés ; leur contrôle d’écoute post-correctif reste à valider.
+Le moteur rend cinq stems instrumentaux distincts, la réverbération et un mix normalisé.
+Le runner actuel passe sur les contrats, le rendu, le frontend et le parcours E2E.
+La phase 0 reste ouverte tant que ses exigences exhaustives de qualification ne sont pas toutes couvertes.

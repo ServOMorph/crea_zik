@@ -9,10 +9,145 @@
 body {
   margin: 0;
 }
-main {
+.studio-page {
   max-width: 980px;
   margin: auto;
   padding: 48px 24px;
+}
+.application-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+}
+.application-shell__content {
+  min-width: 0;
+}
+.sidebar {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  width: 220px;
+  min-height: 100vh;
+  padding: 18px 12px;
+  border-right: 1px solid #273348;
+  background: #121b2a;
+}
+.sidebar--collapsed {
+  width: 64px;
+}
+.sidebar--collapsed strong,
+.sidebar--collapsed .sidebar__label {
+  display: none;
+}
+.sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  color: #9ee5bd;
+}
+.sidebar__toggle {
+  margin-left: auto;
+  padding: 6px 8px;
+  border: 0;
+  color: inherit;
+  background: transparent;
+}
+.sidebar nav {
+  display: grid;
+  gap: 6px;
+  margin-top: 28px;
+}
+.sidebar nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  color: #cbd8ee;
+  text-decoration: none;
+}
+.sidebar nav a[aria-current="page"],
+.sidebar nav a:hover {
+  color: #07101f;
+  background: #9ee5bd;
+}
+.editor-page {
+  max-width: 1100px;
+  margin: auto;
+  padding: 48px 32px;
+}
+.editor-page__header,
+.composition-summary,
+.editor-page__empty {
+  border: 1px solid #273348;
+  border-radius: 12px;
+  background: #182233;
+  padding: 24px;
+}
+.editor-page__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 24px;
+}
+.editor-page__empty {
+  margin-top: 24px;
+}
+.editor-page__empty form {
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+.composition-summary {
+  margin-top: 24px;
+}
+.composition-summary dl {
+  display: flex;
+  gap: 24px;
+}
+.composition-summary dd {
+  margin: 4px 0 0;
+  font-size: 1.5rem;
+}
+.composition-summary ul {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+  list-style: none;
+}
+.composition-summary li {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #10151f;
+}
+.composition-summary li span,
+.offline-notice {
+  color: #8ba5cf;
+}
+.page-state {
+  padding: 48px 32px;
+}
+.page-state--error {
+  color: #ff9d9d;
+}
+@media (max-width: 680px) {
+  .sidebar {
+    width: 64px;
+  }
+
+  .sidebar strong,
+  .sidebar .sidebar__label {
+    display: none;
+  }
+  .editor-page {
+    padding: 32px 16px;
+  }
+  .editor-page__header {
+    display: grid;
+  }
 }
 header {
   display: flex;
@@ -215,4 +350,132 @@ audio {
   flex-wrap: wrap;
   gap: 16px;
   margin-top: 36px;
+}
+
+.editor-workspace {
+  display: grid;
+  gap: 16px;
+}
+
+.editor-workspace__title {
+  margin: 0;
+}
+
+.editor-toolbar,
+.track-browser__header > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.editor-toolbar p {
+  margin: 0 8px 0 0;
+}
+
+.editor-transport {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #3a4a65;
+  border-radius: 12px;
+  background: #182233;
+}
+
+.editor-transport__controls,
+.editor-transport__settings {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 8px;
+}
+
+.editor-transport label input,
+.editor-transport label select {
+  min-width: 0;
+  width: 100%;
+}
+
+.editor-transport__position input {
+  min-width: min(100%, 560px);
+}
+
+.editor-transport__loop {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.editor-transport__loop input {
+  width: auto;
+}
+
+.editor-transport__clip {
+  color: #ff9d9d;
+  font-weight: 700;
+}
+
+.editor-transport__message {
+  margin: 0;
+  color: #8ba5cf;
+}
+
+.editor-properties {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.editor-properties label {
+  display: grid;
+  gap: 6px;
+}
+
+.track-browser {
+  display: grid;
+  gap: 12px;
+}
+
+.track-browser__header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.track-browser__header h2 {
+  margin: 0;
+}
+
+.track-browser ul {
+  max-height: 416px;
+  overflow: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.track-browser li + li {
+  margin-top: 4px;
+}
+
+.track-browser li button {
+  width: 100%;
+  text-align: left;
+}
+
+.track-browser li.is-selected button {
+  outline: 2px solid #9ee5bd;
+}
+
+.track-browser__window {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.track-browser__window p {
+  margin: 0;
 }

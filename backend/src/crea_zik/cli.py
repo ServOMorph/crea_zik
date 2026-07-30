@@ -4,29 +4,84 @@ import argparse
 import json
 import os
 import sys
+from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
+from tempfile import NamedTemporaryFile
+from threading import RLock
+from uuid import UUID
 
 from .engine import CsoundEngine
-from .errors import ArtifactMissingError, CreaZikError, PatchNotFoundError, ProjectPathError, error_detail
+from .errors import (
+    ArtifactMissingError,
+    CompositionNotFoundError,
+    CompositionRevisionConflictError,
+    CreaZikError,
+    PatchNotFoundError,
+    ProjectPathError,
+    error_detail,
+)
 from .exports import export_patch
 from .logging import configure_logging, log_event
-from .models import Patch, Project
+from .models import Composition, Patch, Project
 from .provenance import patch_hash, resolve_project_path
 
 PROJECT_ROOT = Path(os.environ.get("CREA_ZIK_PROJECT_ROOT", "projects"))
+_PROJECT_LOCK = RLock()
+
+
+@contextmanager
+def project_lock() -> Iterator[None]:
+    with _PROJECT_LOCK:
+        yield
 
 
 def load_project(path: Path) -> Project:
     if PROJECT_ROOT.resolve() not in path.resolve().parents:
         raise ProjectPathError("Project path must stay inside projects/.")
-    return Project.model_validate_json(path.read_text(encoding="utf-8"))
+    with project_lock():
+        for temporary in path.parent.glob(f".{path.name}.*.tmp"):
+            temporary.unlink(missing_ok=True)
+        return Project.model_validate_json(path.read_text(encoding="utf-8"))
 
 
 def save_project(project: Project, path: Path) -> None:
     if PROJECT_ROOT.resolve() not in path.resolve().parents:
         raise ProjectPathError("Project path must stay inside projects/.")
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(project.model_dump_json(indent=2), encoding="utf-8")
+    with project_lock():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        payload = project.model_dump_json(indent=2).encode("utf-8")
+        with NamedTemporaryFile(mode="wb", dir=path.parent, prefix=f".{path.name}.", suffix=".tmp", delete=False) as temporary:
+            temporary.write(payload)
+            temporary.flush()
+            os.fsync(temporary.fileno())
+            temporary_path = Path(temporary.name)
+        try:
+            os.replace(temporary_path, path)
+        finally:
+            temporary_path.unlink(missing_ok=True)
+
+
+def replace_composition(
+    path: Path, composition_id: UUID, expected_revision: int, composition: Composition
+) -> Composition:
+    if composition.id != composition_id:
+        raise ValueError("composition id must match the requested resource")
+    with project_lock():
+        project = load_project(path)
+        index = next((index for index, item in enumerate(project.compositions) if item.id == composition_id), None)
+        if index is None:
+            raise CompositionNotFoundError("composition not found")
+        current = project.compositions[index]
+        if current.revision != expected_revision:
+            raise CompositionRevisionConflictError(
+                "composition revision is stale",
+                {"revision": str(current.revision), "composition_id": str(composition_id)},
+            )
+        saved = composition.model_copy(update={"revision": expected_revision + 1}, deep=True)
+        project.compositions[index] = saved
+        save_project(project, path)
+        return saved
 
 
 def _patch(project: Project, identifier: str) -> Patch:

@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from pathlib import Path
 from uuid import UUID
 
-from .models import Patch, PatchKind
+from .models import Composition, Patch, PatchKind
 
 
 def examples() -> list[Patch]:
@@ -15,3 +16,12 @@ def examples() -> list[Patch]:
         Patch(id=UUID("b0c1c1c0-0000-4000-8000-000000000006"), name="Moteur science-fiction", kind=PatchKind.ENGINE, seed=106, duration_seconds=2.4, gain=.16, parameters={"pitch_hz": 84, "movement_hz": .48, "ring_depth": .32, "drive": .08}),
         Patch(id=UUID("b0c1c1c0-0000-4000-8000-000000000007"), name="Ambiance mécanique", kind=PatchKind.MECHANICAL_AMBIENCE, seed=107, duration_seconds=3, gain=.12, parameters={"density": 1.7, "noise_color": 2, "brightness": .35, "delay_mix": .22}),
     ]
+
+
+def composition_examples() -> list[Composition]:
+    source = Path(__file__).resolve().parents[3] / "EDITEUR" / "fixtures" / "lignes_de_nuit.composition.json"
+    return [Composition.model_validate_json(source.read_text(encoding="utf-8"))]
+
+
+def composition_example(example_id: UUID) -> Composition | None:
+    return next((item for item in composition_examples() if item.id == example_id), None)

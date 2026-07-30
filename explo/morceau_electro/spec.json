@@ -8,11 +8,11 @@
   "time_signature": [4, 4],
   "key": "A minor",
   "tracks": [
-    {"id": "drums", "kind": "drum_machine", "gain": 0.78, "pan": 0.0},
-    {"id": "bass", "kind": "subtractive_bass", "gain": 0.70, "pan": 0.0},
-    {"id": "pad", "kind": "warm_pad", "gain": 0.36, "pan": 0.0},
-    {"id": "arp", "kind": "pluck_arpeggio", "gain": 0.48, "pan": 0.0},
-    {"id": "lead", "kind": "soft_lead", "gain": 0.38, "pan": 0.0}
+    {"id": "drums", "kind": "drum_machine", "gain": 0.78, "pan": 0.0, "instrument": {"kick": {"frequency_start": 47.0, "frequency_sweep": 112.0, "sweep_decay": 30.0, "body_decay": 9.5, "click_frequency": 1900.0, "click_decay": 65.0, "click_gain": 0.09}, "clap": {"duration": 0.22, "bandpass": [850.0, 9000.0], "bursts": [0.0, 0.018, 0.036], "burst_width": 0.011, "decay": 7.0}, "hat": {"duration": 0.085, "highpass": 6800.0, "decay": 52.0}}},
+    {"id": "bass", "kind": "subtractive_bass", "gain": 0.70, "pan": 0.0, "instrument": {"harmonics": [1.0, 0.33, 0.12], "lowpass": 620.0, "envelope": [0.008, 0.12, 0.72, 0.07]}},
+    {"id": "pad", "kind": "warm_pad", "gain": 0.36, "pan": 0.0, "instrument": {"detunes": [[-0.004, 0.18], [0.0, 0.30], [0.003, 0.18]], "second_harmonic": 0.16, "lowpass": 2400.0, "envelope": [0.65, 1.2, 0.70, 0.8]}},
+    {"id": "arp", "kind": "pluck_arpeggio", "gain": 0.48, "pan": 0.0, "instrument": {"harmonics": [1.0, 0.34, 0.14], "decay": 4.5, "envelope": [0.006, 0.11, 0.40, 0.22]}},
+    {"id": "lead", "kind": "soft_lead", "gain": 0.38, "pan": 0.0, "instrument": {"vibrato_depth": 0.004, "vibrato_hz": 5.2, "harmonics": [1.0, 0.23, 0.07], "envelope": [0.025, 0.18, 0.68, 0.20]}}
   ],
   "arrangement": {
     "intro_bars": [0, 1],
@@ -22,5 +22,20 @@
     "outro_bars": [14, 14]
   },
   "harmony_midi": [45, 41, 48, 43],
+  "render_plan": {
+    "drums": {
+      "track_id": "drums",
+      "kick": {"from_bar": 2, "beats": [0.0], "duration": 0.46, "amplitude_before_bar": 6, "amplitude_before": 0.72, "amplitude_after": 0.92, "pan": 0.0},
+      "clap": {"from_bar": 2, "beats_in_bar": [1, 3], "amplitude": 0.23, "pan": 0.0, "seed_offset": 0},
+      "hat": {"from_bar": 4, "subdivisions": [0.5, 1.5], "amplitude": 0.075, "pans": [0.28], "seed_offset": 1000}
+    },
+    "harmony": {
+      "pad": {"track_id": "pad", "until_bar": 15, "note_offsets": [12, 15, 19], "duration_extra": 0.8, "amplitude_before_bar": 2, "amplitude_before": 0.12, "amplitude_after": 0.19, "pan": 0.0},
+      "bass": {"track_id": "bass", "from_bar": 4, "steps": [0.0, 1.0, 2.0, 3.0], "root_steps": [0, 12, 0, 12], "duration": 0.42, "amplitude": 0.30, "pan": 0.0},
+      "arp": {"track_id": "arp", "from_bar": 6, "chord_intervals": [0, 3, 7, 10], "octave": 12, "pattern": [0, 2, 1, 3, 2, 1, 0, 1], "step_beats": 0.5, "duration": 0.42, "amplitude": 0.23, "pans": [-0.42, 0.42]}
+    },
+    "lead": {"track_id": "lead", "notes": [[10.0, 69], [10.75, 72], [11.5, 76], [12.5, 74], [13.0, 72], [13.75, 69], [14.5, 72], [15.0, 77], [15.75, 76], [16.5, 72], [17.0, 69], [18.0, 72], [19.0, 76], [20.0, 79], [21.0, 76], [22.0, 74], [23.0, 72], [24.0, 69], [25.0, 72], [26.0, 76], [27.0, 74]], "duration": 0.56, "amplitude": 0.19, "pan": -0.12},
+    "mix": {"reverb_track_ids": ["pad", "arp", "lead"], "reverb_delays": [[0.073, 0.28, -0.32], [0.113, 0.22, 0.25], [0.167, 0.17, -0.18], [0.241, 0.12, 0.16]], "master_gain": 1.16, "fade_seconds": 0.035, "target_peak": 0.89}
+  },
   "license": "Composition et synthese originales creees localement; aucun asset audio externe."
 }

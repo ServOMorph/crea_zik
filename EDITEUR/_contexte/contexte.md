@@ -27,10 +27,11 @@ Music Composer, Adaptive Lab, Analyse & Export) et son backend de rendu, permett
   Csound réel restant avant de poursuivre la roadmap applicative.
 
 ## État actuel (réécrit intégralement à chaque /close)
-Le studio partagé fournit sept SFX, composition avec stems, simulation adaptative, QA/export et assistant Ollama.
-Le frontend partagé expose les parcours correspondants et sa suite de qualification actuelle réussit.
-La phase 0 de l’éditeur dédié reste en cours : son runner canonique et son gate V0 ne sont pas créés.
-La prochaine action est de créer `EDITEUR/test_editor.ps1`, verrouiller l’outillage puis exécuter V0.
+Le code couvre déjà des éléments fonctionnels des phases 0 à 5 : contrats, persistance, rendu, shell, historique et transport.
+La phase 0 reste en cours car toutes ses exigences de qualification ne sont pas encore exécutées.
+Le moteur produit cinq stems instrumentaux distincts, applique la réverbération et normalise le mix.
+Le runner actuel passe sur les contrats, le rendu, le frontend et le parcours E2E, mais ne couvre pas encore tout V0 à V4.
+Le contrôle d’écoute post-correctif reste en attente.
 
 ## Décisions structurantes (append only — 10 entrées max, 5 lignes max/entrée, archiver au-delà)
 - 2026-07-30 : Initialisation de l'agent EDITEUR (mode création), périmètre étendu à frontend/ et
@@ -41,3 +42,7 @@ La prochaine action est de créer `EDITEUR/test_editor.ps1`, verrouiller l’out
   fonctions manquantes et des tests manuels.
 - 2026-07-30 : Les services et écrans partagés déjà livrés sont réutilisés comme fondations, sans
   considérer la phase 0 de l’éditeur terminée avant la création du runner canonique et la réussite de V0.
+- 2026-07-30 : La spécification de composition versionnée est la source unique du mix et des stems ;
+  toute copie remappe aussi les références du mixer.
+- 2026-07-30 : La préécoute lit des plages de révision via Web Audio et le rendu utilise des voix DSP
+  spécialisées par famille instrumentale.

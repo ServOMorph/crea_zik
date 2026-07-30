@@ -1,5 +1,6 @@
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
+import { Application } from "./app/Application";
 import "./styles.css";
 
 type Patch = {
@@ -132,7 +133,7 @@ function operationLabel(operation: ProposalOperation, project: Project) {
   return `${target} : ${property} → ${JSON.stringify(operation.value)}`;
 }
 
-function App() {
+function StudioPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [gallery, setGallery] = useState<Patch[]>([]);
   const [name, setName] = useState("");
@@ -595,7 +596,7 @@ function App() {
   }
 
   return (
-    <main>
+    <main className="studio-page">
       <header>
         <p className="eyebrow">Offline procedural studio</p>
         <h1>Crea Zik</h1>
@@ -1176,4 +1177,4 @@ function App() {
   );
 }
 
-createRoot(document.getElementById("root")!).render(<App />);
+createRoot(document.getElementById("root")!).render(<Application studioPage={<StudioPage />} />);

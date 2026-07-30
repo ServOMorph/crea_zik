@@ -1,10 +1,13 @@
-from pathlib import Path
 import logging
+from pathlib import Path
 from threading import Event
 from uuid import uuid4
 
+import pytest
+from crea_zik.compositions import render_composition
 from crea_zik.engine import Artifact, RenderCancelled
 from crea_zik.errors import RenderTimeoutError
+from crea_zik.gallery import composition_examples
 from crea_zik.jobs import JobManager, JobState
 from crea_zik.models import Patch, PatchKind
 
@@ -72,6 +75,48 @@ def test_cancelled_job_does_not_block_the_next_job(tmp_path: Path) -> None:
     successor.future.result(timeout=2)
     assert manager.get(successor.id).state is JobState.COMPLETED
     assert manager.get(queued.id).state is JobState.CANCELLED
+    manager.shutdown()
+
+
+def test_composition_job_cancels_and_can_be_resubmitted(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    started = Event()
+
+    def blocking_render(*args: object, **kwargs: object) -> object:
+        progress = kwargs.get("progress")
+        if callable(progress):
+            progress(20)
+        started.set()
+        cancelled = kwargs.get("cancelled")
+        while not (callable(cancelled) and cancelled()):
+            Event().wait(0.01)
+        raise RenderCancelled("cancelled")
+
+    monkeypatch.setattr("crea_zik.jobs.render_composition", blocking_render)
+    manager = JobManager(tmp_path)
+    composition = composition_examples()[0]
+    composition = composition.model_copy(
+        update={
+            "render_settings": composition.render_settings.model_copy(
+                update={"duration_seconds": 0.01}
+            )
+        }
+    )
+
+    cancelled = manager.submit_composition(uuid4(), composition)
+    assert started.wait(timeout=1)
+    assert manager.cancel(cancelled.id)
+    assert cancelled.future is not None
+    cancelled.future.result(timeout=1)
+    assert manager.get(cancelled.id).state is JobState.CANCELLED
+
+    monkeypatch.setattr("crea_zik.jobs.render_composition", render_composition)
+    resumed = manager.submit_composition(uuid4(), composition)
+    assert resumed.future is not None
+    resumed.future.result(timeout=5)
+    assert manager.get(resumed.id).state is JobState.COMPLETED
+    assert manager.get(resumed.id).artifacts["mix"].endswith("mix.wav")
     manager.shutdown()
 
 

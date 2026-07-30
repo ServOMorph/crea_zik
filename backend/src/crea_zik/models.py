@@ -9,8 +9,7 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-
-CURRENT_SCHEMA_VERSION = 1
+CURRENT_SCHEMA_VERSION = 2
 
 
 class SchemaMigrationError(ValueError):
@@ -66,6 +65,37 @@ def _relative_path(value: str) -> str:
     if path.is_absolute() or ".." in path.parts or value == ".":
         raise ValueError("path must be relative to its project")
     return path.as_posix()
+
+
+def _validate_finite_json(value: Any) -> None:
+    if isinstance(value, float) and not isfinite(value):
+        raise ValueError("composition parameters must be finite")
+    if isinstance(value, dict):
+        for item in value.values():
+            _validate_finite_json(item)
+    if isinstance(value, list):
+        for item in value:
+            _validate_finite_json(item)
+
+
+def _has_mixer_cycle(channels: dict[UUID, MixerChannel]) -> bool:
+    visiting: set[UUID] = set()
+    visited: set[UUID] = set()
+
+    def visit(channel_id: UUID) -> bool:
+        if channel_id in visiting:
+            return True
+        if channel_id in visited:
+            return False
+        visiting.add(channel_id)
+        output = channels[channel_id].output
+        if isinstance(output, UUID) and visit(output):
+            return True
+        visiting.remove(channel_id)
+        visited.add(channel_id)
+        return False
+
+    return any(visit(channel_id) for channel_id in channels)
 
 
 class Patch(SeededModel):
@@ -134,6 +164,186 @@ class Score(SeededModel):
     events: list[ScoreEvent] = Field(default_factory=list)
 
     _normalize_name = field_validator("name")(_safe_name)
+
+
+class NoteEvent(IdentifiedModel):
+    start_beat: float = Field(ge=0, le=100_000)
+    duration_beats: float = Field(gt=0, le=10_000)
+    midi_note: int = Field(ge=0, le=127)
+    velocity: float = Field(gt=0, le=1)
+    probability: float = Field(default=1, gt=0, le=1)
+    micro_timing_beats: float = Field(default=0, ge=-1, le=1)
+    pan: float = Field(default=0, ge=-1, le=1)
+
+
+class InstrumentPreset(DomainModel):
+    parameters: dict[str, Any] = Field(default_factory=dict)
+
+    @model_validator(mode="before")
+    @classmethod
+    def wrap_parameters(cls, value: Any) -> Any:
+        if isinstance(value, dict) and set(value) != {"parameters"}:
+            return {"parameters": value}
+        return value
+
+    @field_validator("parameters")
+    @classmethod
+    def validate_parameters(cls, values: dict[str, Any]) -> dict[str, Any]:
+        _validate_finite_json(values)
+        return values
+
+
+class EffectInstance(IdentifiedModel):
+    kind: str = Field(min_length=1, max_length=80)
+    bypass: bool = False
+    parameters: dict[str, Any] = Field(default_factory=dict)
+
+    _normalize_kind = field_validator("kind")(_safe_name)
+
+    @field_validator("parameters")
+    @classmethod
+    def validate_parameters(cls, values: dict[str, Any]) -> dict[str, Any]:
+        _validate_finite_json(values)
+        return values
+
+
+class Track(IdentifiedModel):
+    name: str = Field(min_length=1, max_length=80)
+    kind: Literal["drums", "bass", "pad", "arp", "lead", "audio", "midi"]
+    gain: float = Field(default=1, ge=0, le=2)
+    pan: float = Field(default=0, ge=-1, le=1)
+    instrument: InstrumentPreset = Field(default_factory=InstrumentPreset)
+    processors: list[EffectInstance] = Field(default_factory=list, max_length=32)
+
+    _normalize_name = field_validator("name")(_safe_name)
+
+
+class Pattern(IdentifiedModel):
+    track_id: UUID
+    events: list[dict[str, Any]] = Field(default_factory=list, max_length=20_000)
+
+    @field_validator("events")
+    @classmethod
+    def validate_events(cls, values: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        for value in values:
+            _validate_finite_json(value)
+        return values
+
+
+class Clip(IdentifiedModel):
+    pattern_id: UUID
+    start_beat: float = Field(ge=0, le=100_000)
+    length_beats: float = Field(gt=0, le=100_000)
+    repeat_count: int = Field(default=1, ge=1, le=10_000)
+    transposition: int = Field(default=0, ge=-48, le=48)
+
+
+class AutomationPoint(DomainModel):
+    beat: float = Field(ge=0, le=100_000)
+    value: float
+    interpolation: Literal["step", "linear"] = "linear"
+
+    @field_validator("value")
+    @classmethod
+    def validate_value(cls, value: float) -> float:
+        if not isfinite(value):
+            raise ValueError("automation values must be finite")
+        return value
+
+
+class AutomationLane(IdentifiedModel):
+    target: str = Field(pattern=r"^(track|master)\.[0-9a-f-]+\.(gain|pan|parameter\.[a-z][a-z0-9_]*)$")
+    points: list[AutomationPoint] = Field(min_length=1, max_length=20_000)
+
+    @model_validator(mode="after")
+    def validate_points(self) -> AutomationLane:
+        beats = [point.beat for point in self.points]
+        if beats != sorted(beats) or len(beats) != len(set(beats)):
+            raise ValueError("automation points must be unique and ordered")
+        return self
+
+
+class MixerChannel(IdentifiedModel):
+    track_id: UUID | None = None
+    gain: float = Field(default=1, ge=0, le=2)
+    pan: float = Field(default=0, ge=-1, le=1)
+    mute: bool = False
+    solo: bool = False
+    output: UUID | Literal["master"] = "master"
+    sends: dict[UUID, float] = Field(default_factory=dict)
+    effects: list[EffectInstance] = Field(default_factory=list, max_length=32)
+
+    @field_validator("sends")
+    @classmethod
+    def validate_sends(cls, values: dict[UUID, float]) -> dict[UUID, float]:
+        if any(not isfinite(value) or value < 0 or value > 1 for value in values.values()):
+            raise ValueError("send gains must be finite values from 0 to 1")
+        return values
+
+
+class RenderSettings(DomainModel):
+    duration_seconds: float = Field(gt=0, le=7_200)
+    format: Literal["wav_pcm24", "wav_pcm16", "wav_float32"] = "wav_pcm24"
+    channels: Literal[2] = 2
+    stems: bool = True
+
+
+class Composition(SeededModel):
+    schema_version: Literal[2] = 2
+    revision: int = Field(default=0, ge=0)
+    title: str = Field(min_length=1, max_length=160)
+    sample_rate: Literal[44_100, 48_000, 88_200, 96_000] = 48_000
+    tempo_bpm: float = Field(ge=20, le=400)
+    time_signature: tuple[int, Literal[1, 2, 4, 8, 16]] = (4, 4)
+    tracks: list[Track] = Field(min_length=1, max_length=256)
+    patterns: list[Pattern] = Field(default_factory=list, max_length=4_096)
+    clips: list[Clip] = Field(default_factory=list, max_length=16_384)
+    mixer: dict[str, Any] = Field(default_factory=dict)
+    mixer_channels: list[MixerChannel] = Field(default_factory=list, max_length=512)
+    automation_lanes: list[AutomationLane] = Field(default_factory=list, max_length=4_096)
+    render_settings: RenderSettings
+
+    _normalize_title = field_validator("title")(_safe_name)
+
+    @field_validator("time_signature")
+    @classmethod
+    def validate_time_signature(cls, value: tuple[int, int]) -> tuple[int, int]:
+        if not 1 <= value[0] <= 32:
+            raise ValueError("time signature numerator must be from 1 to 32")
+        return value
+
+    @field_validator("mixer")
+    @classmethod
+    def validate_mixer(cls, value: dict[str, Any]) -> dict[str, Any]:
+        _validate_finite_json(value)
+        return value
+
+    @model_validator(mode="after")
+    def validate_references(self) -> Composition:
+        track_ids = {track.id for track in self.tracks}
+        pattern_ids = {pattern.id for pattern in self.patterns}
+        if len(track_ids) != len(self.tracks) or len(pattern_ids) != len(self.patterns):
+            raise ValueError("composition identifiers must be unique")
+        if any(pattern.track_id not in track_ids for pattern in self.patterns):
+            raise ValueError("patterns must reference a track")
+        if any(clip.pattern_id not in pattern_ids for clip in self.clips):
+            raise ValueError("clips must reference a pattern")
+        channels_by_id = {channel.id: channel for channel in self.mixer_channels}
+        if len(channels_by_id) != len(self.mixer_channels):
+            raise ValueError("mixer channel identifiers must be unique")
+        if any(channel.track_id is not None and channel.track_id not in track_ids for channel in self.mixer_channels):
+            raise ValueError("mixer channels must reference a track")
+        if any(isinstance(channel.output, UUID) and channel.output not in channels_by_id for channel in self.mixer_channels):
+            raise ValueError("mixer outputs must reference a channel or master")
+        if any(target not in channels_by_id for channel in self.mixer_channels for target in channel.sends):
+            raise ValueError("mixer sends must reference a channel")
+        if _has_mixer_cycle(channels_by_id):
+            raise ValueError("mixer routing must not contain a cycle")
+        for lane in self.automation_lanes:
+            scope, identifier, _ = lane.target.split(".", 2)
+            if scope == "track" and UUID(identifier) not in track_ids:
+                raise ValueError("automation target must reference a track")
+        return self
 
 
 class AdaptiveState(IdentifiedModel):
@@ -241,7 +451,13 @@ def migrate_project_payload(payload: dict[str, Any]) -> dict[str, Any]:
         raise SchemaMigrationError("schema_version must be a positive integer")
     if version > CURRENT_SCHEMA_VERSION:
         raise SchemaMigrationError("project schema is newer than this application")
-    data["schema_version"] = CURRENT_SCHEMA_VERSION
+    while version < CURRENT_SCHEMA_VERSION:
+        if version == 1:
+            data.setdefault("compositions", [])
+            version = 2
+        else:
+            raise SchemaMigrationError(f"no migration is available from schema version {version}")
+    data["schema_version"] = version
     for key in (
         "patches",
         "instruments",
@@ -251,6 +467,7 @@ def migrate_project_payload(payload: dict[str, Any]) -> dict[str, Any]:
         "artifacts",
         "qa_reports",
         "intent_history",
+        "compositions",
     ):
         data.setdefault(key, [])
     return data
@@ -269,6 +486,7 @@ class Project(IdentifiedModel):
     artifacts: list[Artifact] = Field(default_factory=list)
     qa_reports: list[QaReport] = Field(default_factory=list)
     intent_history: list[IntentRecord] = Field(default_factory=list, max_length=200)
+    compositions: list[Composition] = Field(default_factory=list, max_length=128)
 
     _normalize_name = field_validator("name")(_safe_name)
     _normalize_engine = field_validator("engine")(_safe_name)

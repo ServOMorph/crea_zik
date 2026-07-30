@@ -3,13 +3,19 @@ import { defineConfig } from "@playwright/test";
 export default defineConfig({
   testDir: "./e2e",
   timeout: 45_000,
-  use: { baseURL: "http://127.0.0.1:5180" },
+  use: {
+    baseURL: "http://127.0.0.1:5180",
+    screenshot: "only-on-failure",
+    trace: "retain-on-failure",
+    video: "retain-on-failure",
+    serviceWorkers: "block",
+  },
   webServer: [
     {
       command: "uv run uvicorn crea_zik.api:app --host 127.0.0.1 --port 8001",
       cwd: "..",
       url: "http://127.0.0.1:8001/api/health",
-      env: { CREA_ZIK_PROJECT_ROOT: "test-results/projects" },
+      env: { CREA_ZIK_PROJECT_ROOT: process.env.CREA_ZIK_PROJECT_ROOT ?? "test-results/projects" },
       reuseExistingServer: false,
     },
     {

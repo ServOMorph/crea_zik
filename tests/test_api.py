@@ -1,9 +1,10 @@
 import wave
 from pathlib import Path
+from uuid import UUID
 
+from crea_zik.api import app
+from crea_zik.jobs import JobManager
 from fastapi.testclient import TestClient
-
-from crea_zik.api import PROJECT_ROOT, app
 
 
 def test_health() -> None:
@@ -35,6 +36,120 @@ def test_gallery_is_stable_and_copyable(tmp_path, monkeypatch) -> None:
     copied = client.post(f"/api/projects/{project['id']}/gallery/{examples[0]['id']}")
     assert copied.status_code == 200
     assert copied.json()["patches"][0]["id"] != examples[0]["id"]
+
+
+def test_composition_gallery_is_immutable_and_copyable(tmp_path, monkeypatch) -> None:
+    monkeypatch.setattr("crea_zik.api.PROJECT_ROOT", tmp_path / "projects")
+    monkeypatch.setattr("crea_zik.cli.PROJECT_ROOT", tmp_path / "projects")
+    client = TestClient(app)
+    source = client.get("/api/composition-gallery")
+    project = client.post("/api/projects", json={"name": "composition gallery"}).json()
+    copied = client.post(f"/api/projects/{project['id']}/composition-gallery/{source.json()[0]['id']}")
+
+    assert source.status_code == 200
+    assert len(source.json()[0]["tracks"]) == 5
+    assert copied.status_code == 200
+    assert copied.json()["compositions"][0]["id"] != source.json()[0]["id"]
+    assert copied.json()["compositions"][0]["tracks"][0]["id"] != source.json()[0]["tracks"][0]["id"]
+
+
+def test_composition_resources_save_reload_and_conflict(tmp_path: Path, monkeypatch) -> None:
+    project_root = tmp_path / "projects"
+    monkeypatch.setattr("crea_zik.api.PROJECT_ROOT", project_root)
+    monkeypatch.setattr("crea_zik.cli.PROJECT_ROOT", project_root)
+    client = TestClient(app)
+    project = client.post("/api/projects", json={"name": "composition API"}).json()
+    source = client.get("/api/composition-gallery").json()[0]
+    created = client.post(
+        f"/api/projects/{project['id']}/compositions",
+        json={"example_id": source["id"]},
+    )
+    assert created.status_code == 201
+    composition = created.json()
+
+    for resource in ("tracks", "patterns", "clips", "automation", "mixer"):
+        response = client.get(
+            f"/api/projects/{project['id']}/compositions/{composition['id']}/{resource}"
+        )
+        assert response.status_code == 200
+    composition["title"] = "Lignes de nuit modifiee"
+    saved = client.put(
+        f"/api/projects/{project['id']}/compositions/{composition['id']}",
+        json={"expected_revision": 0, "composition": composition},
+    )
+    assert saved.status_code == 200
+    assert saved.json()["revision"] == 1
+    assert client.get(
+        f"/api/projects/{project['id']}/compositions/{composition['id']}"
+    ).json()["title"] == "Lignes de nuit modifiee"
+
+    conflict = client.put(
+        f"/api/projects/{project['id']}/compositions/{composition['id']}",
+        json={"expected_revision": 0, "composition": composition},
+    )
+    assert conflict.status_code == 409
+    assert conflict.json()["detail"]["code"] == "composition_revision_conflict"
+
+
+def test_composition_render_is_a_revisioned_job(tmp_path: Path, monkeypatch) -> None:
+    project_root = tmp_path / "projects"
+    manager = JobManager(project_root)
+    monkeypatch.setattr("crea_zik.api.PROJECT_ROOT", project_root)
+    monkeypatch.setattr("crea_zik.cli.PROJECT_ROOT", project_root)
+    monkeypatch.setattr("crea_zik.api.jobs", manager)
+    client = TestClient(app)
+    project = client.post("/api/projects", json={"name": "composition render"}).json()
+    source = client.get("/api/composition-gallery").json()[0]
+    composition = client.post(
+        f"/api/projects/{project['id']}/compositions",
+        json={"example_id": source["id"]},
+    ).json()
+    composition["render_settings"]["duration_seconds"] = .01
+    saved = client.put(
+        f"/api/projects/{project['id']}/compositions/{composition['id']}",
+        json={"expected_revision": 0, "composition": composition},
+    ).json()
+
+    queued = client.post(
+        f"/api/projects/{project['id']}/compositions/{saved['id']}/render",
+        json={"track_ids": [saved["tracks"][0]["id"]], "start_beat": 0, "end_beat": .01},
+    )
+    assert queued.status_code == 202
+    job = manager.get(UUID(queued.json()["id"]))
+    assert job is not None and job.future is not None
+    job.future.result(timeout=2)
+    completed = client.get(f"/api/jobs/{job.id}")
+    assert completed.json()["state"] == "completed"
+    assert completed.json()["composition_revision"] == 1
+    assert (project_root / completed.json()["artifacts"]["mix"]).is_file()
+    assert (project_root / completed.json()["artifacts"]["manifest"]).is_file()
+    second = client.post(
+        f"/api/projects/{project['id']}/compositions/{saved['id']}/render",
+        json={"track_ids": [saved["tracks"][0]["id"]], "start_beat": .005, "end_beat": .01},
+    )
+    second_job = manager.get(UUID(second.json()["id"]))
+    assert second_job is not None and second_job.future is not None
+    second_job.future.result(timeout=2)
+    second_completed = client.get(f"/api/jobs/{second_job.id}").json()
+    assert second_completed["artifacts"]["mix"] != completed.json()["artifacts"]["mix"]
+    assert (project_root / second_completed["artifacts"]["mix"]).is_file()
+    artifact = client.get(
+        f"/api/projects/{project['id']}/compositions/{saved['id']}/renders/1/artifact"
+    )
+    manifest = client.get(
+        f"/api/projects/{project['id']}/compositions/{saved['id']}/renders/1/manifest"
+    )
+    analyzed = client.post(
+        f"/api/projects/{project['id']}/compositions/{saved['id']}/renders/1/analyze"
+    )
+    report = client.get(
+        f"/api/projects/{project['id']}/compositions/{saved['id']}/renders/1/qa"
+    )
+    assert artifact.status_code == 200
+    assert manifest.json()["revision"] == 1
+    assert analyzed.status_code == 200
+    assert report.json()["artifact_id"] == analyzed.json()["artifact_id"]
+    manager.shutdown()
 
 
 def test_variants_have_unique_seeds(tmp_path, monkeypatch) -> None:

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Mapping
+from collections.abc import Mapping
 
 from .models import ErrorDetail
 
@@ -22,6 +22,14 @@ class ProjectPathError(CreaZikError):
 
 class PatchNotFoundError(CreaZikError):
     code = "patch_not_found"
+
+
+class CompositionNotFoundError(CreaZikError):
+    code = "composition_not_found"
+
+
+class CompositionRevisionConflictError(CreaZikError):
+    code = "composition_revision_conflict"
 
 
 class RenderEngineUnavailableError(CreaZikError):

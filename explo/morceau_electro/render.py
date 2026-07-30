@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parent
 
 def load_spec(path: Path) -> dict[str, Any]:
     spec = json.loads(path.read_text(encoding="utf-8"))
-    required = {"schema_version", "title", "seed", "sample_rate", "duration_seconds", "tempo_bpm", "tracks", "harmony_midi"}
+    required = {"schema_version", "title", "seed", "sample_rate", "duration_seconds", "tempo_bpm", "tracks", "harmony_midi", "render_plan"}
     missing = required.difference(spec)
     if missing:
         raise ValueError(f"Champs manquants: {', '.join(sorted(missing))}")
@@ -74,81 +74,80 @@ def add(buffer: np.ndarray, voice: np.ndarray, start: int) -> None:
     buffer[destination:end] += voice[offset : offset + end - destination]
 
 
-def kick(sample_rate: int, duration: float, amplitude: float) -> np.ndarray:
+def kick(sample_rate: int, duration: float, amplitude: float, params: dict[str, Any]) -> np.ndarray:
     count = int(duration * sample_rate)
     time = np.arange(count) / sample_rate
-    frequency = 47.0 + 112.0 * np.exp(-time * 30.0)
+    frequency = params["frequency_start"] + params["frequency_sweep"] * np.exp(-time * params["sweep_decay"])
     phase = 2.0 * np.pi * np.cumsum(frequency) / sample_rate
-    body = np.sin(phase) * np.exp(-time * 9.5)
-    click = np.sin(2.0 * np.pi * 1900.0 * time) * np.exp(-time * 65.0) * 0.09
+    body = np.sin(phase) * np.exp(-time * params["body_decay"])
+    click = np.sin(2.0 * np.pi * params["click_frequency"] * time) * np.exp(-time * params["click_decay"]) * params["click_gain"]
     return (body + click) * amplitude
 
 
-def clap(sample_rate: int, seed: int, amplitude: float) -> np.ndarray:
+def clap(sample_rate: int, seed: int, amplitude: float, params: dict[str, Any]) -> np.ndarray:
     rng = np.random.default_rng(seed)
-    count = int(0.22 * sample_rate)
+    count = int(params["duration"] * sample_rate)
     time = np.arange(count) / sample_rate
     noise = rng.standard_normal(count)
-    sos = signal.butter(2, [850.0, 9000.0], btype="bandpass", fs=sample_rate, output="sos")
+    sos = signal.butter(2, params["bandpass"], btype="bandpass", fs=sample_rate, output="sos")
     filtered = signal.sosfilt(sos, noise)
-    bursts = sum(np.exp(-((time - position) / 0.011) ** 2) for position in (0.0, 0.018, 0.036))
-    return filtered * bursts * np.exp(-time * 7.0) * amplitude
+    bursts = sum(np.exp(-((time - position) / params["burst_width"]) ** 2) for position in params["bursts"])
+    return filtered * bursts * np.exp(-time * params["decay"]) * amplitude
 
 
-def hat(sample_rate: int, seed: int, amplitude: float) -> np.ndarray:
+def hat(sample_rate: int, seed: int, amplitude: float, params: dict[str, Any]) -> np.ndarray:
     rng = np.random.default_rng(seed)
-    count = int(0.085 * sample_rate)
+    count = int(params["duration"] * sample_rate)
     time = np.arange(count) / sample_rate
     noise = rng.standard_normal(count)
-    sos = signal.butter(2, 6800.0, btype="highpass", fs=sample_rate, output="sos")
-    return signal.sosfilt(sos, noise) * np.exp(-time * 52.0) * amplitude
+    sos = signal.butter(2, params["highpass"], btype="highpass", fs=sample_rate, output="sos")
+    return signal.sosfilt(sos, noise) * np.exp(-time * params["decay"]) * amplitude
 
 
-def bass_voice(sample_rate: int, note: int, duration: float, amplitude: float) -> np.ndarray:
+def bass_voice(sample_rate: int, note: int, duration: float, amplitude: float, params: dict[str, Any]) -> np.ndarray:
     count = int(duration * sample_rate)
     time = np.arange(count) / sample_rate
     frequency = midi_to_hz(note)
     phase = 2.0 * np.pi * frequency * time
-    harmonic = np.sin(phase) + 0.33 * np.sin(2.0 * phase) + 0.12 * np.sin(3.0 * phase)
-    tone = signal.sosfilt(signal.butter(2, 620.0, btype="lowpass", fs=sample_rate, output="sos"), harmonic)
-    return tone * envelope(count, sample_rate, 0.008, 0.12, 0.72, 0.07) * amplitude
+    harmonic = sum(gain * np.sin((index + 1) * phase) for index, gain in enumerate(params["harmonics"]))
+    tone = signal.sosfilt(signal.butter(2, params["lowpass"], btype="lowpass", fs=sample_rate, output="sos"), harmonic)
+    return tone * envelope(count, sample_rate, *params["envelope"]) * amplitude
 
 
-def pad_voice(sample_rate: int, notes: list[int], duration: float, amplitude: float) -> np.ndarray:
+def pad_voice(sample_rate: int, notes: list[int], duration: float, amplitude: float, params: dict[str, Any]) -> np.ndarray:
     count = int(duration * sample_rate)
     time = np.arange(count) / sample_rate
     voice = np.zeros(count)
     for note in notes:
         frequency = midi_to_hz(note)
-        for detune, gain in ((-0.004, 0.18), (0.0, 0.30), (0.003, 0.18)):
+        for detune, gain in params["detunes"]:
             phase = 2.0 * np.pi * frequency * (1.0 + detune) * time
-            voice += gain * (np.sin(phase) + 0.16 * np.sin(2.0 * phase))
-    filtered = signal.sosfilt(signal.butter(2, 2400.0, btype="lowpass", fs=sample_rate, output="sos"), voice)
-    return filtered * envelope(count, sample_rate, 0.65, 1.2, 0.70, 0.8) * amplitude
+            voice += gain * (np.sin(phase) + params["second_harmonic"] * np.sin(2.0 * phase))
+    filtered = signal.sosfilt(signal.butter(2, params["lowpass"], btype="lowpass", fs=sample_rate, output="sos"), voice)
+    return filtered * envelope(count, sample_rate, *params["envelope"]) * amplitude
 
 
-def pluck_voice(sample_rate: int, note: int, duration: float, amplitude: float) -> np.ndarray:
+def pluck_voice(sample_rate: int, note: int, duration: float, amplitude: float, params: dict[str, Any]) -> np.ndarray:
     count = int(duration * sample_rate)
     time = np.arange(count) / sample_rate
     frequency = midi_to_hz(note)
     phase = 2.0 * np.pi * frequency * time
-    harmonics = np.sin(phase) + 0.34 * np.sin(2.0 * phase) + 0.14 * np.sin(3.0 * phase)
-    return harmonics * np.exp(-time * 4.5) * envelope(count, sample_rate, 0.006, 0.11, 0.40, 0.22) * amplitude
+    harmonics = sum(gain * np.sin((index + 1) * phase) for index, gain in enumerate(params["harmonics"]))
+    return harmonics * np.exp(-time * params["decay"]) * envelope(count, sample_rate, *params["envelope"]) * amplitude
 
 
-def lead_voice(sample_rate: int, note: int, duration: float, amplitude: float) -> np.ndarray:
+def lead_voice(sample_rate: int, note: int, duration: float, amplitude: float, params: dict[str, Any]) -> np.ndarray:
     count = int(duration * sample_rate)
     time = np.arange(count) / sample_rate
     frequency = midi_to_hz(note)
-    vibrato = 0.004 * np.sin(2.0 * np.pi * 5.2 * time)
+    vibrato = params["vibrato_depth"] * np.sin(2.0 * np.pi * params["vibrato_hz"] * time)
     phase = 2.0 * np.pi * frequency * time * (1.0 + vibrato)
-    sound = np.sin(phase) + 0.23 * np.sin(2.0 * phase) + 0.07 * np.sin(3.0 * phase)
-    return sound * envelope(count, sample_rate, 0.025, 0.18, 0.68, 0.20) * amplitude
+    sound = sum(gain * np.sin((index + 1) * phase) for index, gain in enumerate(params["harmonics"]))
+    return sound * envelope(count, sample_rate, *params["envelope"]) * amplitude
 
 
-def reverb(stereo_signal: np.ndarray, sample_rate: int) -> np.ndarray:
+def reverb(stereo_signal: np.ndarray, sample_rate: int, delays: list[list[float]]) -> np.ndarray:
     wet = np.zeros_like(stereo_signal)
-    delays = ((0.073, 0.28, -0.32), (0.113, 0.22, 0.25), (0.167, 0.17, -0.18), (0.241, 0.12, 0.16))
     for seconds, gain, pan in delays:
         delay = int(seconds * sample_rate)
         source = stereo_signal[:-delay]
@@ -167,63 +166,76 @@ def render_audio(spec: dict[str, Any]) -> tuple[np.ndarray, dict[str, np.ndarray
     bars = int(math.ceil(duration / (seconds_per_beat * beats_per_bar)))
     harmony = list(spec["harmony_midi"])
     seed = int(spec["seed"])
-    tracks = {track["id"]: np.zeros((total_samples, 2), dtype=np.float64) for track in spec["tracks"]}
+    track_specs = {track["id"]: track for track in spec["tracks"]}
+    tracks = {track_id: np.zeros((total_samples, 2), dtype=np.float64) for track_id in track_specs}
+    plan = spec["render_plan"]
 
     def beat_to_sample(beat: float) -> int:
         return int(round(beat * seconds_per_beat * sample_rate))
 
-    drums = tracks["drums"]
+    drum_plan = plan["drums"]
+    drums = tracks[drum_plan["track_id"]]
+    drum_instrument = track_specs[drum_plan["track_id"]]["instrument"]
     for beat in range(int(duration / seconds_per_beat)):
         bar = beat // beats_per_bar
-        if bar >= 2:
-            add(drums, stereo(kick(sample_rate, 0.46, 0.92 if bar >= 6 else 0.72), 0.0), beat_to_sample(beat))
-        if bar >= 2 and beat % beats_per_bar in (1, 3):
-            add(drums, stereo(clap(sample_rate, seed + beat, 0.23), 0.0), beat_to_sample(beat))
-        if bar >= 4:
-            for subdivision in (0.5, 1.5):
+        kick_plan = drum_plan["kick"]
+        if bar >= kick_plan["from_bar"]:
+            amplitude = kick_plan["amplitude_after"] if bar >= kick_plan["amplitude_before_bar"] else kick_plan["amplitude_before"]
+            for offset in kick_plan["beats"]:
+                add(drums, stereo(kick(sample_rate, kick_plan["duration"], amplitude, drum_instrument["kick"]), kick_plan["pan"]), beat_to_sample(beat + offset))
+        clap_plan = drum_plan["clap"]
+        if bar >= clap_plan["from_bar"] and beat % beats_per_bar in clap_plan["beats_in_bar"]:
+            add(drums, stereo(clap(sample_rate, seed + clap_plan["seed_offset"] + beat, clap_plan["amplitude"], drum_instrument["clap"]), clap_plan["pan"]), beat_to_sample(beat))
+        hat_plan = drum_plan["hat"]
+        if bar >= hat_plan["from_bar"]:
+            for index, subdivision in enumerate(hat_plan["subdivisions"]):
                 start = beat_to_sample(beat + subdivision)
-                pan = -0.28 if int((beat + subdivision) * 2) % 2 == 0 else 0.28
-                add(drums, stereo(hat(sample_rate, seed + 1000 + int((beat + subdivision) * 2), 0.075), pan), start)
+                pan = hat_plan["pans"][index % len(hat_plan["pans"])]
+                add(drums, stereo(hat(sample_rate, seed + hat_plan["seed_offset"] + int((beat + subdivision) * 2), hat_plan["amplitude"], drum_instrument["hat"]), pan), start)
 
-    bass = tracks["bass"]
-    pad = tracks["pad"]
-    arp = tracks["arp"]
-    lead = tracks["lead"]
-    chord_intervals = (0, 3, 7, 10)
+    harmony_plan = plan["harmony"]
+    pad_plan = harmony_plan["pad"]
+    bass_plan = harmony_plan["bass"]
+    arp_plan = harmony_plan["arp"]
+    pad = tracks[pad_plan["track_id"]]
+    bass = tracks[bass_plan["track_id"]]
+    arp = tracks[arp_plan["track_id"]]
     for bar in range(bars):
         root = harmony[bar % len(harmony)]
         bar_beat = bar * beats_per_bar
         bar_duration = beats_per_bar * seconds_per_beat
-        if bar < 15:
-            add(pad, stereo(pad_voice(sample_rate, [root + 12, root + 15, root + 19], bar_duration + 0.8, 0.12 if bar < 2 else 0.19), 0.0), beat_to_sample(bar_beat))
-        if bar >= 4:
-            for step in range(4):
-                note = root if step in (0, 2) else root + 12
-                add(bass, stereo(bass_voice(sample_rate, note, 0.42, 0.30), 0.0), beat_to_sample(bar_beat + step))
-        if bar >= 6:
-            notes = [root + interval + 12 for interval in chord_intervals]
-            pattern = (0, 2, 1, 3, 2, 1, 0, 1)
-            for index, choice in enumerate(pattern):
-                pan = -0.42 if index % 2 == 0 else 0.42
-                add(arp, stereo(pluck_voice(sample_rate, notes[choice], 0.42, 0.23), pan), beat_to_sample(bar_beat + index * 0.5))
+        if bar < pad_plan["until_bar"]:
+            amplitude = pad_plan["amplitude_after"] if bar >= pad_plan["amplitude_before_bar"] else pad_plan["amplitude_before"]
+            notes = [root + offset for offset in pad_plan["note_offsets"]]
+            add(pad, stereo(pad_voice(sample_rate, notes, bar_duration + pad_plan["duration_extra"], amplitude, track_specs[pad_plan["track_id"]]["instrument"]), pad_plan["pan"]), beat_to_sample(bar_beat))
+        if bar >= bass_plan["from_bar"]:
+            for step, root_offset in zip(bass_plan["steps"], bass_plan["root_steps"], strict=True):
+                add(bass, stereo(bass_voice(sample_rate, root + root_offset, bass_plan["duration"], bass_plan["amplitude"], track_specs[bass_plan["track_id"]]["instrument"]), bass_plan["pan"]), beat_to_sample(bar_beat + step))
+        if bar >= arp_plan["from_bar"]:
+            notes = [root + interval + arp_plan["octave"] for interval in arp_plan["chord_intervals"]]
+            for index, choice in enumerate(arp_plan["pattern"]):
+                pan = arp_plan["pans"][index % len(arp_plan["pans"])]
+                add(arp, stereo(pluck_voice(sample_rate, notes[choice], arp_plan["duration"], arp_plan["amplitude"], track_specs[arp_plan["track_id"]]["instrument"]), pan), beat_to_sample(bar_beat + index * arp_plan["step_beats"]))
 
-    melody = ((10, 69), (10.75, 72), (11.5, 76), (12.5, 74), (13.0, 72), (13.75, 69), (14.5, 72), (15.0, 77), (15.75, 76), (16.5, 72), (17.0, 69), (18.0, 72), (19.0, 76), (20.0, 79), (21.0, 76), (22.0, 74), (23.0, 72), (24.0, 69), (25.0, 72), (26.0, 76), (27.0, 74))
-    for beat, note in melody:
+    lead_plan = plan["lead"]
+    lead = tracks[lead_plan["track_id"]]
+    for beat, note in lead_plan["notes"]:
         if beat < duration / seconds_per_beat:
-            add(lead, stereo(lead_voice(sample_rate, note, 0.56, 0.19), -0.12), beat_to_sample(beat))
+            add(lead, stereo(lead_voice(sample_rate, note, lead_plan["duration"], lead_plan["amplitude"], track_specs[lead_plan["track_id"]]["instrument"]), lead_plan["pan"]), beat_to_sample(beat))
 
-    gains = {track["id"]: float(track["gain"]) for track in spec["tracks"]}
+    gains = {track_id: float(track["gain"]) for track_id, track in track_specs.items()}
     stems = {track_id: signal_data * gains[track_id] for track_id, signal_data in tracks.items()}
-    musical_bus = stems["pad"] + stems["arp"] + stems["lead"]
+    mix_plan = plan["mix"]
+    musical_bus = sum((stems[track_id] for track_id in mix_plan["reverb_track_ids"]), start=np.zeros((total_samples, 2), dtype=np.float64))
     master = sum(stems.values(), start=np.zeros((total_samples, 2), dtype=np.float64))
-    master += reverb(musical_bus, sample_rate)
-    master = np.tanh(master * 1.16)
-    fade = min(int(sample_rate * 0.035), total_samples // 2)
+    master += reverb(musical_bus, sample_rate, mix_plan["reverb_delays"])
+    master = np.tanh(master * mix_plan["master_gain"])
+    fade = min(int(sample_rate * mix_plan["fade_seconds"]), total_samples // 2)
     master[:fade] *= np.linspace(0.0, 1.0, fade)[:, None]
     master[-fade:] *= np.linspace(1.0, 0.0, fade)[:, None]
     peak = float(np.max(np.abs(master)))
     if peak:
-        master *= 0.89 / peak
+        master *= mix_plan["target_peak"] / peak
     return master, stems
 
 

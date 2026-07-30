@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.9 — 2026-07-30
+
+### Ajouté
+
+- Contrats et persistance des compositions versionnées, rendu du mix et des stems, copie sûre des projets.
+- Shell éditeur, store avec historique, sauvegarde, transport et préécoute.
+- Runner canonique couvrant les contrats, le rendu, le frontend et le parcours E2E.
+
+### Corrigé
+
+- Rendu spécialisé des cinq familles instrumentales avec effets et normalisation, au lieu d’un oscillateur générique.
+- Remappage des envois du mixer lors de la copie d’une composition.
+
 ## v0.8 — 2026-07-30
 
 ### Ajouté

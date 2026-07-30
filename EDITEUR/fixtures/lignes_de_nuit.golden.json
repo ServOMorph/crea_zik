@@ -1,0 +1,21 @@
+{
+  "source_spec_sha256": "aceec27c30a8e289306c8c6a10fb7eab977af3a666849b7e32ae1f38e89be61a",
+  "master_sha256": "68544991d97b3a2868fa83e8e3c9da6882991b40338d13a50187a520b17c73fb",
+  "stems_sha256": {
+    "arp": "321f9fc3ceee0e5abab2718d6237cb6e15a6c918bf039261839b4fafbd1d1c1b",
+    "bass": "8f9e3883897b7bbf6b1e8834c9486810b7a8a793a5a644d331bed18ec9d5c9ab",
+    "drums": "5fc82f0124be406a256c43b06573e6f09b853d56e30b263da280db3ac5e3f8b2",
+    "lead": "083ef3cc154d3cd28711e0d91ff1c85cdb9ac23ccef5cc146c744a4d4a3b7cc1",
+    "pad": "5107842a4b181ebbf0188784b2407dcffc1ce28a88ecf63e088cc609d5fd9c2c"
+  },
+  "audio": {
+    "sample_rate": 48000,
+    "channels": 2,
+    "duration_seconds": 30.0,
+    "peak": 0.8900000000000001,
+    "dc": [0.0010014829459115863, 0.0009947646139180852],
+    "stereo_correlation": 0.9919677790372168,
+    "finite": true,
+    "clipping": false
+  }
+}

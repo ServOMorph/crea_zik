@@ -1,32 +1,33 @@
 # Signals — editeur (MAJ 2026-07-30)
 
 ## Actions ouvertes
-- [P1|ouvert] Exécuter la phase 0 puis son gate automatique V0
-  - fait quand: l’outillage, les contrats et le gate Csound sont en place et V0 réussit intégralement
+- [P1|ouvert] Valider à l’écoute le rendu instrumental corrigé et le transport de préécoute.
+  - fait quand: les cinq familles instrumentales sont audibles et lecture, pause, stop, seek, boucle, volume et mute fonctionnent sans modifier l’export
+  - réf: `tests_manuels.md`, `backend/src/crea_zik/composition_dsp.py`, `frontend/src/editor/TransportBar.tsx`
+- [P2|ouvert] Terminer les exigences et le gate V0 avant de poursuivre la roadmap.
+  - fait quand: chaque tâche de la phase 0 est cochée et le gate V0 complet réussit, y compris couverture, mutations et accessibilité prévues
   - réf: `EDITEUR/roadmap_editeur_musical.md`
 
 ## Dernière session (2026-07-30)
-<!-- Écrasé intégralement par /close. Synthèse < 25 lignes. -->
 # Session du 2026-07-30
 
 ## Décisions prises
-- Les fondations partagées du studio sont conservées comme base de l’éditeur dédié.
-- La phase 0 reste ouverte tant que le runner canonique et le gate V0 ne sont pas livrés.
-- La compaction du contexte Codex est automatique à partir de 64 000 tokens.
+- La composition versionnée reste la source du rendu, avec remappage intégral des identifiants lors d’une copie.
+- Le rendu sépare les familles instrumentales, les effets et la normalisation de sortie.
 
 ## Livrables produits ou modifiés
-- Backend partagé : composition avec stems, graphes adaptatifs, QA/export et assistant Ollama sécurisé.
-- Frontend partagé : sept SFX, variantes, transport, waveform, QA, assistant et Adaptive Lab.
-- Qualification : 48 tests Python, lint, formatage, build et 6 parcours Playwright réussis.
-- Configuration Codex et périmètre Prettier automatisés pour les sessions suivantes.
+- Contrats, fixtures, runner de qualification, API et persistance des compositions.
+- Shell éditeur, store avec historique, sauvegarde, transport et préécoute.
+- Correctif DSP pour les cinq instruments, les stems, la réverbération et le mastering.
 
 ## Hypothèses validées / invalidées
-- VALIDE : les services partagés couvrent déjà plusieurs briques nécessaires au futur éditeur.
-- INVALIDE : ces briques suffisent à terminer la phase 0 -> le runner de qualification manque encore.
-- EN ATTENTE : exécution intégrale du gate V0 de l’éditeur.
+- VALIDE — Les tests automatisés de composition et de régression passent.
+- INVALIDE — Un oscillateur générique suffisait à restituer les cinq instruments ; remplacement par des voix DSP spécialisées.
+- EN ATTENTE — Contrôle d’écoute post-correctif par l’utilisateur.
 
 ## Prochaine étape exacte
-Créer `EDITEUR/test_editor.ps1`, verrouiller l’outillage prévu puis faire réussir V0.
+1. Écouter le rendu corrigé et valider le transport.
+2. Compléter la phase 0 et son gate V0 avant de reprendre les phases suivantes.
 
 ## Question bloquante pour la session suivante
 Aucune
