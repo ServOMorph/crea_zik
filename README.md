@@ -28,6 +28,9 @@ déterminisme Csound, couverture bloquante, fuzzing OpenAPI, accessibilité, mut
 visuelle, chacun avec preuve de blocage volontaire. mutmut reste verrouillé mais bloqué nativement
 sous Windows (WSL/CI requis), limite documentée. La phase 1 de l’éditeur reste à démarrer.
 Le gate de déterminisme Csound réel de la phase 1 (roadmap studio audio procédural) est validé (trois rendus indépendants, même SHA-256 du WAV).
-La phase 2 de `roadmap_studio_audio_procedural.md` semble en décalage avec le code réel et reste à auditer avant reprise.
-Explo a livré la phase 1 du plugin kick (schéma de manifeste générique, moteur one-shot, trois presets, WAV et empreintes SHA-256 de référence, tests verts). La phase 2 (banc de test dans l’UI globale, écran « Plugins ») est livrée côté crea_zik ; sa validation manuelle en navigateur reste à faire.
+La phase 2 de `roadmap_studio_audio_procedural.md` a été réauditée et close [FAIT] : le code réel
+dépasse largement sa description initiale. Les phases 3 à 6 restent à réauditer avant reprise.
+`EXPLO/roadmap_plugins.md` est intégralement livré : le banc de test plugins dans l’UI globale a été
+validé dans un navigateur réel, et le plugin kick est promu sur le moteur de composition via des
+paramètres d’instrument opt-in, sans copie de fichiers vers un dossier plugins applicatif séparé.
 Une zone `DOCUMENTATION/` et une zone `WORKFLOW/` ont été créées pour bâtir en parallèle l’inventaire des styles musicaux (modèle de fiche défini) et l’agent de création de musique associé ; voir `roadmap_creation_musique.md`.

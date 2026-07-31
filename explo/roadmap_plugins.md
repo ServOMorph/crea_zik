@@ -58,17 +58,34 @@ Zone : crea_zik
 **⏸ Checkpoint** — Demander à l'utilisateur de faire `/compact` avant de continuer.
 Attendre sa réponse écrite. Ne pas commencer la phase suivante sans confirmation.
 
-## Phase 3 — Promotion et intégration au projet [TODO]
+## Phase 3 — Promotion et intégration au projet [FAIT]
 
 Zone : crea_zik
 
-- Définir la procédure de promotion d'un plugin validé d'explo vers le dossier plugins
-  applicatif, avec sa version et ses empreintes.
-- Brancher les plugins promus sur le moteur de composition, en remplacement des voix codées en
-  dur dans le renderer.
-- Rendre le plugin utilisable depuis une spec de morceau et l'archivage existant.
-- Tests : équivalence du rendu avant et après promotion, rendu d'un morceau utilisant le
-  plugin promu.
+Procédure de promotion retenue le 2026-07-31 : `backend/src/crea_zik/plugins.py` charge déjà les
+plugins directement depuis `EXPLO/plugins/<id>/` (manifeste, presets, moteur), sans copie vers un
+dossier applicatif séparé. Dupliquer les fichiers aurait créé un risque de divergence de version
+entre explo et crea_zik pour un gain nul. La promotion d'un plugin validé consiste donc à :
+1. vérifier que le plugin explo est au vert (tests, empreintes SHA-256 des presets, gate de la
+   phase 1 de ce roadmap) ;
+2. l'exposer côté piste de composition via les paramètres d'instrument `plugin_id`,
+   `plugin_preset` et `plugin_overrides` (opt-in, aucun effet sur les pistes existantes) ;
+3. verrouiller la non-régression par test d'équivalence entre le rendu direct
+   (`/api/plugins/{id}/render`) et le rendu passant par le moteur de composition.
+
+- [x] Brancher les plugins promus sur le moteur de composition, en remplacement de la voix kick
+  codée en dur, pour les pistes `drums` qui déclarent `plugin_id` (`composition_dsp.py`,
+  fonction `_plugin_voice`). Les pistes sans `plugin_id` gardent l'ancien kick codé en dur,
+  inchangé.
+- [x] Rendre le plugin utilisable depuis une composition (`render_composition` /
+  `Track.instrument.parameters`).
+- [x] Tests (`tests/test_composition_dsp_plugin_voice.py`) : équivalence bit-à-bit entre rendu
+  direct et rendu via le moteur de composition, application correcte du gain de composition,
+  non-régression de l'ancien kick codé en dur pour les pistes sans `plugin_id`, rejet d'un
+  `plugin_id` inconnu, rendu complet d'une composition utilisant le plugin promu.
+
+Limite connue : l'archivage versionné (`EXPLO/archives/`) n'a pas encore été branché sur ce
+chemin de promotion — cf. action ouverte P2 dans `_contexte/signals.md` de crea_zik.
 
 **⏸ Checkpoint** — Demander à l'utilisateur de faire `/compact` avant de continuer.
 Attendre sa réponse écrite. Ne pas commencer la phase suivante sans confirmation.

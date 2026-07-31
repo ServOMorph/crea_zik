@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.16 — 2026-07-31
+
+### Ajouté
+
+- Phase 3 de `EXPLO/roadmap_plugins.md` livrée : le plugin kick est promu vers le moteur de
+  composition via des paramètres d'instrument opt-in (`plugin_id`, `plugin_preset`,
+  `plugin_overrides`), sans copie de fichiers vers un dossier plugins applicatif séparé.
+  Équivalence bit-à-bit vérifiée entre rendu direct et rendu via composition (5 nouveaux tests).
+- Banc de test plugins validé dans un navigateur Chromium réel piloté par script (sélection
+  plugin/preset, ajustement de paramètre, rendu, téléchargement, intégrité du WAV vérifiée par
+  analyse programmatique).
+
+### Modifié
+
+- Phase 2 de `roadmap_studio_audio_procedural.md` réauditée après lecture effective du code réel
+  et marquée [FAIT], avec écart assumé face à sa description initiale.
+
 ## v0.15 — 2026-07-30
 
 ### Ajouté

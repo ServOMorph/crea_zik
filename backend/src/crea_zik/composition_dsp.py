@@ -10,6 +10,8 @@ from numpy.typing import NDArray
 from scipy import signal  # type: ignore[import-untyped]
 from scipy.io import wavfile  # type: ignore[import-untyped]
 
+from .plugins import render_plugin, resolve_params
+
 Audio = NDArray[np.float64]
 
 
@@ -75,6 +77,9 @@ def synthesize(
             return _clap(sample_rate, seed, amplitude, parameters.get("clap", {}))
         if midi_note == 42:
             return _hat(sample_rate, seed, amplitude, parameters.get("hat", {}))
+        plugin_id = parameters.get("plugin_id")
+        if plugin_id:
+            return _plugin_voice(plugin_id, parameters, amplitude, sample_rate, seed)
         return _kick(
             sample_rate,
             max(duration_seconds, 0.46),
@@ -181,6 +186,26 @@ def _kick(
         * float(parameters.get("click_gain", 0.09))
     )
     return (body + click) * amplitude
+
+
+def _plugin_voice(
+    plugin_id: str,
+    parameters: dict[str, Any],
+    amplitude: float,
+    sample_rate: int,
+    seed: int,
+) -> Audio:
+    preset = str(parameters.get("plugin_preset", "techno"))
+    overrides = dict(parameters.get("plugin_overrides", {}))
+    overrides.setdefault("seed", seed)
+    params = resolve_params(plugin_id, preset, overrides)
+    audio, engine_sample_rate = render_plugin(plugin_id, params, velocity=1.0)
+    if engine_sample_rate != sample_rate:
+        raise ValueError(
+            f"plugin {plugin_id} sample rate {engine_sample_rate} does not match "
+            f"composition sample rate {sample_rate}"
+        )
+    return np.asarray(audio).mean(axis=1) * amplitude
 
 
 def _clap(

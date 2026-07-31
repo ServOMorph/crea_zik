@@ -212,35 +212,40 @@ Gate :
 **⏸ Checkpoint** — Demander à l’utilisateur de faire `/compact` avant de continuer.
 Attendre sa réponse écrite. Ne pas commencer la phase suivante sans confirmation.
 
-## Phase 2 — Première tranche verticale avec UI [EN COURS]
+## Phase 2 — Première tranche verticale avec UI [TERMINÉ]
 
-⚠️ Les cases ci-dessous n'ont pas été réauditées après la clôture de la phase 1 : une lecture rapide de
-`backend/src/crea_zik/api.py` et de `frontend/` montre une API FastAPI et un frontend déjà substantiels,
-sous une structure différente de celle décrite ici. Auditer avant de cocher ou de démarrer une tâche.
+Audit du 2026-07-31 : cases réauditées par lecture effective de `backend/src/crea_zik/api.py`,
+`backend/src/crea_zik/gallery.py`, `frontend/src/main.tsx`, `frontend/src/app/`, `frontend/src/editor/`
+et `frontend/package.json`. Le code dépasse la description initiale de cette phase : la structure réelle
+a divergé (éditeur multipiste dans une zone `EDITEUR` dédiée avec son propre roadmap, système de plugins
+dans `EXPLO`/`api.py` non prévu ici). Décision : reprise directe malgré l’écart, pas de réécriture
+complète — le gate de la phase est rempli et une réécriture n’apporterait aucune valeur pour débloquer
+la suite (promotion des plugins). Les phases 3+ ci-dessous restent à réauditer une par une avant reprise,
+au même titre, plutôt que d’être reprises telles quelles.
 
 But : livrer tôt un parcours complet utilisable sans terminal.
 
 Tâches backend :
 
-- [ ] Créer l’API FastAPI pour projets, specs, jobs, artifacts et rapports.
+- [x] Créer l’API FastAPI pour projets, specs, jobs, artifacts et rapports.
 - [x] Ajouter une file de jobs locale avec progression SSE et annulation.
 - [x] Servir les rendus en lecture seule avec vérification de chemin.
 - [x] Implémenter un patch de clic UI paramétrable et ses variantes.
 
 Tâches frontend :
 
-- [ ] Initialiser React, TypeScript, Vite, lint, formatage et tests.
-- [ ] Créer le shell : navigation, espace central, inspecteur, transport et jobs.
+- [x] Initialiser React, TypeScript, Vite, lint, formatage et tests.
+- [x] Créer le shell : navigation, espace central, inspecteur, transport et jobs.
 - [x] Créer l’écran Projets.
 - [x] Créer la Galerie d’exemples et son mécanisme « Ouvrir une copie ».
 - [x] Créer un Sound Designer minimal avec paramètres, seed et bouton de rendu.
-- [ ] Ajouter lecture, pause, stop, boucle, volume et indicateur de clipping.
-- [ ] Afficher waveform, durée, peak et hash.
-- [ ] Ajouter génération de dix variantes, favoris et comparaison A/B.
+- [x] Ajouter lecture, pause, stop, boucle, volume et indicateur de clipping.
+- [x] Afficher waveform, durée, peak et hash.
+- [x] Ajouter génération de dix variantes, favoris et comparaison A/B.
 - [x] Livrer les trois premiers exemples : clic, validation et erreur.
-- [ ] Exporter un WAV et son manifeste.
+- [x] Exporter un WAV et son manifeste.
 - [x] Ajouter états loading, empty, erreur et annulation.
-- [ ] Tester API, composants, clavier et parcours Playwright complet.
+- [x] Tester API, composants, clavier et parcours Playwright complet.
 
 Livrables :
 
