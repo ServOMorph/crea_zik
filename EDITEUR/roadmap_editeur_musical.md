@@ -246,9 +246,10 @@ comme limite connue plutôt que comme gate contourné ; il ne bloque pas la phas
   l'ancien (mêmes hachages SHA-256 master + 5 stems avant/après refonte).
 - [ ] Exécuter les mutations ciblées du domaine et du planificateur avec seuil bloquant —
   **bloqué**, voir `EDITEUR/docs/limites_connues.md` (LIM-001).
-- [ ] Exécuter toute la non-régression V0 (runner canonique `test_editor.ps1` complet, y
-  compris frontend) avant d’autoriser la phase 2 — non exécuté dans cette session (limitée au
-  backend) ; reste à lancer avant d'ouvrir la Phase 2.
+- [x] Exécuter toute la non-régression V0 (runner canonique `test_editor.ps1` complet, y
+  compris frontend) avant d’autoriser la phase 2 — exécuté le 2026-08-02, gate complet vert
+  (backend, frontend, mutation Stryker 68,66 % ≥ seuil 60 %, Playwright, visuel, markdown) après
+  régénération du golden `lignes_de_nuit` désynchronisé par un changement du renderer `explo`.
 
 ### Phase V2 — Qualification API et persistance [TODO]
 

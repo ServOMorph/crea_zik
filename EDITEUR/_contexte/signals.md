@@ -1,34 +1,26 @@
-# Signals — editeur (MAJ 2026-08-01)
+# Signals — editeur (MAJ 2026-08-02)
 
 ## Actions ouvertes
-- [P1|ouvert] Exécuter le runner canonique complet (`test_editor.ps1`, backend + frontend) avant d'ouvrir la Phase 2.
-  - fait quand: `test_editor.ps1` s'exécute sans échec depuis un état propre
-  - réf: `EDITEUR/roadmap_editeur_musical.md` (Phase V1, dernier point)
-- [P2|ouvert] Compléter la Phase V1 : propriétés Hypothesis sur le round-trip complet de `Composition` et sur la validation des références (actuellement une seule propriété, sur `beats_to_samples`).
+- [P1|ouvert] Compléter la Phase V1 : propriétés Hypothesis sur le round-trip complet de `Composition` et sur la validation des références (actuellement une seule propriété, sur `beats_to_samples`).
+  - fait quand: propriétés Hypothesis ajoutées et vertes pour le round-trip `Composition` et la validation des références, dernier point V1 restant
   - réf: `EDITEUR/roadmap_editeur_musical.md` (Phase V1)
 
-## Dernière session (2026-08-01)
-# Session du 2026-08-01
+## Dernière session (2026-08-02)
+# Session du 2026-08-02
 
 ## Décisions prises
-- WSL (Ubuntu) provisionné pour tenter de lever le blocage mutmut ; blocage finalement acté (LIM-001) car structurel (incompatibilité `source_paths` / mode d'import réel du projet), hors périmètre d'un correctif d'infrastructure.
-- Phase 1 auditée avant d'écrire du code : le domaine compositionnel existait déjà en grande partie (socle commun antérieur, hors bannière `editeur`). Deux écarts identifiés et comblés : `NoteEvent` et `MixerChannel` définis mais jamais utilisés.
+- Le gate `lignes-de-nuit-reference` échouait non pas à cause d'une régression de l'éditeur, mais d'un golden désynchronisé suite au commit `explo` du 2026-08-01 (intégration du plugin kick au rendu, `render.py`/`spec.json` modifiés). Golden régénéré après confirmation explicite de l'utilisateur.
 
 ## Livrables produits ou modifiés
-- `backend/src/crea_zik/models.py` : `Pattern.events: list[NoteEvent]` ; `Composition.master_channel: MixerChannel` remplace `Composition.mixer: dict`.
-- `backend/src/crea_zik/compositions.py`, `api.py`, `gallery.py`, `plugins.py` : modifiés (planificateur simplifié, endpoint `/master`, résolution de chemin robustifiée).
-- `EDITEUR/fixtures/lignes_de_nuit.composition.json`, `EDITEUR/contracts/composition.schema.json` : migrés vers le nouveau schéma.
-- `tests/test_compositions.py`, `tests/test_composition_dsp_plugin_voice.py` : adaptés.
-- `EDITEUR/docs/limites_connues.md` : nouveau, LIM-001 (mutation testing Python bloqué).
-- `EDITEUR/roadmap_editeur_musical.md` : Phase 1 [FAIT], Phase V1 [EN COURS].
+- `EDITEUR/fixtures/lignes_de_nuit.golden.json` : hashes (spec, master, stem `drums`) et métriques audio (peak, dc, corrélation stéréo) recalculés depuis le renderer `explo/morceau_electro` actuel.
+- `EDITEUR/roadmap_editeur_musical.md` : Phase V1, point non-régression V0 marqué [FAIT].
 
 ## Hypothèses validées / invalidées
-- VALIDE — La migration NoteEvent/MixerChannel ne modifie pas le rendu audio (hachages SHA-256 identiques avant/après, master + 5 stems, comparaison ancien code/fixture vs nouveau).
-- VALIDE — Suite pytest complète verte (85 tests), lint et typage propres sur les fichiers du gate V1.
-- INVALIDE — mutmut réparable par un simple provisioning d'environnement -> pivot vers limite documentée (LIM-001).
+- VALIDE — L'échec du gate V1 n'était pas une régression de l'éditeur : seuls le hash spec, le master et le stem `drums` divergeaient (les 4 autres stems et les caractéristiques audio structurelles — canaux, sample rate, durée — restaient identiques), cohérent avec un changement localisé au kick.
+- VALIDE — Après régénération du golden, `test_editor.ps1` passe intégralement : backend, frontend, mutation Stryker (68,66 % ≥ seuil 60 %), Playwright (7 tests + 1 visuel), markdown.
 
 ## Prochaine étape exacte
-Exécuter le runner canonique complet (`test_editor.ps1`) avant d'ouvrir la Phase 2 ; selon le temps disponible, renforcer la couverture Hypothesis (round-trip `Composition`, références) avant de considérer V1 pleinement close.
+Ajouter les propriétés Hypothesis manquantes (round-trip complet de `Composition`, validation des références) pour clore la Phase V1, seul point restant avant d'ouvrir la Phase 2.
 
 ## Question bloquante pour la session suivante
 Aucune

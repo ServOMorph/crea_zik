@@ -27,13 +27,13 @@ Music Composer, Adaptive Lab, Analyse & Export) et son backend de rendu, permett
   Csound réel restant avant de poursuivre la roadmap applicative.
 
 ## État actuel (réécrit intégralement à chaque /close)
-Phase 0 et gate V0 [FAIT]. Phase 1 (domaine compositionnel, migration de `Lignes de nuit`) [FAIT] :
-`Pattern.events` est désormais `list[NoteEvent]` (notes résolues) et `Composition.master_channel`
-(typé `MixerChannel`) remplace l'ancien dict `mixer` ; migration vérifiée bit-exacte à l'écoute
-programmatique (hachages SHA-256 identiques avant/après). Phase V1 [EN COURS] : tests domaine et
-déterminisme couverts, mutation testing Python (mutmut) bloqué de façon structurelle et documenté
-comme limite connue (`EDITEUR/docs/limites_connues.md`, LIM-001) malgré un environnement WSL/Csound
-provisionné ; le runner canonique complet (`test_editor.ps1`) reste à relancer avant la Phase 2.
+Phase 0 et gate V0 [FAIT]. Phase 1 (domaine compositionnel, migration de `Lignes de nuit`) [FAIT].
+Phase V1 [EN COURS] : runner canonique complet (`test_editor.ps1`, backend + frontend) exécuté avec
+succès le 2026-08-02 après régénération du golden `lignes_de_nuit` (désynchronisé par un changement
+externe du renderer `explo`, pas une régression éditeur). Mutation testing Python (mutmut) reste
+bloqué et documenté comme limite connue (LIM-001). Seul point restant avant de clore V1 et d'ouvrir
+la Phase 2 : propriétés Hypothesis sur le round-trip complet de `Composition` et la validation des
+références.
 
 ## Décisions structurantes (append only — 10 entrées max, 5 lignes max/entrée, archiver au-delà)
 - 2026-07-30 : Initialisation de l'agent EDITEUR (mode création), périmètre étendu à frontend/ et
@@ -59,3 +59,7 @@ provisionné ; le runner canonique complet (`test_editor.ps1`) reste à relancer
 - 2026-08-01 : `Pattern.events` et `Composition.mixer` (dicts génériques codant des données typables)
   migrés vers `list[NoteEvent]` et `MixerChannel` typés, pour tenir la promesse de la Phase 1 (schéma
   entièrement pilotable par données) plutôt que de considérer la phase close sur un socle partiel.
+- 2026-08-02 : golden `EDITEUR/fixtures/lignes_de_nuit.golden.json` régénéré (root cause : golden
+  désynchronisé par un changement du renderer `explo`, pas une régression éditeur) ; décision actée
+  avec confirmation explicite de l'utilisateur, car régénérer un golden touche un gate de
+  déterminisme.

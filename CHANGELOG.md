@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.18 — 2026-08-02
+
+### Corrigé
+
+- `EDITEUR/fixtures/lignes_de_nuit.golden.json` : golden régénéré. Root cause : désynchronisation
+  avec le renderer `explo/morceau_electro` modifié la veille (intégration du plugin kick), pas une
+  régression de l'éditeur. Runner canonique complet (`test_editor.ps1`, backend + frontend, mutation
+  Stryker 68,66 % ≥ seuil 60 %) vert après correction.
+
 ## v0.17 — 2026-08-01
 
 ### Ajouté
