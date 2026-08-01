@@ -266,6 +266,28 @@ Attendre sa réponse écrite. Ne pas commencer la phase suivante sans confirmati
 
 ## Phase 3 — Bibliothèque DSP et Sound Designer complet [TODO]
 
+Audit du 2026-08-02 : cases réauditées par lecture effective de `backend/src/crea_zik/engine.py`
+(`CsoundEngine._body`), `backend/src/crea_zik/variants.py`, `backend/src/crea_zik/gallery.py`,
+`backend/src/crea_zik/qa.py`, `EXPLO/plugins/_common/dsp.py`, `frontend/src/main.tsx` et
+`tests/test_dsp_engine.py`. Le moteur Csound couvre un socle commun transversal (filtres passe-bas/
+passe-haut Butterworth, un délai, une réverbération algorithmique, un clip de sécurité) appliqué à
+six familles de patches (`PatchKind` : UI_CLICK, MODAL_IMPACT, WHOOSH, MECHANICAL_AMBIENCE, DRONE,
+ENGINE), avec bruit coloré via un unique paramètre beta, LFO, FM et ring modulation selon la famille,
+et une approximation de synthèse modale sur `MODAL_IMPACT` (trois partiels sinusoïdaux à ratios fixes).
+Manquent : formes d'onde band-limitées garanties (oscillateurs Csound `oscili` classiques, pas de
+garde anti-aliasing explicite), triangle dédiée, bruit filtré distinct du beta natif, AM, EQ
+paramétrique, un vrai étage de dynamique (compresseur), saturation/waveshaping dans le moteur SFX
+(le tanh de `EXPLO/plugins/_common/dsp.py` n'est pas branché sur `CsoundEngine`), oversampling/
+resampling, chorus/flanger/phaser, résonateurs et modèles physiques génériques. Les macros exposées
+(`brightness`, `drive`, `space`, `delay_mix`) sont les noms mêmes des contrôles internes, pas une
+couche de macros indépendante nommée. Côté UI, favoris/tags/notes et le bouton « Create 10 variants »
+avec verrouillage de macros existent dans `main.tsx` ; aucune vue graphe, aucune vue code/spec exposant
+le Csound généré, aucun panneau QA contextuel, aucune grille de variantes dédiée, aucune promotion en
+master, aucun undo/redo constatés. `test_dsp_engine.py` ne vérifie que la structure textuelle du corps
+Csound généré (présence de motifs, bornes des paramètres) et non le rendu audio réel (pas de contrôle
+NaN/infini/clipping/aliasing sur signal rendu, pas de parcours Sound Designer testés). Décision :
+phase non close, reprise nécessaire. Seules les tâches ci-dessous confirmées complètes sont cochées.
+
 But : couvrir les principales familles d’effets sonores avec une qualité contrôlée.
 
 Tâches moteur :
@@ -277,14 +299,14 @@ Tâches moteur :
 - [ ] Ajouter oversampling local et resampling de qualité.
 - [ ] Implémenter délais, chorus, flanger, phaser et réverbération algorithmique.
 - [ ] Ajouter résonateurs, synthèse modale et premiers modèles physiques.
-- [ ] Créer les familles UI, impact, whoosh, moteur, drone et ambiance.
+- [x] Créer les familles UI, impact, whoosh, moteur, drone et ambiance.
 - [ ] Finaliser les sept exemples SFX de la galerie avec masters et rapports QA.
 - [ ] Exposer des macros artistiques indépendantes des paramètres internes.
 
 Tâches UI :
 
 - [ ] Finaliser les vues macros, graphe, variantes, code/spec et QA contextuelle.
-- [ ] Ajouter randomisation par plages avec verrouillage de paramètres.
+- [x] Ajouter randomisation par plages avec verrouillage de paramètres.
 - [ ] Ajouter grille de variantes, notes, tags, favoris et promotion en master.
 - [ ] Ajouter édition avancée du code Faust si Faust est retenu.
 - [ ] Afficher la provenance et les licences des primitives.
@@ -311,20 +333,43 @@ Attendre sa réponse écrite. Ne pas commencer la phase suivante sans confirmati
 
 ## Phase 4 — Composition, instruments et Music Composer [TODO]
 
+Audit du 2026-08-02 : cases réauditées par lecture effective de `backend/src/crea_zik/models.py`
+(Composition/Track/Pattern/Clip/NoteEvent/AutomationLane/MixerChannel), `backend/src/crea_zik/
+compositions.py`, `backend/src/crea_zik/composition_dsp.py`, `backend/src/crea_zik/composer.py`
+(legacy Score, non utilisé par le pipeline Composition actuel), `backend/src/crea_zik/gallery.py`,
+`frontend/src/editor/EditorLanding.tsx`, `frontend/src/editor/TransportBar.tsx` et
+`EDITEUR/roadmap_editeur_musical.md`. Constat structurant : le volet UI de cette phase a divergé vers
+une roadmap dédiée (`EDITEUR/roadmap_editeur_musical.md`, Channel Rack/Piano Roll/Playlist/Mixer/
+Automations en phases séparées 6 à 11), elle-même en tout début d'exécution (Phase 0 et 1 [FAIT],
+Phase V1 [EN COURS], toutes les phases fonctionnelles 2 à 14 [TODO]) — même divergence que celle
+documentée en phase 2. Côté moteur : tempo/métrique/grille/conversion beat→sample, automation
+sample-accurate (`evaluate_automation`), mixer (gain/pan/mute/solo/sends/bus master avec send reverb)
+et export stems+mix de longueur identique sont réellement implémentés dans `compositions.py`.
+Manquent : isobar (patterns et transformations sont codés nativement, sans cette dépendance —
+décision non tracée comme ADR, à formaliser si assumée) ; accords/gammes/transformations de motifs ;
+validation de tessiture/polyphonie sur le modèle `Composition` actuel (seul l'ancien `composer.py`/
+`Score`, non branché sur `compositions.py`, vérifie la polyphonie) ; quantification/swing/
+humanisation (seuls les champs `probability` et `micro_timing_beats` existent sur `NoteEvent`, sans
+moteur qui les applique) ; allocation de voix avec limite de polyphonie (`synthesize()` rend chaque
+note indépendamment) ; marqueurs, régions et boucles sans couture. Côté galerie : un seul exemple de
+composition (`lignes_de_nuit.composition.json`) est exposé par `composition_examples()`, pas les trois
+exemples requis (instrument polyphonique, thème de menu, boucle d'exploration). Décision : phase non
+close, reprise nécessaire, en coordination avec la roadmap dédiée de la zone EDITEUR pour le volet UI.
+
 But : créer une musique multipiste entièrement synthétique avec stems.
 
 Tâches moteur :
 
-- [ ] Implémenter tempo, métrique, grille et conversion beat/sample.
+- [x] Implémenter tempo, métrique, grille et conversion beat/sample.
 - [ ] Intégrer ou adapter isobar pour les patterns déterministes.
 - [ ] Ajouter notes, accords, gammes, motifs et transformations.
 - [ ] Ajouter validation des mesures, tessitures, voix et polyphonie.
 - [ ] Ajouter quantification, swing et humanisation avec seed.
 - [ ] Implémenter instruments polyphoniques et allocation de voix.
-- [ ] Ajouter automation sample-accurate, bus, sends, mixer et stems.
+- [x] Ajouter automation sample-accurate, bus, sends, mixer et stems.
 - [ ] Ajouter marqueurs, régions et boucles sans couture.
 
-Tâches UI :
+Tâches UI (voir aussi `EDITEUR/roadmap_editeur_musical.md`, source de vérité détaillée pour ce volet) :
 
 - [ ] Créer arrangement multipiste, piste de tempo et marqueurs.
 - [ ] Créer éditeur de patterns et piano roll.

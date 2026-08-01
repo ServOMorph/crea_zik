@@ -1,55 +1,62 @@
-# Signals — crea_zik (MAJ 2026-07-31)
+# Signals — crea_zik (MAJ 2026-08-02)
 
 ## Actions ouvertes
 - [P2|ouvert] Intégrer l'archivage versionné au futur Music Composer.
   fait quand: l'éditeur produit un descripteur puis archive une version, ses stems et son rapport QA
   réf: EXPLO/archives/README.md, EXPLO/archives/archive_piece.py, roadmap_studio_audio_procedural.md
-- [P2|ouvert] Auditer les phases 3 à 6 de `roadmap_studio_audio_procedural.md` (non réauditées) avant
-  d'y reprendre du travail — même logique que l'audit fait sur la phase 2 le 2026-07-31.
-  fait quand: chaque case des phases 3 à 6 est confirmée cochée/décochée après lecture effective du code
+- [P2|ouvert] Auditer les phases 5 et 6 de `roadmap_studio_audio_procedural.md` (non réauditées) avant
+  d'y reprendre du travail — même logique que l'audit fait sur les phases 2, 3 et 4.
+  fait quand: chaque case des phases 5 et 6 est confirmée cochée/décochée après lecture effective du code
   réf: roadmap_studio_audio_procedural.md
+- [P1|ouvert] Reprendre la phase 3 de `roadmap_studio_audio_procedural.md` (bibliothèque DSP et Sound
+  Designer) : gaps identifiés dans l'audit du 2026-08-02 (waveshaping/saturation non branchés sur le
+  moteur SFX, pas de compresseur, pas de chorus/flanger/phaser, pas de résonateurs/modèles physiques,
+  pas de vue graphe/code-spec/QA contextuelle, pas de grille de variantes ni promotion en master, pas
+  d'undo/redo, tests DSP limités à la structure textuelle sans contrôle audio réel).
+  fait quand: le gate de phase 3 est rempli (dix variantes déterministes par famille testées à l'audio,
+  aucun NaN/infini/DC/clipping non signalé, macros stables sur toute leur plage)
+  réf: roadmap_studio_audio_procedural.md (phase 3)
+- [P2|ouvert] Reprendre la phase 4 de `roadmap_studio_audio_procedural.md` (Composition/Music Composer) :
+  gaps identifiés dans l'audit du 2026-08-02 (isobar non intégré, pas d'accords/gammes/transformations
+  de motifs, pas de validation polyphonie/tessiture sur le modèle Composition actuel, pas de
+  quantification/swing/humanisation appliqués, pas d'allocation de voix, pas de marqueurs/régions/
+  boucles, un seul exemple de composition en galerie au lieu de trois). Le volet UI (piano roll,
+  channel rack, mixer, automations) est piloté par `EDITEUR/roadmap_editeur_musical.md`, actuellement
+  en tout début d'exécution (Phase V1 en cours, phases fonctionnelles 2 à 14 TODO) — coordonner plutôt
+  que dupliquer ce travail depuis cette roadmap.
+  fait quand: le gate de phase 4 est rempli (durées de mesures exactes au sample, stems recombinables
+  au mix de référence, rendus bit-identiques à seed identique, masters sans étape externe)
+  réf: roadmap_studio_audio_procedural.md (phase 4), EDITEUR/roadmap_editeur_musical.md
 - [P3|ouvert] Écoute subjective au casque du banc de test plugins par un humain.
   fait quand: un humain a écouté le rendu du plugin kick dans l'UI et confirme la qualité perçue
   réf: frontend/src/plugins/PluginBench.tsx, tests_manuels.md
 
-## Dernière session (2026-07-31)
+## Dernière session (2026-08-02)
 
-# Session du 2026-07-31
+# Session du 2026-08-02
 
 ## Décisions prises
-- Phase 2 de `roadmap_studio_audio_procedural.md` réauditée et close [FAIT] : le code réel dépasse
-  largement la description initiale (API FastAPI complète, éditeur multipiste dans la zone EDITEUR,
-  système de plugins). Reprise directe malgré l'écart, pas de réécriture complète du roadmap.
-- Validation du banc de test plugins effectuée par pilotage automatisé d'un Chromium réel (aucun
-  outil navigateur natif disponible pour l'agent) : sélection plugin/preset, ajustement d'un
-  paramètre, rendu, téléchargement, intégrité du WAV vérifiée par analyse programmatique.
-- Promotion du plugin kick (phase 3 de `EXPLO/roadmap_plugins.md`) : branchement sur le moteur de
-  composition via des paramètres d'instrument opt-in (`plugin_id`, `plugin_preset`,
-  `plugin_overrides`), sans copie de fichiers vers un dossier plugins applicatif séparé.
+- Phase 3 de `roadmap_studio_audio_procedural.md` réauditée : reste [TODO]. Socle réel (6 familles,
+  filtres, delay, reverb, variantes déterministes) mais gaps significatifs (saturation/EQ/compresseur
+  non branchés, pas de chorus/flanger/phaser/résonateurs, tests DSP limités au texte généré).
+- Phase 4 réauditée : reste [TODO]. Moteur (tempo, automation sample-accurate, mixer, stems) solide ;
+  le volet UI a divergé vers `EDITEUR/roadmap_editeur_musical.md`, encore en tout début d'exécution.
 
 ## Livrables produits ou modifiés
-- `roadmap_studio_audio_procedural.md` : phase 2 réauditée, toutes les cases corrigées, marquée [FAIT].
-- `tests_manuels.md` : section « Banc de test plugins » validée et supprimée.
-- `backend/src/crea_zik/composition_dsp.py` : ajout de `_plugin_voice`, branchement opt-in du kick
-  promu sur la voie `drums`, ancien kick codé en dur inchangé par défaut.
-- `tests/test_composition_dsp_plugin_voice.py` : créé, 5 tests (équivalence bit-à-bit, gain de
-  composition, non-régression du kick codé en dur, rejet d'un plugin_id inconnu, rendu de
-  composition complet avec le plugin promu).
-- `EXPLO/roadmap_plugins.md` : phase 3 marquée [FAIT], procédure de promotion documentée.
-- `_contexte/archive_decisions.md` : créé, décisions structurantes antérieures au 2026-07-28 archivées.
+- `roadmap_studio_audio_procedural.md` : phases 3 et 4 réauditées, notes d'audit ajoutées, cases
+  corrigées après lecture effective du code.
+- `_contexte/signals.md` : actions ouvertes mises à jour (reprise phase 3 en P1, reprise phase 4 en
+  P2, audit des phases 5-6 restant en P2).
 
 ## Hypothèses validées / invalidées
-- VALIDE : le rendu du plugin kick via le moteur de composition est bit-identique au rendu direct
-  via `/api/plugins/{id}/render` pour les mêmes paramètres (test automatisé).
-- VALIDE : le WAV produit par le banc de test dans un Chromium réel est un signal stéréo 48 kHz/24
-  bits valide (durée 2 s, pic 0.595, pas d'écrêtage, signal non silencieux) — vérifié par décodage
-  et analyse programmatique, pas par écoute humaine.
+- VALIDE : ni la phase 3 ni la phase 4 ne sont closes, malgré du code dépassant par endroits leur
+  description initiale (cas différent de la phase 2).
+- EN ATTENTE : audit des phases 5 (Adaptive Lab) et 6 (QA/mastering/export) — non fait cette session.
 - EN ATTENTE : écoute subjective au casque du banc de test plugins par un humain.
-- EN ATTENTE : audit détaillé des phases 3 à 6 de `roadmap_studio_audio_procedural.md`.
 
 ## Prochaine étape exacte
-Auditer la phase 3 de `roadmap_studio_audio_procedural.md` avant d'y reprendre du travail, ou
-traiter l'action P2 ouverte sur l'archivage versionné du Music Composer.
+Auditer les phases 5 et 6 de `roadmap_studio_audio_procedural.md`, ou entamer la reprise de la
+phase 3 (priorité P1).
 
 ## Question bloquante pour la session suivante
 Aucune.

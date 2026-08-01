@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.19 — 2026-08-02
+
+### Modifié
+
+- `roadmap_studio_audio_procedural.md` : phases 3 (bibliothèque DSP/Sound Designer) et 4
+  (Composition/Music Composer) réauditées par lecture effective du code. Toutes deux restent [TODO] :
+  gaps documentés (saturation/EQ/compresseur/chorus-flanger-phaser/résonateurs non branchés en phase 3 ;
+  isobar, accords/gammes, quantification/swing/humanisation, allocation de voix absents en phase 4).
+  Le volet UI de la phase 4 est reconnu comme piloté par `EDITEUR/roadmap_editeur_musical.md`.
+
 ## v0.18 — 2026-08-02
 
 ### Corrigé

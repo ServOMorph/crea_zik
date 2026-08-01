@@ -12,9 +12,11 @@ Créer de la musique et des effets sonores pour des applications et des jeux vid
 Les phases 0 et 1 couvrent le benchmark, les schémas métier v1, la provenance, la CLI, Csound et l’API.
 Le gate de déterminisme Csound réel est validé : trois rendus indépendants du même patch produisent un WAV au SHA-256 identique.
 `EXPLO/` contient un premier morceau de 30 s et son archive versionnée avec master, stems, sources et QA.
-`roadmap_studio_audio_procedural.md` phase 2 réauditée et marquée [FAIT] : le code réel (API FastAPI
-complète, éditeur multipiste dans la zone EDITEUR, système de plugins) dépasse largement la description
-initiale de cette phase. Les phases 3 à 6 de ce roadmap n'ont pas encore été réauditées.
+`roadmap_studio_audio_procedural.md` : phase 2 [FAIT] (réaudit 2026-07-31). Phases 3 (bibliothèque
+DSP/Sound Designer) et 4 (Composition/Music Composer) réauditées le 2026-08-02 et restent [TODO] :
+socle réel non négligeable mais gates non remplis (voir notes d'audit dans le roadmap). Le volet UI de
+la phase 4 est piloté par `EDITEUR/roadmap_editeur_musical.md`, en tout début d'exécution. Phases 5
+et 6 restent à auditer.
 `EXPLO/roadmap_plugins.md` intégralement livré : phase 2 (banc de test UI, validé dans un Chromium
 réel piloté par script — écoute subjective humaine encore en attente) et phase 3 (le kick est branché
 sur le moteur de composition via des paramètres d'instrument opt-in `plugin_id`/`plugin_preset`, sans
@@ -41,3 +43,6 @@ Entrées antérieures au 2026-07-28 archivées dans `_contexte/archive_decisions
 - 2026-07-31 : Un plugin explo validé est promu vers le moteur de composition via des paramètres
   d’instrument opt-in (`plugin_id`, `plugin_preset`, `plugin_overrides`), sans copie de fichiers vers
   un dossier plugins applicatif séparé, pour éviter toute divergence de version avec explo.
+- 2026-08-02 : Phases 3 et 4 de `roadmap_studio_audio_procedural.md` réauditées et laissées [TODO]
+  (gates non remplis, détail dans le roadmap) ; le volet UI de la phase 4 est reconnu comme piloté par
+  `EDITEUR/roadmap_editeur_musical.md` plutôt que redondant avec cette roadmap.

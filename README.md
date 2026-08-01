@@ -35,7 +35,11 @@ bloqué par une incompatibilité structurelle malgré un environnement WSL/Csoun
 documentée (`EDITEUR/docs/limites_connues.md`).
 Le gate de déterminisme Csound réel de la phase 1 (roadmap studio audio procédural) est validé (trois rendus indépendants, même SHA-256 du WAV).
 La phase 2 de `roadmap_studio_audio_procedural.md` a été réauditée et close [FAIT] : le code réel
-dépasse largement sa description initiale. Les phases 3 à 6 restent à réauditer avant reprise.
+dépasse largement sa description initiale. Les phases 3 (bibliothèque DSP/Sound Designer) et 4
+(Composition/Music Composer) ont été réauditées le 2026-08-02 et restent [TODO] : un socle réel
+existe (familles de sons, filtres, delay, reverb, variantes déterministes, tempo, automation,
+mixer, stems) mais les gates de phase ne sont pas remplis. Le volet UI de la phase 4 est piloté par
+`EDITEUR/roadmap_editeur_musical.md`. Les phases 5 et 6 restent à réauditer.
 `EXPLO/roadmap_plugins.md` est intégralement livré : le banc de test plugins dans l’UI globale a été
 validé dans un navigateur réel, et le plugin kick est promu sur le moteur de composition via des
 paramètres d’instrument opt-in, sans copie de fichiers vers un dossier plugins applicatif séparé.
