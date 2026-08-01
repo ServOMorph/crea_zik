@@ -28,7 +28,9 @@
         {"id": "sub_freq", "type": "int", "unit": "midi_note", "curve": "linear", "min": 0, "max": 60, "default": 30},
         {"id": "sub_decay", "type": "float", "unit": "s", "curve": "exponential", "min": 0.01, "max": 3.0, "default": 0.6},
         {"id": "sub_gain", "type": "float", "unit": "linear_gain", "curve": "linear", "min": 0.0, "max": 2.0, "default": 0.6},
-        {"id": "sub_drive", "type": "float", "unit": "ratio", "curve": "linear", "min": 0.0, "max": 1.0, "default": 0.2}
+        {"id": "sub_drive", "type": "float", "unit": "ratio", "curve": "linear", "min": 0.0, "max": 1.0, "default": 0.2},
+        {"id": "sub_pitch_start_semitones", "type": "float", "unit": "semitones", "curve": "linear", "min": 0.0, "max": 24.0, "default": 0.0},
+        {"id": "sub_pitch_decay", "type": "float", "unit": "s", "curve": "exponential", "min": 0.001, "max": 1.0, "default": 0.04}
       ]
     },
     {
@@ -39,7 +41,7 @@
         {"id": "click_frequency", "type": "float", "unit": "hz", "curve": "exponential", "min": 200.0, "max": 4000.0, "default": 1200.0},
         {"id": "click_decay", "type": "float", "unit": "s", "curve": "exponential", "min": 0.0005, "max": 0.05, "default": 0.006},
         {"id": "click_gain", "type": "float", "unit": "linear_gain", "curve": "linear", "min": 0.0, "max": 2.0, "default": 0.6},
-        {"id": "click_highpass", "type": "float", "unit": "hz", "curve": "exponential", "min": 20.0, "max": 4000.0, "default": 800.0}
+        {"id": "click_bandwidth", "type": "float", "unit": "hz", "curve": "exponential", "min": 100.0, "max": 6000.0, "default": 1200.0}
       ]
     },
     {
