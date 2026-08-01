@@ -220,14 +220,7 @@ class Track(IdentifiedModel):
 
 class Pattern(IdentifiedModel):
     track_id: UUID
-    events: list[dict[str, Any]] = Field(default_factory=list, max_length=20_000)
-
-    @field_validator("events")
-    @classmethod
-    def validate_events(cls, values: list[dict[str, Any]]) -> list[dict[str, Any]]:
-        for value in values:
-            _validate_finite_json(value)
-        return values
+    events: list[NoteEvent] = Field(default_factory=list, max_length=20_000)
 
 
 class Clip(IdentifiedModel):
@@ -298,7 +291,7 @@ class Composition(SeededModel):
     tracks: list[Track] = Field(min_length=1, max_length=256)
     patterns: list[Pattern] = Field(default_factory=list, max_length=4_096)
     clips: list[Clip] = Field(default_factory=list, max_length=16_384)
-    mixer: dict[str, Any] = Field(default_factory=dict)
+    master_channel: MixerChannel = Field(default_factory=MixerChannel)
     mixer_channels: list[MixerChannel] = Field(default_factory=list, max_length=512)
     automation_lanes: list[AutomationLane] = Field(default_factory=list, max_length=4_096)
     render_settings: RenderSettings
@@ -310,12 +303,6 @@ class Composition(SeededModel):
     def validate_time_signature(cls, value: tuple[int, int]) -> tuple[int, int]:
         if not 1 <= value[0] <= 32:
             raise ValueError("time signature numerator must be from 1 to 32")
-        return value
-
-    @field_validator("mixer")
-    @classmethod
-    def validate_mixer(cls, value: dict[str, Any]) -> dict[str, Any]:
-        _validate_finite_json(value)
         return value
 
     @model_validator(mode="after")

@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from uuid import UUID
 
 from .models import Composition, Patch, PatchKind
+
+_DEFAULT_REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
 def examples() -> list[Patch]:
@@ -19,7 +22,8 @@ def examples() -> list[Patch]:
 
 
 def composition_examples() -> list[Composition]:
-    source = Path(__file__).resolve().parents[3] / "EDITEUR" / "fixtures" / "lignes_de_nuit.composition.json"
+    repo_root = Path(os.environ.get("CREA_ZIK_REPO_ROOT", _DEFAULT_REPO_ROOT))
+    source = repo_root / "EDITEUR" / "fixtures" / "lignes_de_nuit.composition.json"
     return [Composition.model_validate_json(source.read_text(encoding="utf-8"))]
 
 

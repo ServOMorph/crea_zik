@@ -11,7 +11,16 @@ import numpy as np
 
 from .composition_dsp import Audio, add, reverb, stereo, synthesize, write_wav
 from .engine import RenderCancelled
-from .models import AutomationLane, Clip, Composition, EffectInstance, Pattern, Track
+from .models import (
+    AutomationLane,
+    Clip,
+    Composition,
+    EffectInstance,
+    MixerChannel,
+    NoteEvent,
+    Pattern,
+    Track,
+)
 
 
 @dataclass(frozen=True)
@@ -47,11 +56,7 @@ def schedule_composition(composition: Composition) -> list[ScheduledCompositionE
             occurrence = clip.model_copy(
                 update={"start_beat": clip.start_beat + repeat * clip.length_beats}
             )
-            scheduled.extend(
-                _schedule_clip(
-                    pattern, occurrence, track, composition.time_signature[0]
-                )
-            )
+            scheduled.extend(_schedule_clip(pattern, occurrence, track))
     return sorted(
         scheduled,
         key=lambda event: (event.start_beat, str(event.track_id), event.midi_note),
@@ -59,152 +64,23 @@ def schedule_composition(composition: Composition) -> list[ScheduledCompositionE
 
 
 def _schedule_clip(
-    pattern: Pattern, clip: Clip, track: Track, beats_per_bar: int
+    pattern: Pattern, clip: Clip, track: Track
 ) -> list[ScheduledCompositionEvent]:
-    events: list[ScheduledCompositionEvent] = []
     end = clip.start_beat + clip.length_beats
-    for raw_event in pattern.events:
-        if "notes" in raw_event:
-            for start, midi_note in raw_event["notes"]:
-                events.append(
-                    _event(
-                        track,
-                        clip,
-                        float(start),
-                        float(raw_event.get("duration_beats", 0.25)),
-                        int(midi_note),
-                        float(raw_event.get("gain", raw_event.get("velocity", 1))),
-                        raw_event.get("pan", 0),
-                    )
-                )
-            continue
-        if "start_beat" in raw_event and "midi_note" in raw_event:
-            events.append(
-                _event(
-                    track,
-                    clip,
-                    float(raw_event["start_beat"]),
-                    float(raw_event.get("duration_beats", 0.25)),
-                    int(raw_event["midi_note"]),
-                    float(raw_event.get("velocity", 1)),
-                    raw_event.get("pan", 0),
-                )
-            )
-            continue
-        events.extend(_schedule_repeated_event(raw_event, clip, track, beats_per_bar))
+    events = [_event(track, clip, note) for note in pattern.events]
     return [event for event in events if clip.start_beat <= event.start_beat < end]
 
 
-def _schedule_repeated_event(
-    raw_event: dict[str, Any], clip: Clip, track: Track, beats_per_bar: int
-) -> list[ScheduledCompositionEvent]:
-    events: list[ScheduledCompositionEvent] = []
-    first_bar = int(raw_event.get("from_bar", 0))
-    last_bar = int((clip.length_beats - 1) // beats_per_bar)
-    until_bar = min(last_bar + 1, int(raw_event.get("until_bar", last_bar + 1)))
-    roots = [int(value) for value in raw_event.get("roots_midi", [60])]
-    intervals = [int(value) for value in raw_event.get("intervals", [0])]
-    duration = float(raw_event.get("duration_beats", 0.25))
-    gain = _event_gain(raw_event.get("gain", 1), first_bar)
-    pans = raw_event.get("pan", 0)
-    for bar in range(first_bar, until_bar):
-        bar_start = bar * beats_per_bar
-        root = roots[bar % len(roots)]
-        if "beats" in raw_event:
-            for index, beat in enumerate(raw_event["beats"]):
-                events.append(
-                    _event(
-                        track,
-                        clip,
-                        bar_start + float(beat),
-                        duration,
-                        _drum_midi(str(raw_event.get("kind", "drums"))),
-                        gain,
-                        _pan_at(pans, index),
-                    )
-                )
-        elif "notes_per_bar" in raw_event:
-            for index, offset in enumerate(raw_event["notes_per_bar"]):
-                events.append(
-                    _event(
-                        track,
-                        clip,
-                        bar_start + _beat_offset(float(offset), beats_per_bar),
-                        duration,
-                        root,
-                        gain,
-                        _pan_at(pans, index),
-                    )
-                )
-        elif "pattern" in raw_event:
-            step = float(raw_event.get("step_beats", 0.25))
-            for index, interval_index in enumerate(raw_event["pattern"]):
-                events.append(
-                    _event(
-                        track,
-                        clip,
-                        bar_start + index * step,
-                        duration,
-                        root + intervals[int(interval_index) % len(intervals)],
-                        gain,
-                        _pan_at(pans, index),
-                    )
-                )
-        else:
-            for index, interval in enumerate(intervals):
-                events.append(
-                    _event(
-                        track,
-                        clip,
-                        bar_start,
-                        duration,
-                        root + interval,
-                        gain,
-                        _pan_at(pans, index),
-                    )
-                )
-    return events
-
-
-def _event(
-    track: Track,
-    clip: Clip,
-    start_beat: float,
-    duration_beats: float,
-    midi_note: int,
-    velocity: float,
-    pan: Any,
-) -> ScheduledCompositionEvent:
+def _event(track: Track, clip: Clip, note: NoteEvent) -> ScheduledCompositionEvent:
     return ScheduledCompositionEvent(
         track_id=track.id,
         track_kind=track.kind,
-        start_beat=clip.start_beat + start_beat,
-        duration_beats=duration_beats,
-        midi_note=max(0, min(127, midi_note + clip.transposition)),
-        velocity=max(0, min(1, velocity)),
-        pan=max(-1, min(1, float(pan if not isinstance(pan, list) else pan[0]))),
+        start_beat=clip.start_beat + note.start_beat,
+        duration_beats=note.duration_beats,
+        midi_note=max(0, min(127, note.midi_note + clip.transposition)),
+        velocity=max(0, min(1, note.velocity)),
+        pan=max(-1, min(1, note.pan)),
     )
-
-
-def _event_gain(value: Any, bar: int) -> float:
-    if not isinstance(value, dict):
-        return float(value)
-    threshold = int(value.get("from_bar", 0))
-    return float(value.get("value_after" if bar >= threshold else "value", 1))
-
-
-def _pan_at(value: Any, index: int) -> float:
-    if isinstance(value, list) and value:
-        return float(value[index % len(value)])
-    return float(value)
-
-
-def _beat_offset(value: float, beats_per_bar: int) -> float:
-    return value if value <= beats_per_bar else value / 6
-
-
-def _drum_midi(kind: str) -> int:
-    return {"kick": 36, "clap": 39, "hat": 42}.get(kind, 36)
 
 
 def evaluate_automation(lane: AutomationLane, beat: float) -> float:
@@ -320,29 +196,34 @@ def render_composition(
     if progress:
         progress(85)
     mix = np.zeros((frame_count, 2), dtype=np.float64)
-    master_gain = float(composition.mixer.get("master_gain", 1))
+    master = composition.master_channel
+    master_gain = master.gain
     for stem in stems.values():
         mix += stem
-    for effect in composition.mixer.get("effects", []):
-        if effect.get("kind") != "reverb":
+    for effect in master.effects:
+        if effect.bypass or effect.kind != "reverb":
             continue
-        send_ids = _effect_track_ids(effect, tracks)
+        send_ids = _effect_track_ids(effect.parameters, tracks)
         bus = np.zeros_like(mix)
         for track_id in send_ids:
             bus += stems[track_id]
-        taps = effect.get("taps", [])
+        taps = effect.parameters.get("taps", [])
         if taps:
             mix += reverb(bus, composition.sample_rate, taps)
     mix = np.tanh(mix * master_gain)
-    limiter = composition.mixer.get("limiter", {})
+    limiter = next(
+        (effect for effect in master.effects if effect.kind == "limiter" and not effect.bypass),
+        None,
+    )
+    limiter_parameters = limiter.parameters if limiter else {}
     fade = min(
-        round(float(limiter.get("fade_seconds", 0)) * composition.sample_rate),
+        round(float(limiter_parameters.get("fade_seconds", 0)) * composition.sample_rate),
         frame_count // 2,
     )
     if fade:
         mix[:fade] *= np.linspace(0, 1, fade)[:, None]
         mix[-fade:] *= np.linspace(1, 0, fade)[:, None]
-    target_peak = float(limiter.get("normalization_peak", 0))
+    target_peak = float(limiter_parameters.get("normalization_peak", 0))
     peak = float(np.max(np.abs(mix))) if len(mix) else 0
     if peak and target_peak:
         mix *= target_peak / peak
@@ -412,11 +293,11 @@ def _render_event(
 
 
 def _effect_track_ids(
-    effect: dict[str, Any],
+    parameters: dict[str, Any],
     tracks: dict[UUID, Track],
 ) -> set[UUID]:
     requested: set[UUID] = set()
-    for value in effect.get("send_tracks", []):
+    for value in parameters.get("send_tracks", []):
         try:
             requested.add(UUID(str(value)))
         except ValueError:
@@ -497,7 +378,7 @@ def copy_composition(source: Composition) -> Composition:
             "clips": clips,
             "mixer_channels": channels,
             "automation_lanes": lanes,
-            "mixer": _remap_mixer(source.mixer, track_ids),
+            "master_channel": _copy_master_channel(source.master_channel, track_ids),
         },
         deep=True,
     )
@@ -505,6 +386,27 @@ def copy_composition(source: Composition) -> Composition:
 
 def _copy_effect(effect: EffectInstance) -> EffectInstance:
     return effect.model_copy(update={"id": uuid4()}, deep=True)
+
+
+def _copy_master_channel(
+    channel: MixerChannel, track_ids: dict[UUID, UUID]
+) -> MixerChannel:
+    return channel.model_copy(
+        update={
+            "id": uuid4(),
+            "effects": [
+                effect.model_copy(
+                    update={
+                        "id": uuid4(),
+                        "parameters": _remap_mixer(effect.parameters, track_ids),
+                    },
+                    deep=True,
+                )
+                for effect in channel.effects
+            ],
+        },
+        deep=True,
+    )
 
 
 def _remap_target(target: str, track_ids: dict[UUID, UUID]) -> str:

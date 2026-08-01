@@ -25,8 +25,12 @@ Le transport et la préécoute sont implémentés et validés à l’écoute par
 Le moteur rend cinq stems instrumentaux distincts, la réverbération et un mix normalisé.
 La phase 0 et le gate V0 de l’éditeur sont livrés : le runner canonique couvre lint, typage, contrats,
 déterminisme Csound, couverture bloquante, fuzzing OpenAPI, accessibilité, mutation et régression
-visuelle, chacun avec preuve de blocage volontaire. mutmut reste verrouillé mais bloqué nativement
-sous Windows (WSL/CI requis), limite documentée. La phase 1 de l’éditeur reste à démarrer.
+visuelle, chacun avec preuve de blocage volontaire. La phase 1 de l’éditeur (domaine compositionnel,
+migration de `Lignes de nuit`) est livrée : les notes et le bus master/reverb/limiteur sont désormais
+des modèles typés (`NoteEvent`, `MixerChannel`) plutôt que des dictionnaires génériques, migration
+vérifiée bit-exacte au rendu. Le mutation testing Python (mutmut) reste bloqué par une incompatibilité
+structurelle malgré un environnement WSL/Csound provisionné ; limite documentée
+(`EDITEUR/docs/limites_connues.md`).
 Le gate de déterminisme Csound réel de la phase 1 (roadmap studio audio procédural) est validé (trois rendus indépendants, même SHA-256 du WAV).
 La phase 2 de `roadmap_studio_audio_procedural.md` a été réauditée et close [FAIT] : le code réel
 dépasse largement sa description initiale. Les phases 3 à 6 restent à réauditer avant reprise.

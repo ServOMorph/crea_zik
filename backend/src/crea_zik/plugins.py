@@ -2,12 +2,15 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 from pathlib import Path
 from types import ModuleType
 
 from jsonschema import Draft202012Validator
 
-EXPLO_PLUGINS_ROOT = Path(__file__).resolve().parents[3] / "EXPLO" / "plugins"
+_DEFAULT_REPO_ROOT = Path(__file__).resolve().parents[3]
+_REPO_ROOT = Path(os.environ.get("CREA_ZIK_REPO_ROOT", _DEFAULT_REPO_ROOT))
+EXPLO_PLUGINS_ROOT = _REPO_ROOT / "EXPLO" / "plugins"
 PLUGIN_SCHEMA_PATH = EXPLO_PLUGINS_ROOT / "schema" / "plugin_manifest.schema.json"
 
 _engine_modules: dict[str, ModuleType] = {}

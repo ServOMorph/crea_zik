@@ -18,6 +18,7 @@ from crea_zik.models import (
     Composition,
     EffectInstance,
     MixerChannel,
+    NoteEvent,
     Project,
 )
 from hypothesis import given
@@ -134,8 +135,14 @@ def test_reference_schedules_five_tracks_and_copy_reassigns_identifiers() -> Non
         source_track.id: copied_track.id
         for source_track, copied_track in zip(source.tracks, copy.tracks, strict=True)
     }
-    source_sends = source.mixer["effects"][0]["send_tracks"]
-    copied_sends = copy.mixer["effects"][0]["send_tracks"]
+    reverb = next(
+        effect for effect in source.master_channel.effects if effect.kind == "reverb"
+    )
+    copied_reverb = next(
+        effect for effect in copy.master_channel.effects if effect.kind == "reverb"
+    )
+    source_sends = reverb.parameters["send_tracks"]
+    copied_sends = copied_reverb.parameters["send_tracks"]
     assert copied_sends == [str(track_ids[UUID(value)]) for value in source_sends]
     assert reference_composition().model_dump(mode="json") == original
 
@@ -243,12 +250,12 @@ def test_composition_render_preserves_five_distinct_instruments_and_mix_effects(
         pattern.model_copy(
             update={
                 "events": [
-                    {
-                        "start_beat": 0,
-                        "midi_note": notes[track.kind],
-                        "duration_beats": 0.4,
-                        "velocity": 0.5,
-                    }
+                    NoteEvent(
+                        start_beat=0,
+                        midi_note=notes[track.kind],
+                        duration_beats=0.4,
+                        velocity=0.5,
+                    )
                 ]
             },
             deep=True,
@@ -281,7 +288,11 @@ def test_composition_render_preserves_five_distinct_instruments_and_mix_effects(
     assert float(np.max(np.abs(mix))) == pytest.approx(0.89, abs=1e-5)
 
     dry = composition.model_copy(
-        update={"mixer": {**composition.mixer, "effects": []}},
+        update={
+            "master_channel": composition.master_channel.model_copy(
+                update={"effects": []}
+            )
+        },
         deep=True,
     )
     dry_rendered = render_composition(dry, tmp_path / "without-effects")

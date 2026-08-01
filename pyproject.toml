@@ -50,6 +50,10 @@ source = ["backend/src/crea_zik"]
 fail_under = 80
 show_missing = true
 
+[tool.mutmut]
+source_paths = ["backend/src/crea_zik"]
+pytest_add_cli_args_test_selection = ["tests", "--ignore=tests/test_csound_determinism.py"]
+
 [tool.mypy]
 python_version = "3.13"
 files = ["backend/src/crea_zik"]

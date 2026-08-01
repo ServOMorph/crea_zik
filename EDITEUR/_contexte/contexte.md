@@ -27,12 +27,13 @@ Music Composer, Adaptive Lab, Analyse & Export) et son backend de rendu, permett
   Csound réel restant avant de poursuivre la roadmap applicative.
 
 ## État actuel (réécrit intégralement à chaque /close)
-Phase 0 et gate V0 de la roadmap éditeur sont [FAIT] : runner canonique couvrant lint, typage,
-contrats, déterminisme Csound, couverture bloquante, fuzzing OpenAPI (Schemathesis), a11y (axe-core),
-mutation (Stryker sur `transport.ts`), régression visuelle (Playwright) et markdownlint, chacun avec
-une preuve de blocage volontaire. Rendu instrumental et transport validés à l'écoute par l'utilisateur.
-Réserve documentée : mutmut verrouillé mais inexécutable nativement sous Windows (WSL/CI requis).
-Phase 1 (domaine compositionnel, migration de `Lignes de nuit`) reste à démarrer.
+Phase 0 et gate V0 [FAIT]. Phase 1 (domaine compositionnel, migration de `Lignes de nuit`) [FAIT] :
+`Pattern.events` est désormais `list[NoteEvent]` (notes résolues) et `Composition.master_channel`
+(typé `MixerChannel`) remplace l'ancien dict `mixer` ; migration vérifiée bit-exacte à l'écoute
+programmatique (hachages SHA-256 identiques avant/après). Phase V1 [EN COURS] : tests domaine et
+déterminisme couverts, mutation testing Python (mutmut) bloqué de façon structurelle et documenté
+comme limite connue (`EDITEUR/docs/limites_connues.md`, LIM-001) malgré un environnement WSL/Csound
+provisionné ; le runner canonique complet (`test_editor.ps1`) reste à relancer avant la Phase 2.
 
 ## Décisions structurantes (append only — 10 entrées max, 5 lignes max/entrée, archiver au-delà)
 - 2026-07-30 : Initialisation de l'agent EDITEUR (mode création), périmètre étendu à frontend/ et
@@ -52,3 +53,9 @@ Phase 1 (domaine compositionnel, migration de `Lignes de nuit`) reste à démarr
   phases V3/V5 dédiées, pour éviter la couverture artificielle interdite par la roadmap.
 - 2026-07-30 : mutmut reste verrouillé en dépendance mais son exécution est bloquée nativement sous
   Windows (WSL requis) ; traité comme réserve d'infrastructure documentée, pas comme gate contourné.
+- 2026-08-01 : mutmut reste bloqué même sous WSL provisionné (Ubuntu, Python 3.13, Csound) : incompatibilité
+  structurelle entre `source_paths` de mutmut et le mode d'import réel du projet (`pythonpath`).
+  Acté comme limite documentée (LIM-001) plutôt que poursuivi via restructuration app-wide des imports.
+- 2026-08-01 : `Pattern.events` et `Composition.mixer` (dicts génériques codant des données typables)
+  migrés vers `list[NoteEvent]` et `MixerChannel` typés, pour tenir la promesse de la Phase 1 (schéma
+  entièrement pilotable par données) plutôt que de considérer la phase close sur un socle partiel.

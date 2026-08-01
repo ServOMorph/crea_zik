@@ -4,7 +4,6 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-
 from crea_zik.composition_dsp import synthesize
 from crea_zik.compositions import render_composition
 from crea_zik.models import Clip, Composition, Pattern, RenderSettings, Track
@@ -107,7 +106,10 @@ def test_composition_renders_a_promoted_plugin_drum_track(tmp_path: Path) -> Non
             }
         },
     )
-    pattern = Pattern(track_id=track.id, events=[{"start_beat": 0, "duration_beats": 0.5, "midi_note": 36}])
+    pattern = Pattern(
+        track_id=track.id,
+        events=[{"start_beat": 0, "duration_beats": 0.5, "midi_note": 36, "velocity": 1.0}],
+    )
     clip = Clip(pattern_id=pattern.id, start_beat=0, length_beats=1)
     composition = Composition(
         seed=77,

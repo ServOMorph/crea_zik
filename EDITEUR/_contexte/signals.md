@@ -1,37 +1,34 @@
-# Signals — editeur (MAJ 2026-07-30)
+# Signals — editeur (MAJ 2026-08-01)
 
 ## Actions ouvertes
-- [P1|ouvert] Lever le blocage mutmut (WSL/CI) ou acter la limite dans la documentation finale.
-  - fait quand: mutmut s'exécute dans le runner (via WSL provisionné ou CI Linux) ou la limite est actée formellement dans `EDITEUR/docs/limites_connues.md` (phase 14)
-  - réf: `EDITEUR/test_editor.ps1`, `EDITEUR/roadmap_editeur_musical.md` (section Phase V0)
-- [P2|ouvert] Démarrer la Phase 1 — domaine compositionnel et migration de `Lignes de nuit`.
-  - fait quand: modèles Pydantic Composition/Track/Pattern/Clip/NoteEvent/InstrumentPreset/AutomationLane/MixerChannel/EffectInstance/RenderSettings ajoutés et gate V1 lancé
-  - réf: `EDITEUR/roadmap_editeur_musical.md` (Phase 1)
+- [P1|ouvert] Exécuter le runner canonique complet (`test_editor.ps1`, backend + frontend) avant d'ouvrir la Phase 2.
+  - fait quand: `test_editor.ps1` s'exécute sans échec depuis un état propre
+  - réf: `EDITEUR/roadmap_editeur_musical.md` (Phase V1, dernier point)
+- [P2|ouvert] Compléter la Phase V1 : propriétés Hypothesis sur le round-trip complet de `Composition` et sur la validation des références (actuellement une seule propriété, sur `beats_to_samples`).
+  - réf: `EDITEUR/roadmap_editeur_musical.md` (Phase V1)
 
-## Dernière session (2026-07-30)
-# Session du 2026-07-30
+## Dernière session (2026-08-01)
+# Session du 2026-08-01
 
 ## Décisions prises
-- Rendu instrumental et transport de préécoute validés à l'écoute par l'utilisateur (action clôturée).
-- Seuil de couverture frontend temporairement abaissé (60 %/75 %) pour `TransportBar.tsx` et `EditorLanding.tsx`, à remonter à 80 % après leurs phases dédiées (V3/V5).
-- mutmut reste verrouillé en dépendance mais non exécutable nativement sous Windows ; traité comme réserve d'infrastructure documentée plutôt que gate contourné.
+- WSL (Ubuntu) provisionné pour tenter de lever le blocage mutmut ; blocage finalement acté (LIM-001) car structurel (incompatibilité `source_paths` / mode d'import réel du projet), hors périmètre d'un correctif d'infrastructure.
+- Phase 1 auditée avant d'écrire du code : le domaine compositionnel existait déjà en grande partie (socle commun antérieur, hors bannière `editeur`). Deux écarts identifiés et comblés : `NoteEvent` et `MixerChannel` définis mais jamais utilisés.
 
 ## Livrables produits ou modifiés
-- `EDITEUR/test_editor.ps1` : gates Schemathesis, couverture (Python + frontend), markdownlint, a11y, mutation (Stryker), visuel (Playwright), et probes de blocage étendues aux 8 familles.
-- Nouveaux tests : `tests/test_schema_fuzz.py`, `frontend/src/api/client.test.ts`, `frontend/src/app/Application.a11y.test.tsx`, `frontend/e2e/visual.spec.ts` (+ baselines approuvées).
-- Outillage : `pyproject.toml`/`uv.lock` (Schemathesis), `frontend/package.json` (markdownlint-cli2, scripts), `frontend/vitest.config.ts`, `frontend/stryker.config.mjs`, `EDITEUR/.markdownlint-cli2.jsonc`.
-- `backend/src/crea_zik/api.py` : correctifs lint/typage uniquement, sur du code livré ailleurs (feature plugins, cf. CHANGELOG v0.13).
-- `run.py` : ports par défaut changés (API 8003, UI 5175) à la demande utilisateur.
-- `EDITEUR/roadmap_editeur_musical.md` : Phase 0 et Phase V0 marquées [FAIT], réserve mutmut documentée.
+- `backend/src/crea_zik/models.py` : `Pattern.events: list[NoteEvent]` ; `Composition.master_channel: MixerChannel` remplace `Composition.mixer: dict`.
+- `backend/src/crea_zik/compositions.py`, `api.py`, `gallery.py`, `plugins.py` : modifiés (planificateur simplifié, endpoint `/master`, résolution de chemin robustifiée).
+- `EDITEUR/fixtures/lignes_de_nuit.composition.json`, `EDITEUR/contracts/composition.schema.json` : migrés vers le nouveau schéma.
+- `tests/test_compositions.py`, `tests/test_composition_dsp_plugin_voice.py` : adaptés.
+- `EDITEUR/docs/limites_connues.md` : nouveau, LIM-001 (mutation testing Python bloqué).
+- `EDITEUR/roadmap_editeur_musical.md` : Phase 1 [FAIT], Phase V1 [EN COURS].
 
 ## Hypothèses validées / invalidées
-- VALIDE — Le runner V0 étendu passe intégralement, probes de blocage des 8 familles comprises.
-- VALIDE — Rendu instrumental et transport conformes à l'écoute utilisateur.
-- EN ATTENTE — mutmut non exécutable nativement sous Windows ; nécessite WSL provisionné ou CI Linux.
+- VALIDE — La migration NoteEvent/MixerChannel ne modifie pas le rendu audio (hachages SHA-256 identiques avant/après, master + 5 stems, comparaison ancien code/fixture vs nouveau).
+- VALIDE — Suite pytest complète verte (85 tests), lint et typage propres sur les fichiers du gate V1.
+- INVALIDE — mutmut réparable par un simple provisioning d'environnement -> pivot vers limite documentée (LIM-001).
 
 ## Prochaine étape exacte
-1. Lever ou acter le blocage mutmut.
-2. Démarrer la Phase 1 (domaine compositionnel et migration de `Lignes de nuit`).
+Exécuter le runner canonique complet (`test_editor.ps1`) avant d'ouvrir la Phase 2 ; selon le temps disponible, renforcer la couverture Hypothesis (round-trip `Composition`, références) avant de considérer V1 pleinement close.
 
 ## Question bloquante pour la session suivante
 Aucune

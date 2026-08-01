@@ -1,5 +1,23 @@
 # Changelog
 
+## v0.17 — 2026-08-01
+
+### Ajouté
+
+- `EDITEUR/docs/limites_connues.md` : LIM-001, mutation testing Python (mutmut) bloqué par une
+  incompatibilité structurelle entre `source_paths` et le mode d'import réel du projet, malgré un
+  environnement WSL (Ubuntu, Python 3.13, Csound) provisionné pour l'exécuter.
+- Endpoint API `GET .../compositions/{id}/master` exposant le bus master typé (`MixerChannel`).
+
+### Modifié
+
+- Phase 1 de `EDITEUR/roadmap_editeur_musical.md` marquée [FAIT] après audit : `Pattern.events`
+  migré vers `list[NoteEvent]` (notes résolues) et `Composition.mixer` (dict générique) remplacé par
+  `Composition.master_channel: MixerChannel` typé. Migration vérifiée bit-exacte au rendu (hachages
+  SHA-256 identiques avant/après sur le master et les 5 stems).
+- `backend/src/crea_zik/gallery.py`, `plugins.py` : résolution de racine dépôt surchargeable via
+  `CREA_ZIK_REPO_ROOT` au lieu de `Path(__file__).resolve().parents[3]` en dur.
+
 ## v0.16 — 2026-07-31
 
 ### Ajouté

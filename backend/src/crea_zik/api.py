@@ -309,6 +309,11 @@ def read_composition_mixer(project_id: UUID, composition_id: UUID) -> list[Mixer
     return get_composition(get_project(project_id), composition_id).mixer_channels
 
 
+@app.get("/api/projects/{project_id}/compositions/{composition_id}/master", response_model=MixerChannel)
+def read_composition_master(project_id: UUID, composition_id: UUID) -> MixerChannel:
+    return get_composition(get_project(project_id), composition_id).master_channel
+
+
 @app.post("/api/projects", response_model=Project, status_code=status.HTTP_201_CREATED)
 def create_project(payload: CreateProject) -> Project:
     project = Project(name=payload.name)

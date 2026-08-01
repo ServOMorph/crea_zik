@@ -4,7 +4,7 @@
   "title": "Composition",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "id", "revision", "title", "seed", "sample_rate", "tempo_bpm", "time_signature", "tracks", "patterns", "clips", "mixer", "render_settings"],
+  "required": ["schema_version", "id", "revision", "title", "seed", "sample_rate", "tempo_bpm", "time_signature", "tracks", "patterns", "clips", "master_channel", "render_settings"],
   "properties": {
     "schema_version": {"const": 2},
     "id": {"type": "string", "format": "uuid"},
@@ -21,7 +21,7 @@
     "tracks": {"type": "array", "items": {"$ref": "#/$defs/track"}, "minItems": 1},
     "patterns": {"type": "array", "items": {"$ref": "#/$defs/pattern"}},
     "clips": {"type": "array", "items": {"$ref": "#/$defs/clip"}},
-    "mixer": {"$ref": "#/$defs/mixer"},
+    "master_channel": {"$ref": "#/$defs/mixerChannel"},
     "render_settings": {"$ref": "#/$defs/renderSettings"}
   },
   "$defs": {
@@ -47,7 +47,22 @@
       "properties": {
         "id": {"$ref": "#/$defs/id"},
         "track_id": {"$ref": "#/$defs/id"},
-        "events": {"type": "array", "items": {"type": "object"}}
+        "events": {"type": "array", "items": {"$ref": "#/$defs/noteEvent"}}
+      }
+    },
+    "noteEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "start_beat", "duration_beats", "midi_note", "velocity", "pan"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "start_beat": {"type": "number", "minimum": 0, "maximum": 100000},
+        "duration_beats": {"type": "number", "exclusiveMinimum": 0, "maximum": 10000},
+        "midi_note": {"type": "integer", "minimum": 0, "maximum": 127},
+        "velocity": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
+        "probability": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
+        "micro_timing_beats": {"type": "number", "minimum": -1, "maximum": 1},
+        "pan": {"type": "number", "minimum": -1, "maximum": 1}
       }
     },
     "clip": {
@@ -61,13 +76,19 @@
         "length_beats": {"type": "number", "exclusiveMinimum": 0}
       }
     },
-    "mixer": {
+    "mixerChannel": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["master_gain", "limiter", "effects"],
+      "required": ["id", "gain", "pan", "mute", "solo", "output", "sends", "effects"],
       "properties": {
-        "master_gain": {"type": "number", "minimum": 0, "maximum": 2},
-        "limiter": {"type": "object"},
+        "id": {"$ref": "#/$defs/id"},
+        "track_id": {"type": ["string", "null"]},
+        "gain": {"type": "number", "minimum": 0, "maximum": 2},
+        "pan": {"type": "number", "minimum": -1, "maximum": 1},
+        "mute": {"type": "boolean"},
+        "solo": {"type": "boolean"},
+        "output": {},
+        "sends": {"type": "object"},
         "effects": {"type": "array", "items": {"type": "object"}}
       }
     },

@@ -226,18 +226,29 @@ exhaustive de tous les critères non livrés.
   (8 familles : Python, frontend, couverture, markdown, a11y, visuel, mutation).
 - [x] Refuser la phase 1 si un outil est absent, non verrouillé ou silencieusement ignoré.
 
-Réserve documentée (2026-07-30) : `mutmut` est verrouillé dans `pyproject.toml` mais ne peut pas
-s’exécuter nativement sous Windows (WSL requis, non provisionné sur cette machine). Le gate de
-mutation Python reste un point ouvert d’infrastructure, pas une régression fonctionnelle ; à lever
-via CI Linux ou une distribution WSL provisionnée avant la clôture de la phase V1.
+Réserve documentée (2026-07-30, mise à jour 2026-08-01) : WSL (Ubuntu) a été provisionné avec un
+environnement Python 3.13 et Csound 6.18 dédiés, et `mutmut` y est installable et configurable.
+L'exécution reste toutefois bloquée par une incompatibilité structurelle entre `source_paths` et le
+mode d'import réel du projet (voir `EDITEUR/docs/limites_connues.md`, LIM-001). Ce point est acté
+comme limite connue plutôt que comme gate contourné ; il ne bloque pas la phase 1.
 
-### Phase V1 — Qualification domaine, migration et DSP [TODO]
+### Phase V1 — Qualification domaine, migration et DSP [EN COURS]
 
-- [ ] Exécuter tests unitaires, propriétés Hypothesis, round-trip et migrations.
-- [ ] Vérifier références hostiles, bornes, stabilité et invariants de timeline.
-- [ ] Rendre trois fois la spec de référence et comparer master, stems et hashes.
-- [ ] Exécuter les mutations ciblées du domaine et du planificateur avec seuil bloquant.
-- [ ] Exécuter toute la non-régression V0 avant d’autoriser la phase 2.
+- [x] Exécuter tests unitaires, round-trip et migrations (85 tests, suite complète verte).
+  Propriété Hypothesis présente sur `beats_to_samples` ; pas encore de propriétés sur le
+  round-trip complet de `Composition` ni sur le domaine de validation des références.
+- [x] Vérifier références hostiles, bornes, stabilité et invariants de timeline
+  (`test_composition_rejects_invalid_references_and_future_versions`,
+  `test_composition_rejects_mixer_cycles_and_invalid_automation_target`).
+- [x] Rendre trois fois la spec de référence et comparer master, stems et hashes
+  (`test_composition_renders_aligned_deterministic_stems_and_reacts_to_spec`) ; vérifié en
+  plus manuellement que le rendu post-migration NoteEvent/MixerChannel est bit-exact à
+  l'ancien (mêmes hachages SHA-256 master + 5 stems avant/après refonte).
+- [ ] Exécuter les mutations ciblées du domaine et du planificateur avec seuil bloquant —
+  **bloqué**, voir `EDITEUR/docs/limites_connues.md` (LIM-001).
+- [ ] Exécuter toute la non-régression V0 (runner canonique `test_editor.ps1` complet, y
+  compris frontend) avant d’autoriser la phase 2 — non exécuté dans cette session (limitée au
+  backend) ; reste à lancer avant d'ouvrir la Phase 2.
 
 ### Phase V2 — Qualification API et persistance [TODO]
 
@@ -392,34 +403,49 @@ Gate :
 - les contrats permettent une sauvegarde atomique et détectent les révisions concurrentes ;
 - les wireframes couvrent le parcours global de livraison.
 
-## Phase 1 — Domaine compositionnel et migration de `Lignes de nuit` [TODO]
+## Phase 1 — Domaine compositionnel et migration de `Lignes de nuit` [FAIT]
 
 But : rendre le morceau entièrement pilotable par données avant de créer ses éditeurs graphiques.
 
+Constat de session (2026-08-01) : l'essentiel de cette phase existait déjà comme socle commun
+(sessions `crea_zik` antérieures au 2026-07-31, hors bannière `editeur`). L'audit a identifié et
+comblé deux écarts : `NoteEvent` n'était jamais utilisé (`Pattern.events` restait
+`list[dict[str, Any]]`) et `MixerChannel` non plus (le master/reverb/limiteur vivait dans un dict
+générique `Composition.mixer`, rendant l'endpoint API `/mixer` trompeur car toujours vide).
+
 Tâches :
 
-- [ ] Ajouter les modèles Pydantic `Composition`, `Track`, `Pattern`, `Clip`, `NoteEvent`,
+- [x] Ajouter les modèles Pydantic `Composition`, `Track`, `Pattern`, `Clip`, `NoteEvent`,
   `InstrumentPreset`, `AutomationLane`, `MixerChannel`, `EffectInstance` et `RenderSettings`.
-- [ ] Passer le schéma projet à la version suivante avec migration aller et rejet explicite des
+- [x] Passer le schéma projet à la version suivante avec migration aller et rejet explicite des
   versions futures.
-- [ ] Ajouter les validations de références, bornes, longueurs, positions, routages et cibles
+- [x] Ajouter les validations de références, bornes, longueurs, positions, routages et cibles
   d’automation.
-- [ ] Déplacer dans la spec tous les rythmes, notes, accords, mélodies et sections du morceau.
-- [ ] Déplacer dans la spec tous les paramètres de synthèse des cinq pistes.
-- [ ] Déplacer dans la spec les gains, panoramiques, routages, réverbération et paramètres master.
-- [ ] Adapter le planificateur pour transformer patterns, clips et automations en événements moteur.
-- [ ] Adapter le renderer afin qu’il ne connaisse plus l’arrangement de `Lignes de nuit`.
-- [ ] Produire un exemple de galerie immuable et une opération de copie avec nouveaux identifiants.
-- [ ] Conserver master, stems, manifeste et rapport QA de référence.
-- [ ] Tester migrations, round-trip JSON, références invalides, bornes, rendu des cinq pistes,
-  alignement des stems et déterminisme.
+- [x] Déplacer dans la spec tous les rythmes, notes, accords, mélodies et sections du morceau
+  (`Pattern.events: list[NoteEvent]` — notes entièrement résolues, expansées depuis les règles
+  génératives compactes précédentes ; migration vérifiée bit-exacte, cf. Gate).
+- [x] Déplacer dans la spec tous les paramètres de synthèse des cinq pistes.
+- [x] Déplacer dans la spec les gains, panoramiques, routages, réverbération et paramètres master
+  (`Composition.master_channel: MixerChannel`, remplace l'ancien dict `mixer` ; nouvel endpoint
+  `GET .../master` exposant ce bus typé).
+- [x] Adapter le planificateur pour transformer patterns, clips et automations en événements moteur
+  (`schedule_composition`/`_schedule_clip` simplifiés, la logique d'expansion générative n'existe
+  plus dans le code — les notes sont pré-résolues dans la spec).
+- [x] Adapter le renderer afin qu’il ne connaisse plus l’arrangement de `Lignes de nuit`.
+- [x] Produire un exemple de galerie immuable et une opération de copie avec nouveaux identifiants.
+- [x] Conserver master, stems, manifeste et rapport QA de référence.
+- [x] Tester migrations, round-trip JSON, références invalides, bornes, rendu des cinq pistes,
+  alignement des stems et déterminisme (suite pytest complète, 85 tests verts).
 
 Gate :
 
 - modifier une note, un pattern, un paramètre de synthèse ou de mix dans la spec modifie le rendu ;
 - le renderer ne contient plus de données musicales propres à `Lignes de nuit` ;
 - trois rendus d’une même spec et d’une même seed produisent le même hash ;
-- l’exemple source reste immuable et sa copie est indépendante.
+- l’exemple source reste immuable et sa copie est indépendante ;
+- vérifié en plus : rendu de la fixture `Lignes de nuit` bit-exact avant/après migration
+  NoteEvent/MixerChannel (hachages SHA-256 identiques sur le master et les 5 stems, comparaison
+  ancien code/ancienne fixture vs nouveau code/nouvelle fixture).
 
 ## Phase 2 — API de composition et persistance sûre [TODO]
 
