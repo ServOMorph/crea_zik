@@ -19,13 +19,10 @@ Recherches déjà produites côté crea_zik, à consulter avant de dupliquer :
 `_docs/audit_github_audio_open_source.md`.
 
 ## État actuel (réécrit intégralement à chaque /close)
-Le premier morceau est archivé sous `archives/morceaux/lignes-de-nuit/versions/v001/`. Le kick
-codé en dur de `morceau_electro/render.py` n'est pas encore remplacé par le plugin kick.
-`roadmap_plugins.md` : phases 1 à 3 terminées côté explo/crea_zik (manifeste, banc de test UI,
-promotion sur le moteur de composition). Phase 4 (socle commun `plugins/_common/dsp.py`) terminée :
-validation et primitives DSP mutualisées, couches de synthèse restent propres à chaque plugin.
-Phase 5 (punch du kick) en cours : bandpass sur le click et sweep de hauteur sur le sub faits et
-testés (45 tests verts) ; duck d'attaque, transitoire sub dédié et saturation par couche différés.
+Le premier morceau est archivé sous `archives/morceaux/lignes-de-nuit/versions/v001/`.
+Le rendu de `morceau_electro` appelle le plugin kick par manifeste, preset `techno` et moteur déclaré ; le kick local est retiré.
+`roadmap_plugins.md` : phases 1 à 4 terminées, phase 5 en cours ; les trois réglages de punch restent à traiter.
+L'ancienne roadmap `roadmap_archivage_morceaux.md` est terminée ; les suites sont transférées dans `roadmap_plugins.md`.
 
 ## Décisions structurantes (append only — 10 entrées max, 5 lignes max/entrée, archiver au-delà)
 - 2026-07-30 : Création de l'agent explo via /create_agent.
@@ -41,3 +38,5 @@ testés (45 tests verts) ; duck d'attaque, transitoire sub dédié et saturation
 - 2026-08-01 : Amélioration du kick choisie parmi 5 réglages proposés : bandpass de présence sur le
   click et enveloppe de hauteur sur le sub ; 3 réglages restants (duck, transitoire sub, saturation
   par couche) différés et documentés en phase 5 de `roadmap_plugins.md`.
+- 2026-08-01 : `morceau_electro` consomme un plugin one-shot par `plugin_id`, `plugin_preset` et
+  `plugin_overrides` ; le manifeste choisit le moteur et le plan de rendu impose durée et panoramique.

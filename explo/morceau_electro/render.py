@@ -1,18 +1,22 @@
 from __future__ import annotations
 
 import argparse
+from functools import lru_cache
 import hashlib
+import importlib.util
 import json
 import math
+import re
 import wave
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 import numpy as np
 from scipy import signal
 
 
 ROOT = Path(__file__).resolve().parent
+PLUGINS_ROOT = ROOT.parent / "plugins"
 
 
 def load_spec(path: Path) -> dict[str, Any]:
@@ -74,14 +78,48 @@ def add(buffer: np.ndarray, voice: np.ndarray, start: int) -> None:
     buffer[destination:end] += voice[offset : offset + end - destination]
 
 
-def kick(sample_rate: int, duration: float, amplitude: float, params: dict[str, Any]) -> np.ndarray:
-    count = int(duration * sample_rate)
-    time = np.arange(count) / sample_rate
-    frequency = params["frequency_start"] + params["frequency_sweep"] * np.exp(-time * params["sweep_decay"])
-    phase = 2.0 * np.pi * np.cumsum(frequency) / sample_rate
-    body = np.sin(phase) * np.exp(-time * params["body_decay"])
-    click = np.sin(2.0 * np.pi * params["click_frequency"] * time) * np.exp(-time * params["click_decay"]) * params["click_gain"]
-    return (body + click) * amplitude
+@lru_cache(maxsize=None)
+def load_one_shot_plugin(plugin_id: str) -> tuple[dict[str, Any], dict[str, dict[str, Any]], Callable[[dict[str, Any], float, int], np.ndarray]]:
+    if not re.fullmatch(r"[a-z][a-z0-9_]*", plugin_id):
+        raise ValueError(f"Identifiant de plugin invalide: {plugin_id}")
+    plugin_dir = (PLUGINS_ROOT / plugin_id).resolve()
+    if PLUGINS_ROOT.resolve() not in plugin_dir.parents:
+        raise ValueError(f"Plugin hors du dossier autorise: {plugin_id}")
+    manifest = json.loads((plugin_dir / "manifest.json").read_text(encoding="utf-8"))
+    presets = json.loads((plugin_dir / "presets.json").read_text(encoding="utf-8"))
+    engine = manifest["engine"]
+    module_name = engine["module"]
+    if not re.fullmatch(r"[a-z][a-z0-9_]*", module_name):
+        raise ValueError(f"Module de plugin invalide: {module_name}")
+    module_spec = importlib.util.spec_from_file_location(
+        f"morceau_electro_plugin_{plugin_id}_{module_name}",
+        plugin_dir / f"{module_name}.py",
+    )
+    if module_spec is None or module_spec.loader is None:
+        raise ValueError(f"Moteur de plugin introuvable: {plugin_id}")
+    module = importlib.util.module_from_spec(module_spec)
+    module_spec.loader.exec_module(module)
+    renderer = getattr(module, engine["function"], None)
+    if not callable(renderer):
+        raise ValueError(f"Fonction de rendu invalide pour le plugin: {plugin_id}")
+    return manifest, presets, renderer
+
+
+def one_shot_plugin_voice(
+    config: dict[str, Any], duration: float, velocity: float, pan: float, sample_rate: int
+) -> np.ndarray:
+    plugin_id = config["plugin_id"]
+    preset_id = config["plugin_preset"]
+    overrides = config.get("plugin_overrides", {})
+    if not isinstance(overrides, dict):
+        raise ValueError("plugin_overrides doit etre un objet")
+    manifest, presets, renderer = load_one_shot_plugin(plugin_id)
+    if manifest["engine"]["sample_rate"] != sample_rate:
+        raise ValueError(f"Frequence incompatible pour le plugin {plugin_id}")
+    if preset_id not in presets:
+        raise ValueError(f"Preset inconnu pour le plugin {plugin_id}: {preset_id}")
+    params = {**presets[preset_id], **overrides, "length": duration, "pan": pan}
+    return renderer(params, velocity, sample_rate)
 
 
 def clap(sample_rate: int, seed: int, amplitude: float, params: dict[str, Any]) -> np.ndarray:
@@ -182,7 +220,17 @@ def render_audio(spec: dict[str, Any]) -> tuple[np.ndarray, dict[str, np.ndarray
         if bar >= kick_plan["from_bar"]:
             amplitude = kick_plan["amplitude_after"] if bar >= kick_plan["amplitude_before_bar"] else kick_plan["amplitude_before"]
             for offset in kick_plan["beats"]:
-                add(drums, stereo(kick(sample_rate, kick_plan["duration"], amplitude, drum_instrument["kick"]), kick_plan["pan"]), beat_to_sample(beat + offset))
+                add(
+                    drums,
+                    one_shot_plugin_voice(
+                        drum_instrument["kick"],
+                        kick_plan["duration"],
+                        amplitude,
+                        kick_plan["pan"],
+                        sample_rate,
+                    ),
+                    beat_to_sample(beat + offset),
+                )
         clap_plan = drum_plan["clap"]
         if bar >= clap_plan["from_bar"] and beat % beats_per_bar in clap_plan["beats_in_bar"]:
             add(drums, stereo(clap(sample_rate, seed + clap_plan["seed_offset"] + beat, clap_plan["amplitude"], drum_instrument["clap"]), clap_plan["pan"]), beat_to_sample(beat))

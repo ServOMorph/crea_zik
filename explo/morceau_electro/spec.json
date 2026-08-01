@@ -8,7 +8,7 @@
   "time_signature": [4, 4],
   "key": "A minor",
   "tracks": [
-    {"id": "drums", "kind": "drum_machine", "gain": 0.78, "pan": 0.0, "instrument": {"kick": {"frequency_start": 47.0, "frequency_sweep": 112.0, "sweep_decay": 30.0, "body_decay": 9.5, "click_frequency": 1900.0, "click_decay": 65.0, "click_gain": 0.09}, "clap": {"duration": 0.22, "bandpass": [850.0, 9000.0], "bursts": [0.0, 0.018, 0.036], "burst_width": 0.011, "decay": 7.0}, "hat": {"duration": 0.085, "highpass": 6800.0, "decay": 52.0}}},
+    {"id": "drums", "kind": "drum_machine", "gain": 0.78, "pan": 0.0, "instrument": {"kick": {"plugin_id": "kick", "plugin_preset": "techno", "plugin_overrides": {}}, "clap": {"duration": 0.22, "bandpass": [850.0, 9000.0], "bursts": [0.0, 0.018, 0.036], "burst_width": 0.011, "decay": 7.0}, "hat": {"duration": 0.085, "highpass": 6800.0, "decay": 52.0}}},
     {"id": "bass", "kind": "subtractive_bass", "gain": 0.70, "pan": 0.0, "instrument": {"harmonics": [1.0, 0.33, 0.12], "lowpass": 620.0, "envelope": [0.008, 0.12, 0.72, 0.07]}},
     {"id": "pad", "kind": "warm_pad", "gain": 0.36, "pan": 0.0, "instrument": {"detunes": [[-0.004, 0.18], [0.0, 0.30], [0.003, 0.18]], "second_harmonic": 0.16, "lowpass": 2400.0, "envelope": [0.65, 1.2, 0.70, 0.8]}},
     {"id": "arp", "kind": "pluck_arpeggio", "gain": 0.48, "pan": 0.0, "instrument": {"harmonics": [1.0, 0.34, 0.14], "decay": 4.5, "envelope": [0.006, 0.11, 0.40, 0.22]}},
