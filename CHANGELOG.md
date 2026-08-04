@@ -1,5 +1,31 @@
 # Changelog
 
+## v0.21 — 2026-08-04
+
+### Ajouté
+
+- `tests/test_api_robustness.py` (nouveau, 13 tests) : fuzz Hypothesis des entrées invalides de
+  l'API de composition (UUIDs malformés, révisions et `start_beat` négatifs), concurrence réelle
+  entre deux sauvegardes (exactement un 200 et un 409, pas d'écrasement), écriture interrompue
+  (`os.replace` en échec → disque intact puis reprise), purge des fichiers temporaires orphelins à
+  la lecture, annulation/reprise d'un rendu via l'API avec flux SSE, isolation entre projets et
+  `plugin_id` hostiles (aucune écriture hors du dossier autorisé).
+- `backend/src/crea_zik/errors.py` : erreur typée `CompositionIdMismatchError` (code
+  `composition_id_mismatch`).
+
+### Modifié
+
+- `backend/src/crea_zik/cli.py` : le garde d'identifiant incohérent de `replace_composition` lève
+  `CompositionIdMismatchError` au lieu d'un `ValueError` brut (corrige un 500 non typé en 422).
+- `tests/test_api.py` : 4 tests ajoutés (lecture du master, 404 projet absent, 422
+  `composition_not_found`, 422 track inconnu, 422 `export_artifact_missing`).
+- `tests/test_schema_fuzz.py` : fuzz Schemathesis étendu des 4 aux 11 routes GET de composition
+  avec état seedé.
+- `EDITEUR/test_editor.ps1` : gates `python-lint-v1`, `python-types-v1` et `composition-domain`
+  étendus à `errors.py` et `test_api_robustness.py`.
+- `EDITEUR/roadmap_editeur_musical.md` : Phase V2 et Phase 2 (API de composition et persistance
+  sûre) marquées [FAIT].
+
 ## v0.20 — 2026-08-04
 
 ### Ajouté

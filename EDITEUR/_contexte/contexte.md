@@ -27,16 +27,13 @@ Music Composer, Adaptive Lab, Analyse & Export) et son backend de rendu, permett
   Csound réel restant avant de poursuivre la roadmap applicative.
 
 ## État actuel (réécrit intégralement à chaque /close)
-Phase 0, gate V0, Phase 1 (domaine compositionnel) et Phase V1 (qualification domaine, migration et
-DSP) [FAIT]. Propriétés Hypothesis couvrent désormais `beats_to_samples`, le round-trip complet de
-`Composition` et le rejet des références pendantes. Mutation testing Python (mutmut) reste bloqué
-et documenté comme limite connue (LIM-001). Phase V2 (qualification API et persistance) [EN COURS] :
-premier point = tester chaque route nominale et chaque erreur typée de l'API de composition.
+Phases 0/V0, 1/V1, V2 et Phase 2 (API de composition et persistance sûre) [FAIT]. Qualification API
+et persistance complète : routes nominales et erreurs typées testées, fuzzing OpenAPI étendu,
+révisions concurrentes, écriture interrompue/annulation/reprise, chemins hostiles et isolation des
+projets qualifiés. Runner canonique complet vert (backend 111 tests, couverture 88,61 %, frontend,
+mutation et e2e). Mutation testing Python (mutmut) reste documenté comme limite connue (LIM-001).
 
 ## Décisions structurantes (append only — 10 entrées max, 5 lignes max/entrée, archiver au-delà)
-- 2026-07-30 : Roadmap dédiée à l’éditeur intégré : sidebar gauche, édition complète de `Lignes de
-  nuit`, gates automatiques interphases, seuil fonctionnel de 85 % et documentation exhaustive des
-  fonctions manquantes et des tests manuels.
 - 2026-07-30 : Les services et écrans partagés déjà livrés sont réutilisés comme fondations, sans
   considérer la phase 0 de l’éditeur terminée avant la création du runner canonique et la réussite de V0.
 - 2026-07-30 : La spécification de composition versionnée est la source unique du mix et des stems ;
@@ -61,3 +58,7 @@ premier point = tester chaque route nominale et chaque erreur typée de l'API de
 - 2026-08-04 : Phase V1 close [FAIT] — propriétés Hypothesis (round-trip `Composition` + validation
   des références) ajoutées via stratégies composites respectant le graphe de références ; le point
   mutations reste bloqué et documenté (LIM-001). Phase V2 ouverte.
+- 2026-08-04 : Phase V2 et Phase 2 (API de composition et persistance sûre) closes [FAIT] —
+  qualification complète de l'API de composition (routes nominales, erreurs typées, fuzz, concurrence,
+  interruption/reprise, chemins hostiles, isolation) ; runner canonique complet vert. 500 non typé
+  corrigé via `CompositionIdMismatchError` (422 `composition_id_mismatch`).

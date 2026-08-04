@@ -254,13 +254,25 @@ comme limite connue plutôt que comme gate contourné ; il ne bloque pas la phas
   (backend, frontend, mutation Stryker 68,66 % ≥ seuil 60 %, Playwright, visuel, markdown) après
   régénération du golden `lignes_de_nuit` désynchronisé par un changement du renderer `explo`.
 
-### Phase V2 — Qualification API et persistance [EN COURS]
+### Phase V2 — Qualification API et persistance [FAIT]
 
-- [ ] Tester chaque route nominale et chaque erreur typée.
-- [ ] Fuzzer le contrat OpenAPI, les révisions concurrentes et les entrées invalides.
-- [ ] Simuler écriture interrompue, annulation, reprise et chemins hostiles.
-- [ ] Vérifier l’isolation des projets et l’absence de sortie du dossier autorisé.
-- [ ] Exécuter V0 à V1 avant d’autoriser la phase 3.
+- [x] Tester chaque route nominale et chaque erreur typée (`tests/test_api.py` : master lisible,
+  404 project, 422 `composition_not_found`, 422 track inconnu, 422 `export_artifact_missing`).
+- [x] Fuzzer le contrat OpenAPI, les révisions concurrentes et les entrées invalides (Schemathesis
+  étendu aux 11 routes GET composition avec état seedé ; `tests/test_api_robustness.py` : Hypothesis
+  UUIDs malformés/révisions et start_beat négatifs/id mismatch/références pendantes/example inconnu ;
+  concurrence réelle 2 threads → exactement un 200 et un 409, pas d'écrasement).
+- [x] Simuler écriture interrompue, annulation, reprise et chemins hostiles (`os.replace` en échec →
+  disque intact + reprise au PUT suivant ; `.tmp` orphelins purgés à la lecture ; rendu annulé →
+  CANCELLED puis re-rendu → COMPLETED + artifact lisible + flux SSE terminé ; `plugin_id` hostiles
+  → 404, aucun fichier écrit hors du dossier autorisé).
+- [x] Vérifier l'isolation des projets et l'absence de sortie du dossier autorisé (composition d'un
+  projet A inaccessible depuis B → 422 `composition_not_found` ; dossiers strictement distincts ;
+  gardes `resolve_project_path`/`load_project`/`save_project` déjà couvertes).
+- [x] Exécuter V0 à V1 avant d'autoriser la phase 3 — runner canonique `test_editor.ps1` complet
+  exécuté le 2026-08-04, gate vert : backend 111 tests (couverture 88,61 % ≥ 80 %), frontend
+  lint/typecheck/unit (26)/coverage/a11y/mutation (68,66 % ≥ 60 %)/build/e2e (7)/visuel,
+  markdownlint, déterminisme Csound et golden `Lignes de nuit` inchangés.
 
 ### Phase V3 — Qualification shell, sidebar et routage [TODO]
 
@@ -451,22 +463,22 @@ Gate :
   NoteEvent/MixerChannel (hachages SHA-256 identiques sur le master et les 5 stems, comparaison
   ancien code/ancienne fixture vs nouveau code/nouvelle fixture).
 
-## Phase 2 — API de composition et persistance sûre [TODO]
+## Phase 2 — API de composition et persistance sûre [FAIT]
 
 But : exposer un contrat complet de chargement et de sauvegarde à l’éditeur.
 
 Tâches :
 
-- [ ] Ajouter les endpoints de lecture d’une composition et de ses ressources.
-- [ ] Ajouter la création d’une composition depuis l’exemple `Lignes de nuit`.
-- [ ] Ajouter la sauvegarde complète conditionnée par le numéro de révision.
-- [ ] Ajouter les mutations ciblées nécessaires sans multiplier les écritures partielles fragiles.
-- [ ] Implémenter l’écriture atomique et la récupération après fichier temporaire incomplet.
-- [ ] Retourner des erreurs typées et localisables par champ.
-- [ ] Ajouter les endpoints de rendu d’une plage, d’une piste, du mix et des stems.
-- [ ] Relier les rendus aux jobs SSE existants avec progression et annulation.
-- [ ] Ajouter l’accès sécurisé aux artifacts, manifestes et rapports QA.
-- [ ] Tester API, conflits de révision, sauvegarde interrompue, chemins hostiles, annulation et reprise.
+- [x] Ajouter les endpoints de lecture d’une composition et de ses ressources.
+- [x] Ajouter la création d’une composition depuis l’exemple `Lignes de nuit`.
+- [x] Ajouter la sauvegarde complète conditionnée par le numéro de révision.
+- [x] Ajouter les mutations ciblées nécessaires sans multiplier les écritures partielles fragiles.
+- [x] Implémenter l’écriture atomique et la récupération après fichier temporaire incomplet.
+- [x] Retourner des erreurs typées et localisables par champ.
+- [x] Ajouter les endpoints de rendu d’une plage, d’une piste, du mix et des stems.
+- [x] Relier les rendus aux jobs SSE existants avec progression et annulation.
+- [x] Ajouter l’accès sécurisé aux artifacts, manifestes et rapports QA.
+- [x] Tester API, conflits de révision, sauvegarde interrompue, chemins hostiles, annulation et reprise.
 
 Gate :
 
@@ -474,6 +486,11 @@ Gate :
 - deux sauvegardes concurrentes ne s’écrasent pas silencieusement ;
 - chaque rendu est relié à la révision exacte de sa spec ;
 - aucune route ne permet de sortir du dossier projet autorisé.
+
+Qualifié par la Phase V2 (2026-08-04) : gates tous vérifiés par test automatique — création/
+chargement/modification/sauvegarde/rechargement sans perte, concurrence 200+409, rendu relié à la
+révision (manifeste), routes bornées par UUID + `resolve_project_path` (aucune sortie, vérifié par
+rglob avant/après requêtes hostiles).
 
 ## Phase 3 — Shell applicatif, sidebar et nouvel onglet [TODO]
 

@@ -32,7 +32,12 @@ vérifiée bit-exacte au rendu. La phase V1 (qualification domaine, migration et
 propriétés Hypothesis couvrent `beats_to_samples`, le round-trip complet de `Composition` et le rejet
 des références pendantes ; le mutation testing Python (mutmut) reste bloqué par incompatibilité
 structurelle malgré un environnement WSL/Csound provisionné (limite documentée
-`EDITEUR/docs/limites_connues.md`). La phase V2 (qualification API et persistance) est ouverte.
+`EDITEUR/docs/limites_connues.md`). La phase V2 (qualification API et persistance) est livrée :
+routes nominales et erreurs typées de l'API de composition testées, fuzzing OpenAPI étendu,
+révisions concurrentes, écriture interrompue/annulation/reprise, chemins hostiles et isolation des
+projets qualifiés ; runner canonique complet vert (backend 111 tests, couverture 88,61 %). La
+Phase 2 fonctionnelle (API de composition et persistance sûre) est close [FAIT]. La phase 3 de
+l'éditeur (shell, sidebar et routage) est à ouvrir.
 Le gate de déterminisme Csound réel de la phase 1 (roadmap studio audio procédural) est validé (trois rendus indépendants, même SHA-256 du WAV).
 La phase 2 de `roadmap_studio_audio_procedural.md` a été réauditée et close [FAIT] : le code réel
 dépasse largement sa description initiale. Les phases 3 (bibliothèque DSP/Sound Designer) et 4

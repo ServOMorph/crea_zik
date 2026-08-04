@@ -28,6 +28,10 @@ class CompositionNotFoundError(CreaZikError):
     code = "composition_not_found"
 
 
+class CompositionIdMismatchError(CreaZikError):
+    code = "composition_id_mismatch"
+
+
 class CompositionRevisionConflictError(CreaZikError):
     code = "composition_revision_conflict"
 

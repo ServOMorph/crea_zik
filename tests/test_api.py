@@ -324,6 +324,102 @@ def test_api_simulates_an_adaptive_graph(tmp_path: Path, monkeypatch) -> None:
     assert simulated.json()[0]["scheduled_beats"] == 4
 
 
+def test_composition_master_channel_is_readable(tmp_path: Path, monkeypatch) -> None:
+    project_root = tmp_path / "projects"
+    monkeypatch.setattr("crea_zik.api.PROJECT_ROOT", project_root)
+    monkeypatch.setattr("crea_zik.cli.PROJECT_ROOT", project_root)
+    client = TestClient(app)
+    project = client.post("/api/projects", json={"name": "master reader"}).json()
+    source = client.get("/api/composition-gallery").json()[0]
+    composition = client.post(
+        f"/api/projects/{project['id']}/compositions",
+        json={"example_id": source["id"]},
+    ).json()
+
+    master = client.get(
+        f"/api/projects/{project['id']}/compositions/{composition['id']}/master"
+    )
+
+    assert master.status_code == 200
+    assert master.json() == composition["master_channel"]
+
+
+def test_composition_endpoints_return_typed_errors(tmp_path: Path, monkeypatch) -> None:
+    project_root = tmp_path / "projects"
+    monkeypatch.setattr("crea_zik.api.PROJECT_ROOT", project_root)
+    monkeypatch.setattr("crea_zik.cli.PROJECT_ROOT", project_root)
+    client = TestClient(app)
+    project = client.post("/api/projects", json={"name": "typed errors"}).json()
+    composition_id = "00000000-0000-4000-8000-000000000099"
+    missing_project_id = "00000000-0000-4000-8000-000000000098"
+
+    missing_project = client.get(
+        f"/api/projects/{missing_project_id}/compositions/{composition_id}"
+    )
+    assert missing_project.status_code == 404
+    assert missing_project.json()["detail"] == "project not found"
+
+    missing_composition = client.get(
+        f"/api/projects/{project['id']}/compositions/{composition_id}"
+    )
+    assert missing_composition.status_code == 422
+    assert missing_composition.json()["detail"]["code"] == "composition_not_found"
+
+    missing_project_create = client.post(
+        f"/api/projects/{missing_project_id}/compositions",
+        json={"example_id": "00000000-0000-4000-8000-000000000097"},
+    )
+    assert missing_project_create.status_code == 404
+    assert missing_project_create.json()["detail"] == "project not found"
+
+
+def test_composition_render_rejects_unknown_track(tmp_path: Path, monkeypatch) -> None:
+    project_root = tmp_path / "projects"
+    monkeypatch.setattr("crea_zik.api.PROJECT_ROOT", project_root)
+    monkeypatch.setattr("crea_zik.cli.PROJECT_ROOT", project_root)
+    client = TestClient(app)
+    project = client.post("/api/projects", json={"name": "render guard"}).json()
+    source = client.get("/api/composition-gallery").json()[0]
+    composition = client.post(
+        f"/api/projects/{project['id']}/compositions",
+        json={"example_id": source["id"]},
+    ).json()
+    foreign = "00000000-0000-4000-8000-000000000096"
+
+    response = client.post(
+        f"/api/projects/{project['id']}/compositions/{composition['id']}/render",
+        json={"track_ids": [foreign]},
+    )
+
+    assert response.status_code == 422
+    assert response.json()["detail"] == "unknown composition track"
+
+
+def test_composition_artifact_and_manifest_require_a_render(tmp_path: Path, monkeypatch) -> None:
+    project_root = tmp_path / "projects"
+    monkeypatch.setattr("crea_zik.api.PROJECT_ROOT", project_root)
+    monkeypatch.setattr("crea_zik.cli.PROJECT_ROOT", project_root)
+    client = TestClient(app)
+    project = client.post("/api/projects", json={"name": "artifact guard"}).json()
+    source = client.get("/api/composition-gallery").json()[0]
+    composition = client.post(
+        f"/api/projects/{project['id']}/compositions",
+        json={"example_id": source["id"]},
+    ).json()
+
+    artifact = client.get(
+        f"/api/projects/{project['id']}/compositions/{composition['id']}/renders/0/artifact"
+    )
+    manifest = client.get(
+        f"/api/projects/{project['id']}/compositions/{composition['id']}/renders/0/manifest"
+    )
+
+    assert artifact.status_code == 422
+    assert artifact.json()["detail"]["code"] == "export_artifact_missing"
+    assert manifest.status_code == 422
+    assert manifest.json()["detail"]["code"] == "export_artifact_missing"
+
+
 def test_artifact_metadata_and_export_are_available_from_the_api(tmp_path: Path, monkeypatch) -> None:
     project_root = tmp_path / "projects"
     monkeypatch.setattr("crea_zik.api.PROJECT_ROOT", project_root)

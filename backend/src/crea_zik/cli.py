@@ -14,6 +14,7 @@ from uuid import UUID
 from .engine import CsoundEngine
 from .errors import (
     ArtifactMissingError,
+    CompositionIdMismatchError,
     CompositionNotFoundError,
     CompositionRevisionConflictError,
     CreaZikError,
@@ -66,7 +67,7 @@ def replace_composition(
     path: Path, composition_id: UUID, expected_revision: int, composition: Composition
 ) -> Composition:
     if composition.id != composition_id:
-        raise ValueError("composition id must match the requested resource")
+        raise CompositionIdMismatchError("composition id must match the requested resource")
     with project_lock():
         project = load_project(path)
         index = next((index for index, item in enumerate(project.compositions) if item.id == composition_id), None)
