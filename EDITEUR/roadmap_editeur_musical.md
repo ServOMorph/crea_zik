@@ -232,11 +232,14 @@ L'exécution reste toutefois bloquée par une incompatibilité structurelle entr
 mode d'import réel du projet (voir `EDITEUR/docs/limites_connues.md`, LIM-001). Ce point est acté
 comme limite connue plutôt que comme gate contourné ; il ne bloque pas la phase 1.
 
-### Phase V1 — Qualification domaine, migration et DSP [EN COURS]
+### Phase V1 — Qualification domaine, migration et DSP [FAIT]
 
-- [x] Exécuter tests unitaires, round-trip et migrations (85 tests, suite complète verte).
-  Propriété Hypothesis présente sur `beats_to_samples` ; pas encore de propriétés sur le
-  round-trip complet de `Composition` ni sur le domaine de validation des références.
+- [x] Exécuter tests unitaires, round-trip et migrations (87 tests, suite complète verte).
+  Propriétés Hypothesis présentes sur `beats_to_samples`, sur le round-trip complet de
+  `Composition` (`test_composition_round_trip_preserves_structure`, stratégie `_valid_compositions`)
+  et sur le domaine de validation des références (`test_composition_rejects_dangling_references`,
+  stratégie `_compositions_with_dangling_reference` couvrant pattern→track, clip→pattern,
+  mixer→track et automation→track).
 - [x] Vérifier références hostiles, bornes, stabilité et invariants de timeline
   (`test_composition_rejects_invalid_references_and_future_versions`,
   `test_composition_rejects_mixer_cycles_and_invalid_automation_target`).
@@ -251,7 +254,7 @@ comme limite connue plutôt que comme gate contourné ; il ne bloque pas la phas
   (backend, frontend, mutation Stryker 68,66 % ≥ seuil 60 %, Playwright, visuel, markdown) après
   régénération du golden `lignes_de_nuit` désynchronisé par un changement du renderer `explo`.
 
-### Phase V2 — Qualification API et persistance [TODO]
+### Phase V2 — Qualification API et persistance [EN COURS]
 
 - [ ] Tester chaque route nominale et chaque erreur typée.
 - [ ] Fuzzer le contrat OpenAPI, les révisions concurrentes et les entrées invalides.

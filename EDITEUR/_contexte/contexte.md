@@ -27,18 +27,13 @@ Music Composer, Adaptive Lab, Analyse & Export) et son backend de rendu, permett
   Csound réel restant avant de poursuivre la roadmap applicative.
 
 ## État actuel (réécrit intégralement à chaque /close)
-Phase 0 et gate V0 [FAIT]. Phase 1 (domaine compositionnel, migration de `Lignes de nuit`) [FAIT].
-Phase V1 [EN COURS] : runner canonique complet (`test_editor.ps1`, backend + frontend) exécuté avec
-succès le 2026-08-02 après régénération du golden `lignes_de_nuit` (désynchronisé par un changement
-externe du renderer `explo`, pas une régression éditeur). Mutation testing Python (mutmut) reste
-bloqué et documenté comme limite connue (LIM-001). Seul point restant avant de clore V1 et d'ouvrir
-la Phase 2 : propriétés Hypothesis sur le round-trip complet de `Composition` et la validation des
-références.
+Phase 0, gate V0, Phase 1 (domaine compositionnel) et Phase V1 (qualification domaine, migration et
+DSP) [FAIT]. Propriétés Hypothesis couvrent désormais `beats_to_samples`, le round-trip complet de
+`Composition` et le rejet des références pendantes. Mutation testing Python (mutmut) reste bloqué
+et documenté comme limite connue (LIM-001). Phase V2 (qualification API et persistance) [EN COURS] :
+premier point = tester chaque route nominale et chaque erreur typée de l'API de composition.
 
 ## Décisions structurantes (append only — 10 entrées max, 5 lignes max/entrée, archiver au-delà)
-- 2026-07-30 : Initialisation de l'agent EDITEUR (mode création), périmètre étendu à frontend/ et
-  backend/ (décision utilisateur) car le rôle implique de développer directement l'éditeur dans le
-  code applicatif existant, pas seulement produire des specs.
 - 2026-07-30 : Roadmap dédiée à l’éditeur intégré : sidebar gauche, édition complète de `Lignes de
   nuit`, gates automatiques interphases, seuil fonctionnel de 85 % et documentation exhaustive des
   fonctions manquantes et des tests manuels.
@@ -63,3 +58,6 @@ références.
   désynchronisé par un changement du renderer `explo`, pas une régression éditeur) ; décision actée
   avec confirmation explicite de l'utilisateur, car régénérer un golden touche un gate de
   déterminisme.
+- 2026-08-04 : Phase V1 close [FAIT] — propriétés Hypothesis (round-trip `Composition` + validation
+  des références) ajoutées via stratégies composites respectant le graphe de références ; le point
+  mutations reste bloqué et documenté (LIM-001). Phase V2 ouverte.

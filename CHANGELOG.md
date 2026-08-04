@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.20 — 2026-08-04
+
+### Ajouté
+
+- `tests/test_compositions.py` : propriétés Hypothesis sur le round-trip complet de `Composition`
+  (`test_composition_round_trip_preserves_structure`) et sur le rejet des références pendantes
+  (`test_composition_rejects_dangling_references`, couvre pattern→track, clip→pattern, mixer→track,
+  automation→track), via stratégies composites `_valid_compositions` et
+  `_compositions_with_dangling_reference`.
+
+### Modifié
+
+- `EDITEUR/roadmap_editeur_musical.md` : Phase V1 marquée [FAIT] (dernier point actionnable rempli ;
+  mutations restent bloquées, LIM-001), Phase V2 [EN COURS].
+
 ## v0.19 — 2026-08-02
 
 ### Modifié

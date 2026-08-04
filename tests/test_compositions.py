@@ -15,16 +15,170 @@ from crea_zik.gallery import composition_examples
 from crea_zik.models import (
     AutomationLane,
     AutomationPoint,
+    Clip,
     Composition,
     EffectInstance,
     MixerChannel,
     NoteEvent,
+    Pattern,
     Project,
+    RenderSettings,
+    Track,
 )
-from hypothesis import given
+from hypothesis import assume, given
 from hypothesis import strategies as st
+from hypothesis.strategies import composite
 from pydantic import ValidationError
 from scipy.io import wavfile
+
+_ST_TRACK_KIND = st.sampled_from(["drums", "bass", "pad", "arp", "lead"])
+_ST_SAMPLE_RATE = st.sampled_from([44_100, 48_000, 88_200, 96_000])
+_ST_FORMAT = st.sampled_from(["wav_pcm24", "wav_pcm16", "wav_float32"])
+
+
+@composite
+def _valid_compositions(draw) -> Composition:
+    track_count = draw(st.integers(min_value=1, max_value=8))
+    tracks = [
+        Track(
+            id=uuid4(),
+            name=f"track-{index}",
+            kind=draw(_ST_TRACK_KIND),
+            gain=draw(st.floats(min_value=0, max_value=2)),
+            pan=draw(st.floats(min_value=-1, max_value=1)),
+        )
+        for index in range(track_count)
+    ]
+    track_ids = [track.id for track in tracks]
+
+    pattern_count = draw(st.integers(min_value=0, max_value=4))
+    patterns = [
+        Pattern(
+            id=uuid4(),
+            track_id=draw(st.sampled_from(track_ids)),
+            events=[
+                NoteEvent(
+                    id=uuid4(),
+                    start_beat=draw(st.floats(min_value=0, max_value=20)),
+                    duration_beats=draw(st.floats(min_value=0.01, max_value=4)),
+                    midi_note=draw(st.integers(min_value=0, max_value=127)),
+                    velocity=draw(st.floats(min_value=0.01, max_value=1)),
+                )
+                for _ in range(draw(st.integers(min_value=0, max_value=4)))
+            ],
+        )
+        for _ in range(pattern_count)
+    ]
+    pattern_ids = [pattern.id for pattern in patterns]
+
+    clips = [
+        Clip(
+            id=uuid4(),
+            pattern_id=draw(st.sampled_from(pattern_ids)),
+            start_beat=draw(st.floats(min_value=0, max_value=10)),
+            length_beats=draw(st.floats(min_value=0.1, max_value=10)),
+            repeat_count=draw(st.integers(min_value=1, max_value=3)),
+        )
+        for _ in range(draw(st.integers(min_value=0, max_value=4)))
+    ] if pattern_ids else []
+
+    channel_count = draw(st.integers(min_value=0, max_value=4))
+    channels: list[MixerChannel] = []
+    for _ in range(channel_count):
+        track_id = draw(st.sampled_from(track_ids))
+        sends = {
+            existing.id: draw(st.floats(min_value=0, max_value=1))
+            for existing in channels
+            if draw(st.booleans())
+        }
+        output = draw(st.sampled_from([*[c.id for c in channels], "master"]))
+        mixer_track_id = track_id if draw(st.booleans()) else None
+        channels.append(
+            MixerChannel(
+                id=uuid4(),
+                track_id=mixer_track_id,
+                gain=draw(st.floats(min_value=0, max_value=2)),
+                pan=draw(st.floats(min_value=-1, max_value=1)),
+                mute=draw(st.booleans()),
+                solo=draw(st.booleans()),
+                output=output,
+                sends=sends,
+            )
+        )
+
+    lane_count = draw(st.integers(min_value=0, max_value=4))
+    lanes = [
+        AutomationLane(
+            id=uuid4(),
+            target=f"track.{draw(st.sampled_from(track_ids))}.gain",
+            points=[
+                AutomationPoint(
+                    beat=beat,
+                    value=draw(st.floats(min_value=0, max_value=2)),
+                )
+                for beat in sorted(
+                    draw(
+                        st.sets(
+                            st.floats(min_value=0, max_value=10),
+                            min_size=1,
+                            max_size=4,
+                        )
+                    )
+                )
+            ],
+        )
+        for _ in range(lane_count)
+    ]
+
+    return Composition(
+        seed=draw(st.integers(min_value=0, max_value=2**63 - 1)),
+        title=f"composition-{uuid4().hex[:8]}",
+        sample_rate=draw(_ST_SAMPLE_RATE),
+        tempo_bpm=draw(st.floats(min_value=20, max_value=400)),
+        time_signature=(draw(st.integers(min_value=1, max_value=32)), 4),
+        tracks=tracks,
+        patterns=patterns,
+        clips=clips,
+        mixer_channels=channels,
+        automation_lanes=lanes,
+        render_settings=RenderSettings(
+            duration_seconds=draw(st.floats(min_value=0.05, max_value=4)),
+            format=draw(_ST_FORMAT),
+        ),
+    )
+
+
+@composite
+def _compositions_with_dangling_reference(draw) -> dict:
+    composition = draw(_valid_compositions())
+    kind = draw(st.sampled_from(["pattern_track", "clip_pattern", "mixer_track", "automation_track"]))
+    payload = composition.model_dump(mode="json")
+    if kind == "pattern_track" and payload["patterns"]:
+        payload["patterns"][0]["track_id"] = str(uuid4())
+    elif kind == "clip_pattern" and payload["clips"]:
+        payload["clips"][0]["pattern_id"] = str(uuid4())
+    elif kind == "mixer_track" and payload["mixer_channels"]:
+        payload["mixer_channels"][0]["track_id"] = str(uuid4())
+    elif kind == "automation_track" and payload["automation_lanes"]:
+        target_track = str(uuid4())
+        payload["automation_lanes"][0]["target"] = f"track.{target_track}.gain"
+    else:
+        assume(False)
+    return payload
+
+
+@given(payload=_compositions_with_dangling_reference())
+def test_composition_rejects_dangling_references(payload: dict) -> None:
+    with pytest.raises(ValidationError):
+        Composition.model_validate(payload)
+
+
+@given(composition=_valid_compositions())
+def test_composition_round_trip_preserves_structure(composition: Composition) -> None:
+    serialized = composition.model_dump(mode="json")
+    restored = Composition.model_validate(serialized)
+    assert restored == composition
+    assert Composition.model_validate_json(composition.model_dump_json()) == composition
 
 
 def reference_composition() -> Composition:

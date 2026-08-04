@@ -1,26 +1,38 @@
-# Signals — editeur (MAJ 2026-08-02)
+# Signals — editeur (MAJ 2026-08-04)
 
 ## Actions ouvertes
-- [P1|ouvert] Compléter la Phase V1 : propriétés Hypothesis sur le round-trip complet de `Composition` et sur la validation des références (actuellement une seule propriété, sur `beats_to_samples`).
-  - fait quand: propriétés Hypothesis ajoutées et vertes pour le round-trip `Composition` et la validation des références, dernier point V1 restant
-  - réf: `EDITEUR/roadmap_editeur_musical.md` (Phase V1)
+- [P1|ouvert] Ouvrir la Phase V2 : tester chaque route nominale et chaque erreur typée de l'API de
+  composition (le fuzzing OpenAPI, les révisions concurrentes et l'isolation des dossiers viennent
+  après).
+  - fait quand: chaque route nominale et chaque erreur typée de l'API possède un test vert dans
+    `tests/test_api.py`
+  - réf: `EDITEUR/roadmap_editeur_musical.md` (Phase V2, point 1), `backend/src/crea_zik/api.py`,
+    `tests/test_api.py`
 
-## Dernière session (2026-08-02)
-# Session du 2026-08-02
+## Dernière session (2026-08-04)
+# Session du 2026-08-04
 
 ## Décisions prises
-- Le gate `lignes-de-nuit-reference` échouait non pas à cause d'une régression de l'éditeur, mais d'un golden désynchronisé suite au commit `explo` du 2026-08-01 (intégration du plugin kick au rendu, `render.py`/`spec.json` modifiés). Golden régénéré après confirmation explicite de l'utilisateur.
+- Phase V1 close [FAIT] : propriétés Hypothesis manquantes (round-trip `Composition` + validation
+  des références) ajoutées via stratégies composites. Dernier point actionnable rempli ; le point
+  mutations reste bloqué et documenté (LIM-001, limite actée).
 
 ## Livrables produits ou modifiés
-- `EDITEUR/fixtures/lignes_de_nuit.golden.json` : hashes (spec, master, stem `drums`) et métriques audio (peak, dc, corrélation stéréo) recalculés depuis le renderer `explo/morceau_electro` actuel.
-- `EDITEUR/roadmap_editeur_musical.md` : Phase V1, point non-régression V0 marqué [FAIT].
+- `tests/test_compositions.py` : +2 propriétés Hypothesis (`test_composition_round_trip_preserves_structure`,
+  `test_composition_rejects_dangling_references`) et leurs stratégies composites (`_valid_compositions`,
+  `_compositions_with_dangling_reference`, couvrant pattern→track, clip→pattern, mixer→track,
+  automation→track). Suite 11/11 verte.
+- `EDITEUR/roadmap_editeur_musical.md` : Phase V1 point 1 mis à jour (85→87 tests, propriétés
+  Hypothesis documentées) ; V1 marquée [FAIT], V2 [EN COURS].
 
 ## Hypothèses validées / invalidées
-- VALIDE — L'échec du gate V1 n'était pas une régression de l'éditeur : seuls le hash spec, le master et le stem `drums` divergeaient (les 4 autres stems et les caractéristiques audio structurelles — canaux, sample rate, durée — restaient identiques), cohérent avec un changement localisé au kick.
-- VALIDE — Après régénération du golden, `test_editor.ps1` passe intégralement : backend, frontend, mutation Stryker (68,66 % ≥ seuil 60 %), Playwright (7 tests + 1 visuel), markdown.
+- VALIDE — Des stratégies composites construisant des `Composition` valides (en respectant le graphe
+  de références et en évitant les cycles de mixage) permettent de property-tester à la fois le
+  round-trip JSON et le rejet systématique des références pendantes.
 
 ## Prochaine étape exacte
-Ajouter les propriétés Hypothesis manquantes (round-trip complet de `Composition`, validation des références) pour clore la Phase V1, seul point restant avant d'ouvrir la Phase 2.
+Ouvrir la Phase V2 : tester chaque route nominale et chaque erreur typée de l'API de composition
+dans `tests/test_api.py`, avant le fuzzing OpenAPI et l'isolation des dossiers.
 
 ## Question bloquante pour la session suivante
 Aucune
