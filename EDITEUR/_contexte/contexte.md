@@ -27,15 +27,14 @@ Music Composer, Adaptive Lab, Analyse & Export) et son backend de rendu, permett
   Csound réel restant avant de poursuivre la roadmap applicative.
 
 ## État actuel (réécrit intégralement à chaque /close)
-Phases 0/V0, 1/V1, V2, Phase 2 et Phase 3/V3 (shell, sidebar et routage) [FAIT]. Qualification du
-shell complète : composants et états de page testés (Vitest+RTL), axe-core sur l'éditeur réel et ses
-états, parcours Playwright URL directe/historique/sidebar active/conservation du projet, snapshots
-visuels approuvés ; runner canonique complet vert — backend 111 tests (couverture 88,61 %), frontend
-39 unitaires, a11y 5, e2e 10, mutation Stryker 87,31 % ≥ 60 %, build, visuel, markdownlint.
+Phases 0/V0, 1/V1, 2/V2, 3/V3 et V4 [FAIT]. Qualification V4 close : store 100 % lignes et branches,
+fast-check des inverses sur séquences d'actions, cent opérations puis cent undo/redo comparées,
+Stryker sur `editorStore.ts`/`transport.ts` (seuil bloquant 60 %) ; runner canonique vert (rapport
+`test-results/v1-20260804-151348.json`, 20 checks). Phase 4 fonctionnelle en cours : store,
+commandes, undo/redo, transactions, sélection, copier/coller/dupliquer, grille et dirty state
+livrés ; il reste la virtualisation des grandes listes avant d'ouvrir la Phase 5.
 
 ## Décisions structurantes (append only — 10 entrées max, 5 lignes max/entrée, archiver au-delà)
-- 2026-07-30 : La spécification de composition versionnée est la source unique du mix et des stems ;
-  toute copie remappe aussi les références du mixer.
 - 2026-07-30 : La préécoute lit des plages de révision via Web Audio et le rendu utilise des voix DSP
   spécialisées par famille instrumentale.
 - 2026-07-30 : Seuil de couverture frontend abaissé temporairement (60 %/75 %) pour
@@ -64,3 +63,7 @@ visuels approuvés ; runner canonique complet vert — backend 111 tests (couver
   de page testés (Vitest+RTL), axe-core sur l'éditeur réel et ses états introuvable/vide, parcours
   Playwright URL directe/historique/sidebar active/conservation du projet, snapshots visuels
   approuvés ; runner canonique complet vert (V0→V2 inclus).
+- 2026-08-04 : Phase V4 (store, commandes et sauvegarde) close [FAIT] — store 100 % lignes et
+  branches, fast-check des inverses, cent opérations puis cent undo/redo comparées, Stryker sur
+  `editorStore.ts`/`transport.ts` (break 60 %) ; runner canonique vert (20 checks). La Phase 4
+  fonctionnelle reste ouverte : seule la virtualisation des grandes listes manque.

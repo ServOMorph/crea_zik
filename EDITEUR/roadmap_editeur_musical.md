@@ -293,13 +293,22 @@ comme limite connue plutôt que comme gate contourné ; il ne bloque pas la phas
   Csound et golden inchangés, frontend lint/typecheck/unit (39)/coverage/a11y (5)/mutation
   (87,31 % ≥ 60 %)/build/e2e (10)/visuel, markdownlint.
 
-### Phase V4 — Qualification store, commandes et sauvegarde [TODO]
+### Phase V4 — Qualification store, commandes et sauvegarde [FAIT]
 
-- [ ] Atteindre 100 % lignes et branches sur store, commandes et historique.
-- [ ] Générer avec `fast-check` des séquences d’actions et vérifier tous leurs inverses.
-- [ ] Tester cent opérations suivies de cent undo/redo et comparer les états exacts.
-- [ ] Exécuter Stryker sur les transformations critiques avec seuil bloquant.
-- [ ] Exécuter V0 à V3 avant d’autoriser la phase 5.
+- [x] Atteindre 100 % lignes et branches sur store, commandes et historique
+  (couverture-summary 2026-08-04 : `editorStore.ts` 100 % lignes / 100 % branches).
+- [x] Générer avec `fast-check` des séquences d’actions et vérifier tous leurs inverses
+  (`editorStore.property.test.ts` : undo rétablit l'état précédent exact, redo le rejoue ; 100 runs).
+- [x] Tester cent opérations suivies de cent undo/redo et comparer les états exacts
+  (`editorStore.test.ts` « restaure exactement cent commandes avec undo puis redo », historique
+  borné à 200, suppressions en cascade, transactions, coller avec remappage des identifiants).
+- [x] Exécuter Stryker sur les transformations critiques avec seuil bloquant
+  (`stryker.config.mjs` étendu à `editorStore.ts` et `transport.ts`, break 60 % ; gate runner vert).
+- [x] Exécuter V0 à V3 avant d’autoriser la phase 5 — runner canonique `test_editor.ps1` complet
+  exécuté le 2026-08-04 15:17, gate vert : backend 111 tests (couverture 88,61 % ≥ 80 %),
+  déterminisme Csound et golden inchangés, frontend lint/typecheck/unit/coverage/a11y/mutation
+  (Stryker ≥ 60 %)/build/e2e (10)/visuel, markdownlint (rapport
+  `EDITEUR/test-results/v1-20260804-151348.json`, success true, 20 checks).
 
 ### Phase V5 — Qualification transport et Web Audio [TODO]
 
@@ -533,23 +542,29 @@ Gate :
 - la navigation ne perd ni sélection ni modifications sans confirmation ;
 - les parcours Playwright existants restent fonctionnels après adaptation.
 
-## Phase 4 — Noyau d’édition, sélection et historique [TODO]
+## Phase 4 — Noyau d’édition, sélection et historique [EN COURS]
 
 But : fournir une base cohérente à toutes les vues d’édition.
 
 Tâches :
 
-- [ ] Créer un store d’édition local distinct du cache serveur.
-- [ ] Définir les commandes atomiques d’édition utilisées par toutes les vues.
-- [ ] Implémenter undo/redo multi-niveaux, transactions de glisser-déposer et regroupement des
-  frappes continues.
-- [ ] Implémenter sélection simple, multiple, rectangle, tout sélectionner et désélection.
-- [ ] Ajouter couper, copier, coller, dupliquer et supprimer avec remappage sûr des identifiants.
-- [ ] Ajouter grille temporelle, snap configurable, zoom horizontal/vertical et défilement.
-- [ ] Ajouter dirty state, sauvegarde explicite, raccourci `Ctrl+S` et retour d’erreurs de validation.
-- [ ] Ajouter une stratégie de virtualisation pour les grandes listes de pistes et d’événements.
-- [ ] Tester chaque commande, les inverses undo/redo, les transactions et les changements de
-  sélection sur données verrouillées.
+- [x] Créer un store d’édition local distinct du cache serveur (`createEditorState` sépare
+  `composition` et `savedComposition`, qualifié par V4).
+- [x] Définir les commandes atomiques d’édition utilisées par toutes les vues (`execute`, `transaction`).
+- [x] Implémenter undo/redo multi-niveaux, transactions de glisser-déposer et regroupement des
+  frappes continues (historique borné à 200, `groupWithPrevious`).
+- [x] Implémenter sélection simple, multiple, rectangle, tout sélectionner et désélection
+  (`select` additif, `selectRectangle`, `selectAll`, `clearSelection`).
+- [x] Ajouter couper, copier, coller, dupliquer et supprimer avec remappage sûr des identifiants
+  (`copySelection`, `cutSelection`, `paste` avec nouveaux UUID, `duplicateSelection`, suppressions en cascade).
+- [x] Ajouter grille temporelle, snap configurable, zoom horizontal/vertical et défilement
+  (`setGrid` avec bornes strictement positives, contrôles dans `EditorLanding.tsx`).
+- [x] Ajouter dirty state, sauvegarde explicite, raccourci `Ctrl+S` et retour d’erreurs de validation
+  (`isDirty`, `markSaving`/`markSaved`/`markSaveFailed`, raccourci dans `EditorLanding.tsx`).
+- [ ] Ajouter une stratégie de virtualisation pour les grandes listes de pistes et d’événements —
+  **non implémentée** (aucun `virtual` dans `frontend/src/`), à livrer avant d'ouvrir la Phase 5.
+- [x] Tester chaque commande, les inverses undo/redo, les transactions et les changements de
+  sélection sur données verrouillées (qualifié par V4, voir Phase V4 ci-dessus).
 
 Gate :
 

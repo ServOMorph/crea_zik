@@ -10,3 +10,5 @@ Décisions archivées depuis `_contexte/contexte.md` (append only).
   fonctions manquantes et des tests manuels.
 - 2026-07-30 : Les services et écrans partagés déjà livrés sont réutilisés comme fondations, sans
   considérer la phase 0 de l'éditeur terminée avant la création du runner canonique et la réussite de V0.
+- 2026-07-30 : La spécification de composition versionnée est la source unique du mix et des stems ;
+  toute copie remappe aussi les références du mixer.

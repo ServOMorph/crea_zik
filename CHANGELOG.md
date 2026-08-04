@@ -1,5 +1,25 @@
 # Changelog
 
+## v0.23 — 2026-08-04
+
+### Ajouté
+
+- `frontend/src/editor/editorStore.property.test.ts` (nouveau) : fast-check sur séquences d'actions
+  générées — chaque action est annulée exactement par undo puis rejouée par redo, et une séquence
+  entière est défaite puis refaite à l'identique (100 runs).
+
+### Modifié
+
+- `frontend/src/editor/editorStore.test.ts` : +185 lignes — cent commandes puis cent undo/redo
+  comparées exactement, historique borné à 200 entrées, suppressions en cascade
+  (tracks→patterns→clips), transactions, sélection multicollection et coller avec remappage des
+  identifiants.
+- `frontend/stryker.config.mjs` : mutation étendue à `editorStore.ts` et `transport.ts`, seuil
+  bloquant break 60 %.
+- `EDITEUR/roadmap_editeur_musical.md` : Phase V4 [FAIT] avec preuves (runner canonique vert le
+  2026-08-04, store 100 % lignes et branches) ; Phase 4 passée [EN COURS], seule la virtualisation
+  des grandes listes reste ouverte.
+
 ## v0.22 — 2026-08-04
 
 ### Ajouté
