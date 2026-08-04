@@ -35,6 +35,36 @@ describe("transport", () => {
     });
   });
 
+  it("avance la position exactement selon l’horloge simulée en lecture", () => {
+    const state = { ...createTransportState(composition), status: "playing" as const, positionBeat: 4 };
+
+    expect(advance(state, 0.5, 120, 60).positionBeat).toBeCloseTo(5);
+    expect(advance(state, 0.25, 120, 60).positionBeat).toBeCloseTo(4.5);
+  });
+
+  it("ne bouge pas la position en pause ou à l’arrêt", () => {
+    const duration = compositionDurationBeats(composition);
+    const paused = { ...createTransportState(composition), status: "paused" as const, positionBeat: 8 };
+    const stopped = { ...createTransportState(composition), status: "stopped" as const, positionBeat: 2 };
+
+    expect(advance(paused, 1, composition.tempo_bpm, duration).positionBeat).toBe(8);
+    expect(advance(stopped, 1, composition.tempo_bpm, duration).positionBeat).toBe(2);
+  });
+
+  it("maintient la position bouclée sur plusieurs tours de boucle", () => {
+    const state = {
+      ...createTransportState(composition),
+      status: "playing" as const,
+      positionBeat: 7,
+      loop: { enabled: true, range: { startBeat: 4, endBeat: 8 } },
+    };
+    let current = advance(state, 3, composition.tempo_bpm, 60);
+
+    expect(current.positionBeat).toBeCloseTo(5);
+    current = advance(current, 3.5, composition.tempo_bpm, 60);
+    expect(current.positionBeat).toBeCloseTo(4);
+  });
+
   it("reboucle la tête de lecture dans la plage définie", () => {
     const state = {
       ...createTransportState(composition),

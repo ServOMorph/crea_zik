@@ -12,3 +12,8 @@ Décisions archivées depuis `_contexte/contexte.md` (append only).
   considérer la phase 0 de l'éditeur terminée avant la création du runner canonique et la réussite de V0.
 - 2026-07-30 : La spécification de composition versionnée est la source unique du mix et des stems ;
   toute copie remappe aussi les références du mixer.
+- 2026-07-30 : La préécoute lit des plages de révision via Web Audio et le rendu utilise des voix DSP
+  spécialisées par famille instrumentale.
+- 2026-07-30 : Seuil de couverture frontend abaissé temporairement (60 %/75 %) pour
+  `TransportBar.tsx`/`EditorLanding.tsx`, non testés en profondeur ; à remonter à 80 % après les
+  phases V3/V5 dédiées, pour éviter la couverture artificielle interdite par la roadmap.

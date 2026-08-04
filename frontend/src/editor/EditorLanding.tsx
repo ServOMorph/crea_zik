@@ -22,6 +22,7 @@ import {
   undo,
 } from "./editorStore";
 import { TransportBar } from "./TransportBar";
+import { VirtualList } from "./VirtualList";
 
 type ProjectSummary = { id: string; name: string; compositions: { id: string; title: string }[] };
 type GalleryComposition = { id: string; title: string; tempo_bpm: number; time_signature: [number, number] };
@@ -45,15 +46,9 @@ export function EditorLanding({ search, onNavigate, onDirtyChange }: EditorLandi
   const [editor, setEditor] = useState<ReturnType<typeof createEditorState> | null>(null);
   const [selectedProjectId, setSelectedProjectId] = useState("");
   const [selectedExampleId, setSelectedExampleId] = useState("");
-  const [trackWindowStart, setTrackWindowStart] = useState(0);
   const [state, setState] = useState<"loading" | "ready" | "error" | "missing">("loading");
   const [message, setMessage] = useState("");
   const [offline, setOffline] = useState(!navigator.onLine);
-  const trackWindowSize = 80;
-  const trackWindowStartBounded = Math.min(
-    trackWindowStart,
-    Math.max(0, (editor?.composition.tracks.length ?? 0) - trackWindowSize),
-  );
 
   useEffect(() => {
     const refreshOnlineState = () => setOffline(!navigator.onLine);
@@ -406,52 +401,33 @@ export function EditorLanding({ search, onNavigate, onDirtyChange }: EditorLandi
                 </button>
               </div>
             </div>
-            <ul aria-label="Pistes de la composition">
-              {editor.composition.tracks
-                .slice(trackWindowStartBounded, trackWindowStartBounded + trackWindowSize)
-                .map((track) => {
-                  const selected = editor.selection.tracks.includes(track.id);
-                  return (
-                    <li key={track.id} className={selected ? "is-selected" : undefined}>
-                      <button
-                        type="button"
-                        aria-pressed={selected}
-                        onClick={(event) =>
-                          setEditor(
-                            (current) =>
-                              current && select(current, "tracks", [track.id], event.ctrlKey || event.metaKey),
-                          )
-                        }
-                      >
-                        {track.name} <span>{track.kind}</span>
-                      </button>
-                    </li>
-                  );
-                })}
-            </ul>
-            {editor.composition.tracks.length > trackWindowSize && (
-              <div className="track-browser__window">
-                <button
-                  type="button"
-                  disabled={trackWindowStartBounded === 0}
-                  onClick={() => setTrackWindowStart((current) => Math.max(0, current - trackWindowSize))}
-                >
-                  Pistes précédentes
-                </button>
-                <p>
-                  Pistes {trackWindowStartBounded + 1} à{" "}
-                  {Math.min(trackWindowStartBounded + trackWindowSize, editor.composition.tracks.length)} sur{" "}
-                  {editor.composition.tracks.length}
-                </p>
-                <button
-                  type="button"
-                  disabled={trackWindowStartBounded + trackWindowSize >= editor.composition.tracks.length}
-                  onClick={() => setTrackWindowStart((current) => current + trackWindowSize)}
-                >
-                  Pistes suivantes
-                </button>
-              </div>
-            )}
+            <VirtualList
+              items={editor.composition.tracks}
+              idFor={(track) => track.id}
+              height={320}
+              rowHeight={44}
+              overscan={4}
+              ariaLabel="Pistes de la composition"
+              renderRow={(track) => {
+                const selected = editor.selection.tracks.includes(track.id);
+                return (
+                  <div className={selected ? "is-selected" : undefined}>
+                    <button
+                      type="button"
+                      aria-pressed={selected}
+                      onClick={(event) =>
+                        setEditor(
+                          (current) =>
+                            current && select(current, "tracks", [track.id], event.ctrlKey || event.metaKey),
+                        )
+                      }
+                    >
+                      {track.name} <span>{track.kind}</span>
+                    </button>
+                  </div>
+                );
+              }}
+            />
           </section>
         </section>
       )}

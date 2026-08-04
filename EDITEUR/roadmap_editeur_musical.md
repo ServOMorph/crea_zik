@@ -310,13 +310,27 @@ comme limite connue plutôt que comme gate contourné ; il ne bloque pas la phas
   (Stryker ≥ 60 %)/build/e2e (10)/visuel, markdownlint (rapport
   `EDITEUR/test-results/v1-20260804-151348.json`, success true, 20 checks).
 
-### Phase V5 — Qualification transport et Web Audio [TODO]
+### Phase V5 — Qualification transport et Web Audio [FAIT]
 
-- [ ] Tester la machine d’état avec horloge contrôlée et wrapper audio simulé.
-- [ ] Tester lecture, pause, stop, seek, boucle et fin de média dans Chromium réel.
-- [ ] Mesurer la dérive playhead/audio sur des scénarios verrouillés.
-- [ ] Tester cache, invalidation, annulation et concurrence des préécoutes.
-- [ ] Exécuter V0 à V4 avant d’autoriser la phase 6.
+- [x] Tester la machine d’état avec horloge contrôlée et wrapper audio simulé
+  (`transport.test.ts` : avance exacte 0,5 s→1 beat à 120 bpm, immobilité pause/stop, rebouclage
+  multi-tours ; `TransportBar.test.tsx` : synchro playhead à `MockAudioContext`, pause fige,
+  cache, interruption sur composition modifiée, annulation d'une préécoute en file, fin de média).
+- [x] Tester lecture, pause, stop, seek, boucle et fin de média dans Chromium réel
+  (`e2e/studio.spec.ts` « the editor transport plays, pauses, stops and reaches media end » :
+  lire la sélection, playhead qui avance, pause → Lire, reprise → Relancer, stop → Lire,
+  relecture jusqu'à la fin ; sélecteur playhead désambiguïsé par `output[aria-live="polite"]`).
+- [x] Mesurer la dérive playhead/audio sur des scénarios verrouillés (position attendue exacte à
+  horloge audio simulée : audioClock=1 → « 1.3 » ; dérive nulle sur ces scénarios).
+- [x] Tester cache, invalidation, annulation et concurrence des préécoutes (`PreviewCache` par
+  clé de plage, `PreviewRequestGate` ; `transport.test.ts` invalidation des seules plages
+  recouvrantes + requête annulée qui ne remplace pas la préécoute la plus récente ;
+  `TransportBar.test.tsx` réutilisation du cache sans nouveau rendu).
+- [x] Exécuter V0 à V4 avant d’autoriser la phase 6 — runner canonique `test_editor.ps1` complet
+  exécuté le 2026-08-04 22:47, gate vert : backend 111 tests (couverture 88,61 % ≥ 80 %),
+  déterminisme Csound et golden inchangés, frontend lint/typecheck/unit (72)/coverage/a11y (5)/
+  mutation (Stryker 95,37 % ≥ 60 %)/build/e2e (12)/visuel, markdownlint (rapport
+  `EDITEUR/test-results/v1-20260804-224727.json`, success true, 20 checks).
 
 ### Phase V6 — Qualification Channel Rack [TODO]
 
@@ -542,7 +556,7 @@ Gate :
 - la navigation ne perd ni sélection ni modifications sans confirmation ;
 - les parcours Playwright existants restent fonctionnels après adaptation.
 
-## Phase 4 — Noyau d’édition, sélection et historique [EN COURS]
+## Phase 4 — Noyau d’édition, sélection et historique [FAIT]
 
 But : fournir une base cohérente à toutes les vues d’édition.
 
@@ -561,8 +575,11 @@ Tâches :
   (`setGrid` avec bornes strictement positives, contrôles dans `EditorLanding.tsx`).
 - [x] Ajouter dirty state, sauvegarde explicite, raccourci `Ctrl+S` et retour d’erreurs de validation
   (`isDirty`, `markSaving`/`markSaved`/`markSaveFailed`, raccourci dans `EditorLanding.tsx`).
-- [ ] Ajouter une stratégie de virtualisation pour les grandes listes de pistes et d’événements —
-  **non implémentée** (aucun `virtual` dans `frontend/src/`), à livrer avant d'ouvrir la Phase 5.
+- [x] Ajouter une stratégie de virtualisation pour les grandes listes de pistes et d’événements
+  (`frontend/src/editor/VirtualList.tsx` + `virtualization.ts`, livré le 2026-08-04 : fenêtre
+  scrollante ne montant que les lignes visibles avec overscan, testée sur 5000 lignes, couverture
+  100 %, intégrée à la liste de pistes de `EditorLanding.tsx` à la place de l'ancienne pagination ;
+  réutilisable pour les listes d'événements des phases suivantes).
 - [x] Tester chaque commande, les inverses undo/redo, les transactions et les changements de
   sélection sur données verrouillées (qualifié par V4, voir Phase V4 ci-dessus).
 
@@ -573,21 +590,31 @@ Gate :
 - une sauvegarde réussie nettoie le dirty state et une sauvegarde échouée le conserve ;
 - les erreurs ciblent le contrôle ou l’objet concerné.
 
-## Phase 5 — Transport et préécoute [TODO]
+## Phase 5 — Transport et préécoute [EN COURS]
 
 But : écouter et naviguer dans le morceau pendant l’édition.
 
 Tâches :
 
-- [ ] Créer une barre de transport persistante : lecture, pause, stop, retour début et position.
-- [ ] Ajouter affichage mesures/temps, tempo, métrique et mode pattern/morceau.
-- [ ] Ajouter playhead cliquable, scrubbing, boucle et lecture d’une sélection.
-- [ ] Ajouter volume de monitoring, mute global et indicateur de clipping.
-- [ ] Utiliser Web Audio API pour la lecture, la synchronisation visuelle et le gain de monitoring.
-- [ ] Ajouter un rendu de préécoute de plage annulable et mis en cache par hash.
-- [ ] Invalider uniquement les plages affectées par une modification.
-- [ ] Définir un comportement explicite lorsqu’une édition survient pendant la lecture.
-- [ ] Tester machine d’état du transport, boucles, seek, fin de média, cache et annulation.
+- [x] Créer une barre de transport persistante : lecture, pause, stop, retour début et position
+  (`TransportBar.tsx`, qualifié par V5).
+- [ ] Ajouter affichage mesures/temps, tempo, métrique et mode pattern/morceau — partiel :
+  mesures/temps (`formatMusicalPosition`), temps en secondes et mode pattern/morceau affichés ;
+  le tempo et la métrique ne sont pas encore affichés (à faire).
+- [x] Ajouter playhead cliquable, scrubbing, boucle et lecture d’une sélection (slider de position,
+  `Lire la sélection`, `Boucle sélection`, qualifié par V5).
+- [x] Ajouter volume de monitoring, mute global et indicateur de clipping (détection
+  `clipDetected` sur le buffer décodé, qualifié par V5).
+- [x] Utiliser Web Audio API pour la lecture, la synchronisation visuelle et le gain de monitoring
+  (`AudioContext`, `AudioBufferSourceNode`, nœud de gain dédié, qualifié par V5).
+- [x] Ajouter un rendu de préécoute de plage annulable et mis en cache par hash (`PreviewCache`
+  par clé `previewKey`, `PreviewRequestGate`, qualifié par V5).
+- [x] Invalider uniquement les plages affectées par une modification (`PreviewCache.invalidate`
+  par plage, testé — `transport.test.ts`).
+- [x] Définir un comportement explicite lorsqu’une édition survient pendant la lecture (arrêt +
+  message « Préécoute interrompue : la composition a été modifiée. », testé).
+- [x] Tester machine d’état du transport, boucles, seek, fin de média, cache et annulation
+  (qualifié par V5, voir Phase V5 ci-dessus).
 
 Gate :
 

@@ -196,3 +196,37 @@ test("the music editor opens a project composition from a direct route", async (
   await page.getByRole("link", { name: "Éditeur musical" }).click();
   await expect(page).toHaveURL(directUrl);
 });
+
+test("the editor transport plays, pauses, stops and reaches media end", async ({ page }) => {
+  const projectName = `E2E transport ${Date.now()}`;
+  await page.goto("/");
+  await page.getByRole("textbox", { name: "Name", exact: true }).fill(projectName);
+  await page.getByRole("button", { name: "Create", exact: true }).click();
+  await page.getByRole("link", { name: "Éditeur musical" }).click();
+  await page.getByRole("button", { name: "Créer une copie éditable" }).click();
+  await expect(page).toHaveURL(/\/editor\?project=.*&composition=.*/);
+  await expect(page.getByRole("heading", { name: "Lignes de nuit" })).toBeVisible();
+
+  await page.getByLabel("Fin de sélection").fill("4");
+  await page.getByRole("button", { name: "Lire la sélection" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "Préécoute prête" })).toBeVisible({
+    timeout: 35_000,
+  });
+  await expect(page.getByRole("button", { name: "Relancer" })).toBeVisible();
+
+  const playhead = page.locator('output[aria-live="polite"]');
+  const before = await playhead.textContent();
+  await expect.poll(() => playhead.textContent(), { timeout: 6_000 }).not.toBe(before);
+
+  await page.getByRole("button", { name: "Pause" }).click();
+  await expect(page.getByRole("button", { name: "Lire", exact: true })).toBeVisible();
+
+  await page.getByRole("button", { name: "Lire", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Relancer" })).toBeVisible();
+  await page.getByRole("button", { name: "Stop" }).click();
+  await expect(page.getByRole("button", { name: "Lire", exact: true })).toBeVisible();
+
+  await page.getByRole("button", { name: "Lire la sélection" }).click();
+  await expect(page.getByRole("button", { name: "Relancer" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Lire", exact: true })).toBeVisible({ timeout: 35_000 });
+});

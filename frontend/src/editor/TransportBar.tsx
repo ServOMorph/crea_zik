@@ -54,7 +54,15 @@ export function TransportBar({ composition, projectId, compositionId, ensureSave
   const playbackRef = useRef<Playback | null>(null);
   const previousCompositionKey = useRef(previewKey(composition, { startBeat: 0, endBeat: durationBeats }));
 
+  const cancelPreview = useCallback(() => {
+    requestGateRef.current.cancel();
+    const jobId = jobIdRef.current;
+    jobIdRef.current = null;
+    if (jobId) void apiRequest(`/api/jobs/${jobId}/cancel`, { method: "POST" }).catch(() => undefined);
+  }, []);
+
   const stopPlayback = useCallback((reset = false) => {
+    cancelPreview();
     const playback = playbackRef.current;
     playbackRef.current = null;
     if (playback) {
@@ -62,14 +70,7 @@ export function TransportBar({ composition, projectId, compositionId, ensureSave
       playback.source.stop();
     }
     setTransport((current) => ({ ...current, status: "stopped", positionBeat: reset ? 0 : current.positionBeat }));
-  }, []);
-
-  const cancelPreview = useCallback(() => {
-    requestGateRef.current.cancel();
-    const jobId = jobIdRef.current;
-    jobIdRef.current = null;
-    if (jobId) void apiRequest(`/api/jobs/${jobId}/cancel`, { method: "POST" }).catch(() => undefined);
-  }, []);
+  }, [cancelPreview]);
 
   useEffect(() => {
     return () => {

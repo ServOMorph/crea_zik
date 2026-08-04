@@ -27,19 +27,14 @@ Music Composer, Adaptive Lab, Analyse & Export) et son backend de rendu, permett
   Csound réel restant avant de poursuivre la roadmap applicative.
 
 ## État actuel (réécrit intégralement à chaque /close)
-Phases 0/V0, 1/V1, 2/V2, 3/V3 et V4 [FAIT]. Qualification V4 close : store 100 % lignes et branches,
-fast-check des inverses sur séquences d'actions, cent opérations puis cent undo/redo comparées,
-Stryker sur `editorStore.ts`/`transport.ts` (seuil bloquant 60 %) ; runner canonique vert (rapport
-`test-results/v1-20260804-151348.json`, 20 checks). Phase 4 fonctionnelle en cours : store,
-commandes, undo/redo, transactions, sélection, copier/coller/dupliquer, grille et dirty state
-livrés ; il reste la virtualisation des grandes listes avant d'ouvrir la Phase 5.
+Phases 0→3/V0→V3, V4, Phase 4 et V5 [FAIT]. Virtualisation livrée (`VirtualList` +
+`computeVirtualWindow`) et intégrée à la liste de pistes de `EditorLanding` (fini : pagination).
+Transport et préécoute qualifiés : machine d'état à horloge contrôlée, `MockAudioContext`,
+parcours Chromium réel, cache/invalidation/annulation ; runner canonique vert (rapport
+`test-results/v1-20260804-224727.json`, 20 checks). Phase 5 fonctionnelle [EN COURS] : il ne reste
+que l'affichage du tempo et de la métrique dans la barre de transport avant d'ouvrir la Phase 6.
 
 ## Décisions structurantes (append only — 10 entrées max, 5 lignes max/entrée, archiver au-delà)
-- 2026-07-30 : La préécoute lit des plages de révision via Web Audio et le rendu utilise des voix DSP
-  spécialisées par famille instrumentale.
-- 2026-07-30 : Seuil de couverture frontend abaissé temporairement (60 %/75 %) pour
-  `TransportBar.tsx`/`EditorLanding.tsx`, non testés en profondeur ; à remonter à 80 % après les
-  phases V3/V5 dédiées, pour éviter la couverture artificielle interdite par la roadmap.
 - 2026-07-30 : mutmut reste verrouillé en dépendance mais son exécution est bloquée nativement sous
   Windows (WSL requis) ; traité comme réserve d'infrastructure documentée, pas comme gate contourné.
 - 2026-08-01 : mutmut reste bloqué même sous WSL provisionné (Ubuntu, Python 3.13, Csound) : incompatibilité
@@ -67,3 +62,9 @@ livrés ; il reste la virtualisation des grandes listes avant d'ouvrir la Phase 
   branches, fast-check des inverses, cent opérations puis cent undo/redo comparées, Stryker sur
   `editorStore.ts`/`transport.ts` (break 60 %) ; runner canonique vert (20 checks). La Phase 4
   fonctionnelle reste ouverte : seule la virtualisation des grandes listes manque.
+- 2026-08-04 : Phase 4 fonctionnelle et Phase V5 closes [FAIT] — virtualisation livrée
+  (`VirtualList` + `computeVirtualWindow`, couverture 100 %, 5000 lignes) et intégrée à
+  `EditorLanding` ; transport et préécoute qualifiés (horloge contrôlée, `MockAudioContext`,
+  Chromium réel, cache/invalidation/annulation) ; runner canonique vert
+  (`EDITEUR/test-results/v1-20260804-224727.json`, 20 checks). La Phase 5 fonctionnelle reste
+  ouverte sur un point : affichage du tempo et de la métrique dans `TransportBar`.

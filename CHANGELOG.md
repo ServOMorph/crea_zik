@@ -1,5 +1,33 @@
 # Changelog
 
+## v0.24 — 2026-08-04
+
+### Ajouté
+
+- `frontend/src/editor/virtualization.ts` + `VirtualList.tsx` (nouveaux) : fenêtre scrollante
+  générique pour les grandes listes — fonction pure `computeVirtualWindow` (overscan 4,
+  `aria-setsize`/`aria-posinset`), testée sur 5000 lignes, 100 % couverture lignes et branches.
+- `frontend/src/editor/virtualization.test.ts` + `VirtualList.test.tsx` (nouveaux, 8 tests).
+- `frontend/src/editor/TransportBar.test.tsx` (nouveau, 6 tests) : transport testé via
+  `MockAudioContext` — synchro playhead/audio, pause fige la position, réutilisation du cache sans
+  nouveau rendu, interruption sur composition modifiée, annulation d'une préécoute en file, fin de
+  média.
+- `frontend/e2e/studio.spec.ts` : test e2e transport dans Chromium réel (lecture → pause → reprise
+  → stop → relecture jusqu'à la fin ; sélecteur playhead désambiguïsé par `output[aria-live]`).
+
+### Modifié
+
+- `frontend/src/editor/EditorLanding.tsx` : la liste de pistes utilise `VirtualList` à la place de
+  l'ancienne pagination (`trackWindowStart` supprimé).
+- `frontend/src/editor/transport.test.ts` : +4 tests à horloge contrôlée (avance exacte
+  0,5 s→1 beat à 120 bpm, immobilité pause/stop, rebouclage multi-tours).
+- `frontend/src/editor/TransportBar.tsx` : `cancelPreview` extrait et appelé par `stopPlayback`
+  — corrige un rendu périmé qui pouvait remplacer une préécoute plus récente après un Stop.
+- `EDITEUR/roadmap_editeur_musical.md` : Phase 4 fonctionnelle et Phase V5 [FAIT] (preuves :
+  virtualisation livrée, runner canonique vert V5 le 2026-08-04, rapport
+  `EDITEUR/test-results/v1-20260804-224727.json`, 20 checks) ; Phase 5 passée [EN COURS], il ne
+  reste que l'affichage du tempo et de la métrique.
+
 ## v0.23 — 2026-08-04
 
 ### Ajouté

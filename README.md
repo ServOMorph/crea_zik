@@ -48,6 +48,14 @@ vert (V0→V3 inclus, rapport `EDITEUR/test-results/v1-20260804-151348.json`, 20
 d'édition de la Phase 4 est livré (store local, commandes atomiques, undo/redo, transactions,
 sélection, copier/coller/dupliquer, grille, dirty state et `Ctrl+S`) ; il reste la virtualisation
 des grandes listes avant d'ouvrir la Phase 5 (transport et préécoute).
+La Phase 4 fonctionnelle est close [FAIT] : la virtualisation est livrée (`VirtualList` +
+`computeVirtualWindow`, fenêtre scrollante avec overscan, testée sur 5000 lignes, 100 % couverture)
+et intégrée aux pistes de `EditorLanding`. La phase V5 (qualification transport et Web Audio) est
+close [FAIT] : machine d'état testée à horloge contrôlée, `MockAudioContext`, parcours de lecture
+Chromium réel et cache/invalidation/annulation des préécoutes ; runner canonique vert (rapport
+`EDITEUR/test-results/v1-20260804-224727.json`, 20 checks, e2e 12, mutation Stryker 95,37 %).
+La Phase 5 fonctionnelle est [EN COURS] : seule l'affichage du tempo et de la métrique dans la
+barre de transport reste à livrer avant l'ouverture de la Phase 6 (Channel Rack).
 Le gate de déterminisme Csound réel de la phase 1 (roadmap studio audio procédural) est validé (trois rendus indépendants, même SHA-256 du WAV).
 La phase 2 de `roadmap_studio_audio_procedural.md` a été réauditée et close [FAIT] : le code réel
 dépasse largement sa description initiale. Les phases 3 (bibliothèque DSP/Sound Designer) et 4
