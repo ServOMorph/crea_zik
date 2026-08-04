@@ -27,15 +27,13 @@ Music Composer, Adaptive Lab, Analyse & Export) et son backend de rendu, permett
   Csound réel restant avant de poursuivre la roadmap applicative.
 
 ## État actuel (réécrit intégralement à chaque /close)
-Phases 0/V0, 1/V1, V2 et Phase 2 (API de composition et persistance sûre) [FAIT]. Qualification API
-et persistance complète : routes nominales et erreurs typées testées, fuzzing OpenAPI étendu,
-révisions concurrentes, écriture interrompue/annulation/reprise, chemins hostiles et isolation des
-projets qualifiés. Runner canonique complet vert (backend 111 tests, couverture 88,61 %, frontend,
-mutation et e2e). Mutation testing Python (mutmut) reste documenté comme limite connue (LIM-001).
+Phases 0/V0, 1/V1, V2, Phase 2 et Phase 3/V3 (shell, sidebar et routage) [FAIT]. Qualification du
+shell complète : composants et états de page testés (Vitest+RTL), axe-core sur l'éditeur réel et ses
+états, parcours Playwright URL directe/historique/sidebar active/conservation du projet, snapshots
+visuels approuvés ; runner canonique complet vert — backend 111 tests (couverture 88,61 %), frontend
+39 unitaires, a11y 5, e2e 10, mutation Stryker 87,31 % ≥ 60 %, build, visuel, markdownlint.
 
 ## Décisions structurantes (append only — 10 entrées max, 5 lignes max/entrée, archiver au-delà)
-- 2026-07-30 : Les services et écrans partagés déjà livrés sont réutilisés comme fondations, sans
-  considérer la phase 0 de l’éditeur terminée avant la création du runner canonique et la réussite de V0.
 - 2026-07-30 : La spécification de composition versionnée est la source unique du mix et des stems ;
   toute copie remappe aussi les références du mixer.
 - 2026-07-30 : La préécoute lit des plages de révision via Web Audio et le rendu utilise des voix DSP
@@ -62,3 +60,7 @@ mutation et e2e). Mutation testing Python (mutmut) reste documenté comme limite
   qualification complète de l'API de composition (routes nominales, erreurs typées, fuzz, concurrence,
   interruption/reprise, chemins hostiles, isolation) ; runner canonique complet vert. 500 non typé
   corrigé via `CompositionIdMismatchError` (422 `composition_id_mismatch`).
+- 2026-08-04 : Phase V3 et Phase 3 (shell, sidebar et routage) closes [FAIT] — composants et états
+  de page testés (Vitest+RTL), axe-core sur l'éditeur réel et ses états introuvable/vide, parcours
+  Playwright URL directe/historique/sidebar active/conservation du projet, snapshots visuels
+  approuvés ; runner canonique complet vert (V0→V2 inclus).

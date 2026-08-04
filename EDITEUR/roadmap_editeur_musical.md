@@ -274,13 +274,24 @@ comme limite connue plutôt que comme gate contourné ; il ne bloque pas la phas
   lint/typecheck/unit (26)/coverage/a11y/mutation (68,66 % ≥ 60 %)/build/e2e (7)/visuel,
   markdownlint, déterminisme Csound et golden `Lignes de nuit` inchangés.
 
-### Phase V3 — Qualification shell, sidebar et routage [TODO]
+### Phase V3 — Qualification shell, sidebar et routage [FAIT]
 
-- [ ] Tester composants, états de page et navigation avec Vitest et React Testing Library.
-- [ ] Tester clavier, focus et accessibilité avec `axe-core`.
-- [ ] Tester URL directe, historique, sidebar active et conservation du projet avec Playwright.
-- [ ] Comparer les snapshots visuels du shell aux références approuvées.
-- [ ] Exécuter V0 à V2 avant d’autoriser la phase 4.
+- [x] Tester composants, états de page et navigation avec Vitest et React Testing Library
+  (`Sidebar.test.tsx` nouveau, `EditorLanding.test.tsx` nouveau : états loading/vide/erreur/
+  introuvable/hors ligne/écran de copie, `Application.test.tsx` étendu : confirmation de perte de
+  modifs non enregistrées, restauration de la route éditeur ; suite frontend 39 tests verts).
+- [x] Tester clavier, focus et accessibilité avec `axe-core` (shell studio, éditeur réel avec fetch
+  stubé, état projet introuvable, état vide — l'ancien test axe « éditeur » scannait l'état erreur
+  par accident).
+- [x] Tester URL directe, historique, sidebar active et conservation du projet avec Playwright
+  (`e2e/shell.spec.ts` nouveau : goBack/goForward, `aria-current` par route, URL directe projet
+  absent, conservation de la route éditeur sans query ; suite e2e 10 tests verts).
+- [x] Comparer les snapshots visuels du shell aux références approuvées (expanded/collapsed,
+  `maxDiffPixelRatio 0.02` — inchangés, ré-validés).
+- [x] Exécuter V0 à V2 avant d'autoriser la phase 4 — runner canonique `test_editor.ps1` complet
+  exécuté le 2026-08-04, gate vert : backend 111 tests (couverture 88,61 % ≥ 80 %), déterminisme
+  Csound et golden inchangés, frontend lint/typecheck/unit (39)/coverage/a11y (5)/mutation
+  (87,31 % ≥ 60 %)/build/e2e (10)/visuel, markdownlint.
 
 ### Phase V4 — Qualification store, commandes et sauvegarde [TODO]
 
@@ -492,23 +503,28 @@ chargement/modification/sauvegarde/rechargement sans perte, concurrence 200+409,
 révision (manifeste), routes bornées par UUID + `resolve_project_path` (aucune sortie, vérifié par
 rglob avant/après requêtes hostiles).
 
-## Phase 3 — Shell applicatif, sidebar et nouvel onglet [TODO]
+## Phase 3 — Shell applicatif, sidebar et nouvel onglet [FAIT]
 
 But : intégrer l’éditeur à l’UI existante avec une navigation durable.
 
 Tâches :
 
-- [ ] Découper l’application frontend monolithique en shell, pages, composants et couche de requêtes.
-- [ ] Ajouter une sidebar verticale fixe à gauche avec libellé, icône accessible et état actif.
-- [ ] Migrer les écrans existants vers des onglets routés sans régression fonctionnelle.
-- [ ] Ajouter l’onglet `Éditeur musical`.
-- [ ] Conserver le projet courant lors des changements d’onglet.
-- [ ] Ajouter états chargement, vide, erreur, hors ligne et projet introuvable.
-- [ ] Ajouter un mécanisme de confirmation si un changement d’onglet ou de projet risque de perdre
-  des modifications locales.
-- [ ] Rendre la sidebar repliable sur fenêtre étroite sans prétendre fournir un éditeur mobile.
-- [ ] Tester routage direct, retour navigateur, état actif, clavier, focus et non-régression des pages
-  existantes.
+- [x] Découper l’application frontend monolithique en shell, pages, composants et couche de requêtes
+  (`Application.tsx`, `Sidebar.tsx`, `EditorLanding.tsx`, `PluginBench.tsx`, `api/client.ts`).
+- [x] Ajouter une sidebar verticale fixe à gauche avec libellé, icône accessible et état actif
+  (`aria-current="page"`, icônes `aria-hidden`, marque repliable).
+- [x] Migrer les écrans existants vers des onglets routés sans régression fonctionnelle (routes
+  `/`, `/editor`, `/plugins` ; parcours Playwright existants tous verts).
+- [x] Ajouter l’onglet `Éditeur musical`.
+- [x] Conserver le projet courant lors des changements d’onglet (`lastEditorPath`, query
+  `project`/`composition` restaurée — testé unitaire et e2e).
+- [x] Ajouter états chargement, vide, erreur, hors ligne et projet introuvable.
+- [x] Ajouter un mécanisme de confirmation si un changement d’onglet ou de projet risque de perdre
+  des modifications locales (`window.confirm` sur l'état dirty — testé refus puis acceptation).
+- [x] Rendre la sidebar repliable sur fenêtre étroite sans prétendre fournir un éditeur mobile
+  (mode `collapsed` — testé).
+- [x] Tester routage direct, retour navigateur, état actif, clavier, focus et non-régression des
+  pages existantes (qualifié par la Phase V3, voir ci-dessus).
 
 Gate :
 

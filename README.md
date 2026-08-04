@@ -37,7 +37,11 @@ routes nominales et erreurs typées de l'API de composition testées, fuzzing Op
 révisions concurrentes, écriture interrompue/annulation/reprise, chemins hostiles et isolation des
 projets qualifiés ; runner canonique complet vert (backend 111 tests, couverture 88,61 %). La
 Phase 2 fonctionnelle (API de composition et persistance sûre) est close [FAIT]. La phase 3 de
-l'éditeur (shell, sidebar et routage) est à ouvrir.
+l'éditeur (shell, sidebar et routage) et sa qualification V3 sont closes [FAIT] : composants et
+états de page testés (Vitest + RTL), accessibilité axe-core sur l'éditeur réel et ses états,
+parcours Playwright (URL directe, historique navigateur, sidebar active, conservation du projet),
+snapshots visuels approuvés ; runner canonique complet vert (V0→V2 inclus, frontend 39 unitaires,
+e2e 10, mutation Stryker 87,31 %). La phase V4 (store, commandes et sauvegarde) est à ouvrir.
 Le gate de déterminisme Csound réel de la phase 1 (roadmap studio audio procédural) est validé (trois rendus indépendants, même SHA-256 du WAV).
 La phase 2 de `roadmap_studio_audio_procedural.md` a été réauditée et close [FAIT] : le code réel
 dépasse largement sa description initiale. Les phases 3 (bibliothèque DSP/Sound Designer) et 4

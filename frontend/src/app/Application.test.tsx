@@ -109,4 +109,37 @@ describe("Application", () => {
     expect(await screen.findByText("Révision 2")).toBeVisible();
     expect(screen.getByText("Enregistré")).toBeVisible();
   });
+
+  it("demande confirmation avant de quitter des modifications non enregistrées", async () => {
+    const user = userEvent.setup();
+    window.history.replaceState({}, "", "/editor?project=project-1&composition=composition-1");
+    render(<Application studioPage={<h1>Studio existant</h1>} />);
+
+    const title = await screen.findByRole("textbox", { name: "Titre de la composition" });
+    await user.type(title, "non sauvegardée");
+    await screen.findByText("Modifications non enregistrées");
+
+    const confirm = vi.spyOn(window, "confirm");
+    confirm.mockReturnValue(false);
+    await user.click(screen.getByRole("link", { name: "Studio" }));
+    expect(window.location.pathname).toBe("/editor");
+    expect(screen.getByRole("heading", { name: "Éditeur musical" })).toBeVisible();
+
+    confirm.mockReturnValue(true);
+    await user.click(screen.getByRole("link", { name: "Studio" }));
+    expect(screen.getByRole("heading", { name: "Studio existant" })).toBeVisible();
+  });
+
+  it("restaure la route éditeur au retour depuis le studio après un départ direct", async () => {
+    const user = userEvent.setup();
+    window.history.replaceState({}, "", "/editor");
+    render(<Application studioPage={<h1>Studio existant</h1>} />);
+
+    expect(await screen.findByRole("heading", { name: "Ouvrir Lignes de nuit" })).toBeVisible();
+    await user.click(screen.getByRole("link", { name: "Studio" }));
+    await user.click(screen.getByRole("link", { name: "Éditeur musical" }));
+
+    expect(window.location.pathname).toBe("/editor");
+    expect(screen.getByRole("heading", { name: "Éditeur musical" })).toBeVisible();
+  });
 });

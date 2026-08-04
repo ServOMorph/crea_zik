@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.22 — 2026-08-04
+
+### Ajouté
+
+- `frontend/src/app/Sidebar.test.tsx` (nouveau, 3 tests) : repli/dépli, `aria-current` unique,
+  toggle et navigation au clic sans suivre le href.
+- `frontend/src/editor/EditorLanding.test.tsx` (nouveau, 6 tests) : états chargement, vide, erreur,
+  projet introuvable, bannière hors ligne (événements online/offline) et écran de création de copie.
+- `frontend/e2e/shell.spec.ts` (nouveau, 3 tests) : sidebar active et historique navigateur
+  (goBack/goForward), URL directe vers un projet absent, conservation de la route éditeur sans query.
+
+### Modifié
+
+- `frontend/src/app/Application.test.tsx` : +2 tests — confirmation avant de quitter des
+  modifications non enregistrées, restauration de la route éditeur après un départ direct.
+- `frontend/src/app/Application.a11y.test.tsx` : axe étendu à l'éditeur réel (fetch stubé), à
+  l'état projet introuvable et à l'état vide ; l'ancien test axe « éditeur » scannait l'état erreur
+  par accident.
+- `EDITEUR/roadmap_editeur_musical.md` : Phase V3 et Phase 3 (shell, sidebar et routage) [FAIT],
+  avec preuves de qualification (runner canonique complet vert le 2026-08-04).
+
 ## v0.21 — 2026-08-04
 
 ### Ajouté
