@@ -679,6 +679,74 @@ audio {
   padding-bottom: 8px;
 }
 
+.piano-roll__stage {
+  position: relative;
+}
+
+.piano-roll__lanes {
+  position: absolute;
+  left: 0;
+  z-index: 1;
+}
+
+.piano-roll__lane {
+  position: relative;
+  border-top: 1px solid #3a4a65;
+  background: #0c1119;
+  touch-action: none;
+}
+
+.piano-roll__lane-label {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 130px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 8px;
+  color: #8ba5cf;
+  font-size: 0.7em;
+  border-right: 1px solid #3a4a65;
+  z-index: 2;
+}
+
+.piano-roll__lane-bar {
+  position: absolute;
+  border-radius: 3px;
+  cursor: ns-resize;
+  touch-action: none;
+}
+
+.piano-roll__lane-bar.is-velocity {
+  background: #2f7d55;
+  border: 1px solid #9ee5bd;
+}
+
+.piano-roll__lane-bar.is-probability {
+  background: #2f5d7d;
+  border: 1px solid #9ecbe5;
+}
+
+.piano-roll__lane-bar.is-micro {
+  background: #7d5d2f;
+  border: 1px solid #e5d29e;
+}
+
+.piano-roll__lane-bar.is-pan {
+  background: #5d2f7d;
+  border: 1px solid #d29ee5;
+}
+
+.piano-roll__ghost-note {
+  position: absolute;
+  border-radius: 4px;
+  background: rgba(139, 165, 207, 0.16);
+  border: 1px dashed rgba(139, 165, 207, 0.45);
+  pointer-events: none;
+}
+
 .piano-roll__board {
   position: relative;
   background:
@@ -719,6 +787,14 @@ audio {
   border-bottom-color: #3a4a65;
 }
 
+.piano-roll__key.is-offscale {
+  opacity: 0.45;
+}
+
+.piano-roll__key.is-black.is-offscale {
+  opacity: 0.25;
+}
+
 .piano-roll__cells {
   position: absolute;
   top: 0;
@@ -751,6 +827,11 @@ audio {
 
 .piano-roll__note.is-focus {
   outline-color: #ffffff;
+}
+
+.piano-roll__note.is-offscale {
+  border-style: dashed;
+  opacity: 0.6;
 }
 
 .piano-roll__playhead {

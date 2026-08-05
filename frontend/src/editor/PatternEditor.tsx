@@ -19,7 +19,7 @@ type PatternEditorProps = {
   onMoveNotes: (patternId: string, noteIds: string[], deltaBeats: number, deltaMidi: number, groupWithPrevious?: boolean) => void;
   onResizeNotes: (patternId: string, noteIds: string[], deltaBeats: number, groupWithPrevious?: boolean) => void;
   onDeleteNotes: (patternId: string, noteIds: string[]) => void;
-  onSetNoteFields: (patternId: string, noteIds: string[], field: NoteField, value: number) => void;
+  onSetNoteFields: (patternId: string, noteIds: string[], field: NoteField, value: number, groupWithPrevious?: boolean) => void;
   onQuantize: (patternId: string, noteIds: string[]) => void;
   onSwing: (patternId: string, noteIds: string[], amount: number) => void;
   onHumanize: (patternId: string, noteIds: string[]) => void;
@@ -98,6 +98,12 @@ export function PatternEditor({
   const displayName = patternName(editor, activePattern.id);
   const color = activePattern.color ?? "#8d99ae";
   const isDrumTrack = selectedTrack?.kind === "drums";
+  const ghostNotes = editor.composition.patterns
+    .filter((pattern) => pattern.track_id !== activePattern.track_id)
+    .flatMap((pattern) => {
+      const track = editor.composition.tracks.find((item) => item.id === pattern.track_id);
+      return track && track.kind !== "drums" ? pattern.events : [];
+    });
 
   const requestDelete = () => {
     if (
@@ -155,7 +161,9 @@ export function PatternEditor({
             onResizeNotes(activePattern.id, noteIds, deltaBeats, groupWithPrevious)
           }
           onDeleteNotes={(noteIds) => onDeleteNotes(activePattern.id, noteIds)}
-          onSetNoteFields={(noteIds, field, value) => onSetNoteFields(activePattern.id, noteIds, field, value)}
+          onSetNoteFields={(noteIds, field, value, groupWithPrevious) =>
+            onSetNoteFields(activePattern.id, noteIds, field, value, groupWithPrevious)
+          }
           onQuantize={(noteIds) => onQuantize(activePattern.id, noteIds)}
           onSwing={(noteIds, amount) => onSwing(activePattern.id, noteIds, amount)}
           onHumanize={(noteIds) => onHumanize(activePattern.id, noteIds)}
@@ -170,6 +178,7 @@ export function PatternEditor({
             onDuplicateNotes(activePattern.id, noteIds, deltaBeats, deltaMidi)
           }
           onPreview={() => onPreview(activePattern.id)}
+          ghostNotes={ghostNotes}
         />
       )}
       <section className="pattern-editor" aria-label="Propriétés du pattern">

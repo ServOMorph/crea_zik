@@ -537,9 +537,11 @@ export function EditorLanding({ search, onNavigate, onDirtyChange }: EditorLandi
             onDeleteNotes={(patternId, noteIds) =>
               setEditor((current) => (current ? deleteNotes(current, patternId, noteIds) : current))
             }
-            onSetNoteFields={(patternId, noteIds, field, value) =>
+            onSetNoteFields={(patternId, noteIds, field, value, groupWithPrevious) =>
               setEditor((current) =>
-                current ? setNoteFields(current, patternId, noteIds, field, value) : current,
+                current
+                  ? setNoteFields(current, patternId, noteIds, field, value, groupWithPrevious)
+                  : current,
               )
             }
             onQuantize={(patternId, noteIds) =>

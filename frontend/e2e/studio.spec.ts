@@ -306,3 +306,54 @@ test("the piano roll renders every melodic note and transposes exactly", async (
   await rackName("bass").click();
   await expect(page.getByRole("button", { name: /Note La3, temps 16, durée 0\.42/ })).toBeVisible();
 });
+
+test("the piano roll edits notes with the mouse and keeps them after reload", async ({ page }) => {
+  const projectName = `E2E piano roll mouse ${Date.now()}`;
+  await page.goto("/");
+  await page.getByRole("textbox", { name: "Name", exact: true }).fill(projectName);
+  await page.getByRole("button", { name: "Create", exact: true }).click();
+  await page.getByRole("link", { name: "Éditeur musical" }).click();
+  await page.getByRole("button", { name: "Créer une copie éditable" }).click();
+  await expect(page).toHaveURL(/\/editor\?project=.*&composition=.*/);
+  await expect(page.getByRole("heading", { name: "Lignes de nuit" })).toBeVisible();
+
+  const rackName = (name: string) => page.locator(".channel-rack__name").filter({ hasText: name });
+  await rackName("bass").click();
+  await expect(page.getByRole("heading", { name: "Piano Roll" })).toBeVisible();
+
+  const board = page.getByRole("application", { name: "Piano roll" });
+  await board.scrollIntoViewIfNeeded();
+  const box = (await board.boundingBox()) ?? { x: 0, y: 0 };
+  const x = (beat: number) => box.x + 130 + beat * 40;
+  const y = (midi: number) => box.y + (59 - midi) * 24;
+
+  await page.mouse.click(x(4), y(55));
+  const created = page.getByRole("button", { name: /Note Sol3, temps 4, durée 0\.5/ });
+  await expect(created).toBeVisible();
+  await created.click();
+  await expect(page.getByLabel("Vélocité des notes")).toBeVisible();
+
+  const moveFrom = (await created.boundingBox()) ?? { x: 0, y: 0, width: 20, height: 24 };
+  await page.mouse.move(moveFrom.x + moveFrom.width / 2, moveFrom.y + moveFrom.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(moveFrom.x + moveFrom.width / 2 + 80, moveFrom.y + moveFrom.height / 2 - 24, {
+    steps: 8,
+  });
+  await page.mouse.up();
+  const moved = page.getByRole("button", { name: /Note Sol#3, temps 6, durée 0\.5/ });
+  await expect(moved).toBeVisible();
+
+  const resizeFrom = (await moved.boundingBox()) ?? { x: 0, y: 0, width: 20, height: 24 };
+  await page.mouse.move(resizeFrom.x + resizeFrom.width - 4, resizeFrom.y + 4);
+  await page.mouse.down();
+  await page.mouse.move(resizeFrom.x + resizeFrom.width - 4 + 40, resizeFrom.y + 4, { steps: 8 });
+  await page.mouse.up();
+  await expect(page.getByRole("button", { name: /Note Sol#3, temps 6, durée 1\.5/ })).toBeVisible();
+
+  await page.getByRole("button", { name: "Sauvegarder" }).click();
+  await expect(page.getByText("Enregistré")).toBeVisible();
+  await page.goto(page.url());
+  await expect(page.getByRole("heading", { name: "Lignes de nuit" })).toBeVisible();
+  await rackName("bass").click();
+  await expect(page.getByRole("button", { name: /Note Sol#3, temps 6, durée 1\.5/ })).toBeVisible();
+});

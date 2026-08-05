@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { useState } from "react";
 
 import { createEditorState } from "./editorStore";
-import type { EditorState, Pattern } from "./editorStore";
+import type { EditorState, NoteEvent, Pattern } from "./editorStore";
 import { PianoRoll } from "./PianoRoll";
 
 function makePattern(): Pattern {
@@ -68,6 +68,7 @@ type Harness = {
   onPreview: ReturnType<typeof vi.fn>;
   editor: EditorState;
   pattern: Pattern;
+  ghostNotes?: NoteEvent[];
 };
 
 function renderPianoRoll(overrides: Partial<Harness> = {}): Harness {
@@ -114,6 +115,7 @@ function renderPianoRoll(overrides: Partial<Harness> = {}): Harness {
     onBuildChord: harness.onBuildChord,
     onDuplicateNotes: harness.onDuplicateNotes,
     onPreview: harness.onPreview,
+    ghostNotes: overrides.ghostNotes,
   };
   function Shell() {
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -178,6 +180,64 @@ describe("PianoRoll", () => {
     expect(screen.getByRole("button", { name: "Préécouter le pattern" })).toBeEnabled();
   });
 
+  it("affiche les quatre lanes de réglage avec une barre par note", () => {
+    renderPianoRoll();
+
+    expect(screen.getByRole("group", { name: "Lane Vélocité" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "Lane Probabilité" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "Lane Micro-décalage" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "Lane Pan" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Vélocité de La2 : 70 %" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Micro-décalage de Do3 : 0.25 temps" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Pan de Do3 : -50 %" })).toBeInTheDocument();
+  });
+
+  it("règle la vélocité d’une note en glissant sur sa barre de lane", () => {
+    const harness = renderPianoRoll();
+    const velocityLane = screen.getByRole("group", { name: "Lane Vélocité" });
+    const bar = screen.getByRole("button", { name: "Vélocité de La2 : 70 %" });
+
+    pointer(bar, "pointerdown", 175, 864 + 30);
+    pointer(velocityLane, "pointermove", 175, 864 + 52);
+    pointer(velocityLane, "pointerup", 175, 864 + 52);
+
+    expect(harness.onSetNoteFields).toHaveBeenCalledWith(["note-45"], "velocity", 0.49);
+    expect(harness.onSetNoteFields).toHaveBeenCalledWith(["note-45"], "velocity", 0.12, true);
+  });
+
+  it("règle le pan d’une note en glissant sur sa barre de lane", () => {
+    const harness = renderPianoRoll();
+    const bar = screen.getByRole("button", { name: "Pan de Do3 : -50 %" });
+
+    pointer(bar, "pointerdown", 240, 864 + 168 + 44);
+
+    expect(harness.onSetNoteFields).toHaveBeenCalledWith(["note-48"], "pan", -0.55);
+  });
+
+  it("affiche les notes fantômes des autres pistes, non éditables", () => {
+    const ghostNotes: NoteEvent[] = [
+      {
+        id: "ghost-1",
+        start_beat: 2,
+        duration_beats: 1,
+        midi_note: 50,
+        velocity: 0.6,
+        probability: 1,
+        micro_timing_beats: 0,
+        pan: 0,
+      },
+    ];
+    renderPianoRoll({ ghostNotes });
+
+    const ghost = document.querySelectorAll(".piano-roll__ghost-note");
+    expect(ghost).toHaveLength(1);
+    expect(ghost[0].getAttribute("aria-hidden")).toBe("true");
+  });
+
   it("sélectionne une note au clic et affiche ses réglages", () => {
     const harness = renderPianoRoll();
 
@@ -213,6 +273,22 @@ describe("PianoRoll", () => {
     pointer(board, "pointerup", 130 + 40 + 50, 336 - 14);
 
     expect(harness.onMoveNotes).toHaveBeenCalledWith(["note-45"], 1, 1, true);
+  });
+
+  it("cumule les déplacements successifs sans accélération", () => {
+    const harness = renderPianoRoll();
+    const board = screen.getByRole("application", { name: "Piano roll" });
+    const note = screen.getByRole("button", { name: "Note La2, temps 1, durée 0.5, vélocité 70 %" });
+
+    pointer(note, "pointerdown", 180, 346);
+    pointer(board, "pointermove", 190, 346);
+    pointer(board, "pointermove", 210, 346);
+    pointer(board, "pointermove", 230, 346);
+    pointer(board, "pointerup", 230, 346);
+
+    expect(harness.onMoveNotes).toHaveBeenCalledWith(["note-45"], 0.25, 0, true);
+    expect(harness.onMoveNotes).toHaveBeenCalledWith(["note-45"], 0.5, 0, true);
+    expect(harness.onMoveNotes).toHaveBeenCalledWith(["note-45"], 0.5, 0, true);
   });
 
   it("redimensionne la note par le bord droit", () => {
@@ -310,5 +386,49 @@ describe("PianoRoll", () => {
     expect(screen.getByRole("button", { name: "Legato" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Supprimer" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Appliquer le swing" })).toBeEnabled();
+  });
+
+  it("surligne les touches et notes hors gamme sans les bloquer (Do majeur par défaut)", () => {
+    const pattern: Pattern = {
+      id: "pattern-1",
+      track_id: "track-1",
+      events: [
+        {
+          id: "note-42",
+          start_beat: 1,
+          duration_beats: 0.5,
+          midi_note: 42,
+          velocity: 0.7,
+          probability: 1,
+          micro_timing_beats: 0,
+          pan: 0,
+        },
+      ],
+    };
+    const harness = renderPianoRoll({ pattern });
+    const offscaleKey = screen.getByRole("button", { name: "Note Fa#2" });
+    const inscaleKey = screen.getByRole("button", { name: "Note La2" });
+    const offscaleNote = screen.getByRole("button", { name: "Note Fa#2, temps 1, durée 0.5, vélocité 70 %" });
+
+    expect(offscaleKey.className).toContain("is-offscale");
+    expect(inscaleKey.className).not.toContain("is-offscale");
+    expect(offscaleNote.className).toContain("is-offscale");
+
+    pointer(offscaleNote, "pointerdown", 175, 346);
+    expect(harness.onSelectNotes).toHaveBeenCalledWith(["note-42"], false);
+  });
+
+  it("met à jour la surbrillance quand on change la tonique ou le mode", () => {
+    renderPianoRoll();
+
+    fireEvent.change(screen.getByLabelText("Tonique de la gamme"), { target: { value: "9" } });
+    fireEvent.change(screen.getByLabelText("Mode de la gamme"), { target: { value: "mineure" } });
+
+    expect(screen.getByRole("button", { name: "Note La2" }).className).not.toContain("is-offscale");
+    expect(screen.getByRole("button", { name: "Note Do3" }).className).not.toContain("is-offscale");
+    expect(screen.getByRole("button", { name: "Note Fa#2" }).className).toContain("is-offscale");
+    expect(
+      screen.getByRole("button", { name: "Note La2, temps 1, durée 0.5, vélocité 70 %" }),
+    ).not.toHaveClass("is-offscale");
   });
 });

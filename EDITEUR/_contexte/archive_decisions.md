@@ -19,3 +19,11 @@ Décisions archivées depuis `_contexte/contexte.md` (append only).
   phases V3/V5 dédiées, pour éviter la couverture artificielle interdite par la roadmap.
 - 2026-07-30 : mutmut reste verrouillé en dépendance mais son exécution est bloquée nativement sous
   Windows (WSL requis) ; traité comme réserve d'infrastructure documentée, pas comme gate contourné.
+- 2026-08-01 : mutmut reste bloqué même sous WSL provisionné (Ubuntu, Python 3.13, Csound) :
+  incompatibilité structurelle entre `source_paths` de mutmut et le mode d'import réel du projet
+  (`pythonpath`). Acté comme limite documentée (LIM-001) plutôt que poursuivi via restructuration
+  app-wide des imports.
+- 2026-08-01 : `Pattern.events` et `Composition.mixer` (dicts génériques codant des données
+  typables) migrés vers `list[NoteEvent]` et `MixerChannel` typés, pour tenir la promesse de la
+  Phase 1 (schéma entièrement pilotable par données) plutôt que de considérer la phase close sur
+  un socle partiel.

@@ -496,3 +496,69 @@ def test_composition_render_preserves_five_distinct_instruments_and_mix_effects(
         dry_rendered.stem_paths[track_id].read_bytes() == path.read_bytes()
         for track_id, path in rendered.stem_paths.items()
     )
+
+
+def test_composition_render_reacts_to_a_moved_and_transposed_melodic_note(
+    tmp_path: Path,
+) -> None:
+    source = short_reference()
+    pad_track = next(track for track in source.tracks if track.kind == "pad")
+    pattern = next(
+        pattern for pattern in source.patterns if pattern.track_id == pad_track.id
+    )
+    note = min(pattern.events, key=lambda event: event.start_beat)
+    first = render_composition(source, tmp_path / "first")
+
+    moved = pattern.model_copy(
+        update={
+            "events": [
+                note.model_copy(update={"start_beat": note.start_beat + 0.5}),
+                *pattern.events[1:],
+            ]
+        },
+        deep=True,
+    )
+    moved_render = render_composition(
+        source.model_copy(
+            update={
+                "patterns": [
+                    moved if candidate.id == pattern.id else candidate
+                    for candidate in source.patterns
+                ]
+            },
+            deep=True,
+        ),
+        tmp_path / "moved",
+    )
+    assert (
+        moved_render.stem_paths[str(pad_track.id)].read_bytes()
+        != first.stem_paths[str(pad_track.id)].read_bytes()
+    )
+    assert moved_render.mix_path.read_bytes() != first.mix_path.read_bytes()
+
+    transposed = pattern.model_copy(
+        update={
+            "events": [
+                note.model_copy(update={"midi_note": note.midi_note + 2}),
+                *pattern.events[1:],
+            ]
+        },
+        deep=True,
+    )
+    transposed_render = render_composition(
+        source.model_copy(
+            update={
+                "patterns": [
+                    transposed if candidate.id == pattern.id else candidate
+                    for candidate in source.patterns
+                ]
+            },
+            deep=True,
+        ),
+        tmp_path / "transposed",
+    )
+    assert (
+        transposed_render.stem_paths[str(pad_track.id)].read_bytes()
+        != first.stem_paths[str(pad_track.id)].read_bytes()
+    )
+    assert transposed_render.mix_path.read_bytes() != first.mix_path.read_bytes()

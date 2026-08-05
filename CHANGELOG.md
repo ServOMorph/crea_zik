@@ -1,5 +1,36 @@
 # Changelog
 
+## v0.27 — 2026-08-05
+
+### Ajouté
+
+- `frontend/src/editor/PianoRoll.tsx` : lanes vélocité/probabilité/micro-décalage/pan sous la
+  grille (drag borné, undo groupé via 4e paramètre `groupWithPrevious` de `onSetNoteFields`) ;
+  ghost notes des autres pistes (hors drums, pointillés non interactifs) ; sélecteurs tonique +
+  mode avec surbrillance `is-offscale` des touches et notes hors gamme (non bloquante).
+- `frontend/src/editor/PatternEditor.tsx` : prop `ghostNotes` et propagation de `groupWithPrevious`
+  ; `frontend/src/editor/EditorLanding.tsx` : propagation de `groupWithPrevious`.
+- `frontend/e2e/studio.spec.ts` : e2e d'édition souris — création, déplacement, resize, sauvegarde
+  puis rechargement identique (« the piano roll edits notes with the mouse and keeps them after
+  reload »).
+- `tests/test_compositions.py` : preuve backend « note modifiée → rendu » — déplacement et
+  transposition d'une note mélodique modifient stem et mix (hash).
+- `frontend/src/editor/PianoRoll.test.tsx` : +2 tests (anti-accélération des drags, surbrillance
+  de gamme).
+
+### Corrigé
+
+- Accélération des drags de déplacement/redimensionnement : les deltas étaient cumulés à chaque
+  `pointermove` ; corrigé via `lastDeltaBeat`/`lastDeltaMidi`/`lastDelta` dans `DragState`.
+- Libellés de notes du e2e piano roll : « Si3 » → « Sol#3 » (midi 56) — notation française exacte.
+
+### Modifié
+
+- `frontend/src/styles.css` : styles `.piano-roll__lane*`, `.piano-roll__ghost-note`, `.is-offscale`.
+- `frontend/e2e/debug.spec.ts` : supprimé (fichier de debug temporaire).
+- `EDITEUR/roadmap_editeur_musical.md` : Phase 7 et V7 [FAIT], Phase 8 ouverte [EN COURS] avec
+  constat de session ; `EDITEUR/_contexte/signals.md` et `contexte.md` mis à jour.
+
 ## v0.26 — 2026-08-05
 
 ### Ajouté

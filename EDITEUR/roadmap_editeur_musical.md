@@ -359,13 +359,30 @@ comme limite connue plutôt que comme gate contourné ; il ne bloque pas la phas
   Csound et golden inchangés, markdownlint (rapport `EDITEUR/test-results/v1-20260805-110735.json`,
   success true).
 
-### Phase V7 — Qualification Piano Roll [TODO]
+### Phase V7 — Qualification Piano Roll [FAIT]
 
-- [ ] Tester les conversions beat/pixel et pixel/beat par propriétés réversibles.
-- [ ] Tester création, déplacement, resize, quantification, transposition et polyphonie.
-- [ ] Vérifier chaque note de référence de `Lignes de nuit` dans la spec et dans l’UI.
-- [ ] Exécuter le parcours Playwright d’édition d’une mélodie puis comparer le rendu.
-- [ ] Exécuter V0 à V6 avant d’autoriser la phase 8.
+- [x] Tester les conversions beat/pixel et pixel/beat par propriétés réversibles
+  (`pianoRollGeometry.test.ts` : aller-retour beats↔pixels et midi↔pixels en fast-check, snap
+  idempotent, plages visibles bornées octave par octave, clamps aux extrêmes MIDI, notation
+  française des notes et construction des gammes majeure/mineure).
+- [x] Tester création, déplacement, resize, quantification, transposition et polyphonie
+  (`PianoRoll.test.tsx` 19 tests : création, move/resize souris avec seuil de drag, anti-
+  accélération des deltas, sélection rectangle, lanes, ghost notes, gamme/tonalité ;
+  `noteCommands.test.ts` : transformations, polyphonie, undo/redo ; `e2e/studio.spec.ts` :
+  rendu exact des notes et transposition ±12 dans Chromium).
+- [x] Vérifier chaque note de référence de `Lignes de nuit` dans la spec et dans l'UI (e2e
+  « renders every melodic note and transposes exactly » : bass 22, pad 42, arp 72, lead 21
+  notes reconstituées et libellées en notation française depuis la fixture).
+- [x] Exécuter le parcours Playwright d'édition d’une mélodie puis comparer le rendu (e2e
+  « edits notes with the mouse and keeps them after reload » : création → déplacement →
+  resize → sauvegarde → rechargement identique ; la comparaison du rendu audio post-édition
+  reste hors Chromium — preuve par hash portée par le backend
+  `test_composition_render_reacts_to_a_moved_and_transposed_melodic_note`, réserve assumée).
+- [x] Exécuter V0 à V6 avant d’autoriser la phase 8 — runner canonique `test_editor.ps1` complet
+  exécuté le 2026-08-05, gate vert : backend (lint, types, contrats, domaine, fuzz OpenAPI,
+  couverture, golden `Lignes de nuit`), frontend lint/typecheck/unit/coverage/a11y/mutation/
+  build/e2e (15)/visuel, markdownlint (rapport `EDITEUR/test-results/v1-20260805-191709.json`,
+  success true).
 
 ### Phase V8 — Qualification Playlist et arrangement [TODO]
 
@@ -681,33 +698,41 @@ Gate :
 - les patterns de longueurs différentes bouclent sans dérive ;
 - toutes les opérations souris disposent d’un équivalent clavier essentiel.
 
-## Phase 7 — Piano Roll et outils mélodiques [EN COURS]
+## Phase 7 — Piano Roll et outils mélodiques [FAIT]
 
 But : éditer précisément basse, pad, arpège et lead.
 
-Constat de session (2026-08-05) : piano roll de base livré et vérifié — `PianoRoll.tsx` rend
-toutes les notes mélodiques de `Lignes de nuit` et transpose exactement dans Chromium (e2e « the
-piano roll renders every melodic note and transposes exactly ») ; commandes notes complètes dans
-`noteCommands.ts` (sélection, addNote/moveNotes/resizeNotes/duplicateNotes/deleteNotes,
-setNoteFields, quantizeNotes/swingNotes/humanizeNotes seedés, transposeNotes, legatoNotes,
-uniformDuration, invertNotes, buildChord — testées) ; conversions beat/pixel, snap, bornes MIDI,
-clavier vertical et gamme/tonalité dans `pianoRollGeometry.ts` (fast-check). Restent : lanes
-vélocité/pan/probabilité/micro-timing, ghost notes, édition souris (création/déplacement/resize)
-qualifiée dans l'UI, reconstitution complète, et la qualification V7.
+Constat de session (2026-08-05, clôture) : tous les bullets livrés et qualifiés. `PianoRoll.tsx`
+rend toutes les notes mélodiques de `Lignes de nuit` et transpose exactement dans Chromium ;
+commandes notes complètes dans `noteCommands.ts` ; conversions beat/pixel, snap, bornes MIDI,
+clavier vertical et gamme/tonalité dans `pianoRollGeometry.ts` (fast-check). Session de clôture :
+lanes vélocité/probabilité/micro-décalage/pan (drag avec undo groupé via `groupWithPrevious`),
+ghost notes des autres pistes (hors drums), édition souris qualifiée (création, déplacement,
+resize, sélection rectangle — e2e Chromium avec sauvegarde/rechargement), gamme/tonalité avec
+surbrillance non bloquante (sélecteurs tonique/mode, classes `is-offscale`), fix de
+l'accélération des drags (`lastDelta*`), preuve backend « note modifiée → rendu » par hash
+(`tests/test_compositions.py`). V7 close [FAIT] : runner canonique vert final
+(`EDITEUR/test-results/v1-20260805-191709.json`, success true). Réserves assumées : comparaison
+audio post-édition hors Chromium, snapshot visuel limité au shell.
 
 Tâches :
 
-- [ ] Créer le Piano Roll avec clavier vertical, grille, playhead et notes redimensionnables.
-- [ ] Ajouter création, déplacement, duplication, suppression et redimensionnement des notes.
-- [ ] Ajouter vélocité, panoramique de note, probabilité et micro-timing dans des lanes inférieures.
-- [ ] Ajouter quantification paramétrable, swing et humanisation seedée.
-- [ ] Ajouter transposition par note, octave, sélection et pattern.
-- [ ] Afficher gamme et tonalité avec surbrillance sans bloquer les notes hors gamme.
-- [ ] Ajouter outils accords, legato, durée uniforme et inversion.
-- [ ] Ajouter ghost notes des autres pistes et audition optionnelle des notes.
-- [ ] Reconstituer toutes les notes de basse, pad, arpège et lead de `Lignes de nuit`.
-- [ ] Tester conversions beat/pixel, bornes MIDI, redimensionnement, quantification, transposition,
-  polyphonie et déterminisme.
+- [x] Créer le Piano Roll avec clavier vertical, grille, playhead et notes redimensionnables.
+- [x] Ajouter création, déplacement, duplication, suppression et redimensionnement des notes
+  (édition souris qualifiée + équivalent clavier, e2e de rechargement).
+- [x] Ajouter vélocité, panoramique de note, probabilité et micro-timing dans des lanes inférieures
+  (4 lanes, drag borné, undo groupé).
+- [x] Ajouter quantification paramétrable, swing et humanisation seedée.
+- [x] Ajouter transposition par note, octave, sélection et pattern.
+- [x] Afficher gamme et tonalité avec surbrillance sans bloquer les notes hors gamme (sélecteurs
+  tonique/mode locaux, surbrillance `is-offscale` sur touches et notes, édition toujours possible).
+- [x] Ajouter outils accords, legato, durée uniforme et inversion.
+- [x] Ajouter ghost notes des autres pistes et audition optionnelle des notes (ghost notes hors
+  drums en pointillés non interactifs ; audition = préécoute du pattern).
+- [x] Reconstituer toutes les notes de basse, pad, arpège et lead de `Lignes de nuit` (e2e :
+  bass 22, pad 42, arp 72, lead 21).
+- [x] Tester conversions beat/pixel, bornes MIDI, redimensionnement, quantification, transposition,
+  polyphonie et déterminisme (fast-check, unitaires, e2e, preuve backend par hash).
 
 Gate :
 
@@ -716,9 +741,17 @@ Gate :
 - une transposition de sélection produit le résultat musical et numérique attendu ;
 - les outils seedés sont reproductibles.
 
-## Phase 8 — Playlist, arrangement et marqueurs [TODO]
+## Phase 8 — Playlist, arrangement et marqueurs [EN COURS]
 
 But : construire et restructurer le morceau sur une timeline multipiste.
+
+Constat de session (2026-08-05, ouverture par /close) : rien de livré pour l'instant — la
+session de clôture de la Phase 7 n'a fait qu'ouvrir la phase. Règles à retenir : le drag-and-drop
+natif relève de cette phase (Playlist) ; la structure de `Lignes de nuit`
+(intro/groove/montée/climax/outro) est représentée par des marqueurs éditables ; le store
+d'édition fournit déjà la sélection, la duplication, le couper/copier/coller et la suppression
+des clips via les commandes génériques (`duplicateSelection`, `paste`, `selectRectangle`,
+suppression en cascade), mais pas encore de déplacement direct de clip.
 
 Tâches :
 

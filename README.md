@@ -55,16 +55,16 @@ close [FAIT] : machine d'état testée à horloge contrôlée, `MockAudioContext
 Chromium réel et cache/invalidation/annulation des préécoutes ; runner canonique vert (rapport
 `EDITEUR/test-results/v1-20260804-224727.json`, 20 checks, e2e 12, mutation Stryker 95,37 %).
 La Phase 5 fonctionnelle est close [FAIT] : le tempo et la métrique sont affichés dans la barre
-de transport et couverts par un test. Les phases 6 et V6 (Channel Rack et séquenceur pas à pas)
-sont closes [FAIT] : longueur, duplication, renommage, variation seedée et suppression sûre des
+de transport et couverts par un test. Les phases 6 et V6 (Channel Rack et séquenceur pas à pas) sont closes [FAIT] : longueur, duplication, renommage, variation seedée et suppression sûre des
 patterns, sélection multiple, remplissages, préécoute piste, couleur et nom via migration de
 schéma v3 ; réserves assumées (glisser/multi-sélection en unitaire, preuve rendu/hash frontend
-non formalisée). La Phase 7 (Piano Roll) est ouverte [EN COURS] : piano roll de base livré
-(rendu de toutes les notes mélodiques de `Lignes de nuit` et transposition exacte en Chromium,
-commandes notes complètes, conversions beat/pixel et gamme/tonalité fast-check) ; la course
-sauvegarde/préécoute est corrigée (un clic « Lire la sélection » pendant une sauvegarde attend
-la fin du PUT). Runner canonique vert (`EDITEUR/test-results/v1-20260805-161626.json`, success
-true, 21 checks, mutation Stryker 79,17 %).
+non formalisée). La Phase 7 (Piano Roll) et sa qualification V7 sont closes [FAIT] : lanes
+vélocité/probabilité/micro-décalage/pan, ghost notes des autres pistes, édition souris qualifiée
+(création, déplacement, resize — e2e Chromium avec sauvegarde/rechargement), gamme/tonalité avec
+surbrillance non bloquante, fix de l'accélération des drags, preuve backend « note modifiée →
+rendu » par hash ; runner canonique vert final (`EDITEUR/test-results/v1-20260805-191709.json`,
+success true). Réserve assumée : comparaison audio post-édition hors Chromium. La Phase 8
+(Playlist, arrangement et marqueurs) est ouverte [EN COURS].
 Le gate de déterminisme Csound réel de la phase 1 (roadmap studio audio procédural) est validé (trois rendus indépendants, même SHA-256 du WAV).
 La phase 2 de `roadmap_studio_audio_procedural.md` a été réauditée et close [FAIT] : le code réel
 dépasse largement sa description initiale. Les phases 3 (bibliothèque DSP/Sound Designer) et 4

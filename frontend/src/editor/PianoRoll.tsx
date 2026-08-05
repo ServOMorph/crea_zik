@@ -9,14 +9,18 @@ import {
   ROW_HEIGHT,
   PIXELS_PER_BEAT,
   beatToX,
+  inScale,
   noteClass,
   noteName,
   noteToY,
+  scaleDegrees,
   snapToGrid,
   visibleRange,
   xToBeat,
   yToNote,
 } from "./pianoRollGeometry";
+
+const TONIC_NAMES = ["Do", "Do#", "Ré", "Ré#", "Mi", "Fa", "Fa#", "Sol", "Sol#", "La", "La#", "Si"];
 
 type PianoRollProps = {
   pattern: Pattern;
@@ -28,7 +32,7 @@ type PianoRollProps = {
   onMoveNotes: (noteIds: string[], deltaBeats: number, deltaMidi: number, groupWithPrevious?: boolean) => void;
   onResizeNotes: (noteIds: string[], deltaBeats: number, groupWithPrevious?: boolean) => void;
   onDeleteNotes: (noteIds: string[]) => void;
-  onSetNoteFields: (noteIds: string[], field: NoteField, value: number) => void;
+  onSetNoteFields: (noteIds: string[], field: NoteField, value: number, groupWithPrevious?: boolean) => void;
   onQuantize: (noteIds: string[]) => void;
   onSwing: (noteIds: string[], amount: number) => void;
   onHumanize: (noteIds: string[]) => void;
@@ -39,12 +43,45 @@ type PianoRollProps = {
   onBuildChord: (rootNoteId: string, type: ChordType) => void;
   onDuplicateNotes: (noteIds: string[], deltaBeats: number, deltaMidi: number) => void;
   onPreview: () => void;
+  ghostNotes?: NoteEvent[];
 };
 
 const BLACK_KEYS = new Set([1, 3, 6, 8, 10]);
 const DEFAULT_DURATION = 0.5;
 const RESIZE_HANDLE_PX = 8;
 const DRAG_THRESHOLD_PX = 6;
+const LANE_HEIGHT = 56;
+const LANE_FIELDS: { field: NoteField; label: string }[] = [
+  { field: "velocity", label: "Vélocité" },
+  { field: "probability", label: "Probabilité" },
+  { field: "micro_timing_beats", label: "Micro-décalage" },
+  { field: "pan", label: "Pan" },
+];
+
+function laneValue(field: NoteField, y: number): number {
+  const ratio = 1 - Math.min(LANE_HEIGHT, Math.max(0, y)) / LANE_HEIGHT;
+  if (field === "velocity" || field === "probability") {
+    return Math.round(Math.min(1, Math.max(0.05, 0.05 + ratio * 0.95)) * 100) / 100;
+  }
+  return Math.round(Math.min(1, Math.max(-1, (ratio - 0.5) * 2)) / 0.05) * 0.05;
+}
+
+function laneBarStyle(field: NoteField, event: NoteEvent, horizontalZoom: number) {
+  const width = Math.max(4, event.duration_beats * PIXELS_PER_BEAT * horizontalZoom);
+  if (field === "velocity" || field === "probability") {
+    return { bottom: 5, height: Math.max(4, event[field] * (LANE_HEIGHT - 10)), width };
+  }
+  const value = field === "micro_timing_beats" ? event.micro_timing_beats : event.pan;
+  const top = (1 - (value + 1) / 2) * (LANE_HEIGHT - 12) + 5;
+  const marginLeft = field === "micro_timing_beats" ? value * 14 : 0;
+  return { top, height: 8, width, marginLeft };
+}
+
+function laneDisplay(field: NoteField, event: NoteEvent) {
+  if (field === "velocity" || field === "probability") return `${Math.round(event[field] * 100)} %`;
+  if (field === "micro_timing_beats") return `${event.micro_timing_beats} temps`;
+  return `${Math.round(event.pan * 100)} %`;
+}
 
 type DragState =
   | { kind: "maybe-create"; startX: number; startY: number }
@@ -55,8 +92,10 @@ type DragState =
       startX: number;
       startY: number;
       starts: Map<string, { startBeat: number; midi: number }>;
+      lastDeltaBeat: number;
+      lastDeltaMidi: number;
     }
-  | { kind: "resize"; noteIds: string[]; startX: number; ends: Map<string, number> };
+  | { kind: "resize"; noteIds: string[]; startX: number; ends: Map<string, number>; lastDelta: number };
 
 function noteRect(event: NoteEvent, topMidiNote: number, geometry: { horizontalZoom: number; scrollBeat: number }) {
   return {
@@ -88,12 +127,19 @@ export function PianoRoll({
   onBuildChord,
   onDuplicateNotes,
   onPreview,
+  ghostNotes = [],
 }: PianoRollProps) {
   const boardRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<DragState | null>(null);
+  const laneDragRef = useRef<{ noteIds: string[]; field: NoteField; laneTop: number } | null>(null);
   const currentRef = useRef({ x: 0, y: 0 });
   const [swingAmount, setSwingAmount] = useState(0.25);
   const [uniformBeats, setUniformBeats] = useState(1);
+  const [scale, setScale] = useState<{ tonic: number; mode: "majeure" | "mineure" }>({
+    tonic: 0,
+    mode: "majeure",
+  });
+  const degrees = scaleDegrees(scale.tonic, scale.mode);
 
   const geometry = { horizontalZoom: grid.horizontalZoom, scrollBeat: grid.scrollBeat };
   const lengthBeats = patternLengthBeats(pattern);
@@ -157,6 +203,33 @@ export function PianoRoll({
     <section className="piano-roll" aria-labelledby="piano-roll-heading">
       <div className="piano-roll__toolbar">
         <h3 id="piano-roll-heading">Piano Roll</h3>
+        <label>
+          Tonique
+          <select
+            aria-label="Tonique de la gamme"
+            value={scale.tonic}
+            onChange={(event) => setScale({ ...scale, tonic: Number(event.target.value) })}
+          >
+            {TONIC_NAMES.map((name, tonic) => (
+              <option key={name} value={tonic}>
+                {name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Gamme
+          <select
+            aria-label="Mode de la gamme"
+            value={scale.mode}
+            onChange={(event) =>
+              setScale({ ...scale, mode: event.target.value as "majeure" | "mineure" })
+            }
+          >
+            <option value="majeure">Majeure</option>
+            <option value="mineure">Mineure</option>
+          </select>
+        </label>
         <button type="button" disabled={!selectedNoteIds.length} onClick={() => onQuantize(selectedNoteIds)}>
           Quantifier
         </button>
@@ -257,12 +330,16 @@ export function PianoRoll({
       </div>
       <div className="piano-roll__scroll">
         <div
-          ref={boardRef}
-          className="piano-roll__board"
-          role="application"
-          aria-label="Piano roll"
-          tabIndex={0}
-          style={{ width: KEY_WIDTH + boardWidth, height: boardHeight }}
+          className="piano-roll__stage"
+          style={{ width: KEY_WIDTH + boardWidth, height: boardHeight + LANE_FIELDS.length * LANE_HEIGHT }}
+        >
+          <div
+            ref={boardRef}
+            className="piano-roll__board"
+            role="application"
+            aria-label="Piano roll"
+            tabIndex={0}
+            style={{ width: KEY_WIDTH + boardWidth, height: boardHeight }}
           onKeyDown={(event) => {
             if ((event.key === "Delete" || event.key === "Backspace") && selectedNoteIds.length) {
               event.preventDefault();
@@ -293,14 +370,22 @@ export function PianoRoll({
               if (!leader) return;
               const snapped = snapToGrid(leader.startBeat + rawDelta, grid.snapBeats) - leader.startBeat;
               const deltaMidi = Math.round((drag.startY - y) / ROW_HEIGHT);
-              onMoveNotes(drag.noteIds, snapped, deltaMidi, true);
+              onMoveNotes(
+                drag.noteIds,
+                snapped - drag.lastDeltaBeat,
+                deltaMidi - drag.lastDeltaMidi,
+                true,
+              );
+              drag.lastDeltaBeat = snapped;
+              drag.lastDeltaMidi = deltaMidi;
             } else if (drag.kind === "resize") {
               const leader = drag.noteIds[0];
               const end = drag.ends.get(leader);
               if (end === undefined) return;
               const rawDelta = (x - drag.startX) / (PIXELS_PER_BEAT * grid.horizontalZoom);
               const newEnd = snapToGrid(end + rawDelta, grid.snapBeats);
-              onResizeNotes(drag.noteIds, newEnd - end, true);
+              onResizeNotes(drag.noteIds, newEnd - end - drag.lastDelta, true);
+              drag.lastDelta = newEnd - end;
             }
           }}
           onPointerUp={() => {
@@ -327,7 +412,11 @@ export function PianoRoll({
                 <button
                   key={midi}
                   type="button"
-                  className={["piano-roll__key", BLACK_KEYS.has(midiClass) ? "is-black" : undefined]
+                  className={[
+                    "piano-roll__key",
+                    BLACK_KEYS.has(midiClass) ? "is-black" : undefined,
+                    !inScale(midi, degrees) ? "is-offscale" : undefined,
+                  ]
                     .filter(Boolean)
                     .join(" ")}
                   aria-label={`Note ${noteName(midi)}`}
@@ -356,6 +445,22 @@ export function PianoRoll({
                 style={{ left: beatToX(positionBeat, geometry) }}
               />
             )}
+            {ghostNotes.map((event) => {
+              const rect = noteRect(event, topMidiNote, geometry);
+              return (
+                <div
+                  key={event.id}
+                  className="piano-roll__ghost-note"
+                  aria-hidden="true"
+                  style={{
+                    left: rect.x,
+                    top: rect.y,
+                    width: Math.max(rect.width, 4),
+                    height: rect.height,
+                  }}
+                />
+              );
+            })}
             {pattern.events
               .slice()
               .sort((a, b) => a.start_beat - b.start_beat)
@@ -366,7 +471,12 @@ export function PianoRoll({
                 return (
                   <div
                     key={event.id}
-                    className={["piano-roll__note", isSelected ? "is-selected" : undefined, isFocus ? "is-focus" : undefined]
+                    className={[
+                      "piano-roll__note",
+                      isSelected ? "is-selected" : undefined,
+                      isFocus ? "is-focus" : undefined,
+                      !inScale(event.midi_note, degrees) ? "is-offscale" : undefined,
+                    ]
                       .filter(Boolean)
                       .join(" ")}
                     style={{
@@ -403,6 +513,7 @@ export function PianoRoll({
                               return [id, note ? note.start_beat + note.duration_beats : 0] as const;
                             }),
                           ),
+                          lastDelta: 0,
                         };
                       } else {
                         dragRef.current = {
@@ -416,6 +527,8 @@ export function PianoRoll({
                               return [id, { startBeat: note?.start_beat ?? 0, midi: note?.midi_note ?? 0 }] as const;
                             }),
                           ),
+                          lastDeltaBeat: 0,
+                          lastDeltaMidi: 0,
                         };
                       }
                       currentRef.current = { x, y };
@@ -424,6 +537,65 @@ export function PianoRoll({
                 );
               })}
           </div>
+          <div
+            className="piano-roll__lanes"
+            style={{ top: boardHeight, width: KEY_WIDTH + boardWidth }}
+            onPointerDown={(pointerEvent) => {
+              const bar = (pointerEvent.target as HTMLElement).closest("[data-lane-bar]");
+              if (!bar) return;
+              pointerEvent.preventDefault();
+              const { y } = localPoint(pointerEvent.clientX, pointerEvent.clientY);
+              const field = bar.getAttribute("data-field") as NoteField;
+              const noteIds = JSON.parse(bar.getAttribute("data-note-ids") ?? "[]") as string[];
+              const laneTop = Number(bar.getAttribute("data-lane-top") ?? "0");
+              laneDragRef.current = { noteIds, field, laneTop };
+              onSetNoteFields(noteIds, field, laneValue(field, y - boardHeight - laneTop));
+            }}
+            onPointerMove={(pointerEvent) => {
+              const drag = laneDragRef.current;
+              if (!drag) return;
+              const { y } = localPoint(pointerEvent.clientX, pointerEvent.clientY);
+              onSetNoteFields(drag.noteIds, drag.field, laneValue(drag.field, y - boardHeight - drag.laneTop), true);
+            }}
+            onPointerUp={() => {
+              laneDragRef.current = null;
+            }}
+            onPointerLeave={() => {
+              laneDragRef.current = null;
+            }}
+          >
+            {LANE_FIELDS.map((lane, laneIndex) => (
+              <div
+                key={lane.field}
+                className="piano-roll__lane"
+                style={{ height: LANE_HEIGHT }}
+                role="group"
+                aria-label={`Lane ${lane.label}`}
+              >
+                <span className="piano-roll__lane-label">{lane.label}</span>
+                {pattern.events.map((event) => {
+                  const bar = laneBarStyle(lane.field, event, grid.horizontalZoom);
+                  return (
+                    <div
+                      key={event.id}
+                      className={[
+                        "piano-roll__lane-bar",
+                        `is-${lane.field === "micro_timing_beats" ? "micro" : lane.field}`,
+                      ].join(" ")}
+                      style={{ left: KEY_WIDTH + beatToX(event.start_beat, geometry), ...bar }}
+                      data-lane-bar
+                      data-field={lane.field}
+                      data-note-ids={JSON.stringify(selectedIds(event))}
+                      data-lane-top={laneIndex * LANE_HEIGHT}
+                      role="button"
+                      aria-label={`${lane.label} de ${noteName(event.midi_note)} : ${laneDisplay(lane.field, event)}`}
+                    />
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        </div>
         </div>
       </div>
       <div className="piano-roll__editor">
