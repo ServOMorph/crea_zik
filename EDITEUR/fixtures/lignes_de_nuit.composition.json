@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "id": "9b11b2f0-9cbe-4c85-8d5e-f967cc3d5c01",
   "revision": 0,
   "title": "Lignes de nuit",
@@ -780,7 +780,9 @@
           "velocity": 0.23,
           "pan": 0.0
         }
-      ]
+      ],
+      "name": "Pattern 1",
+      "color": "#e0a458"
     },
     {
       "id": "7cbcaec4-a91c-42ae-ae7d-4d33209aa102",
@@ -962,7 +964,9 @@
           "velocity": 0.3,
           "pan": 0.0
         }
-      ]
+      ],
+      "name": "Pattern 2",
+      "color": "#7fb3d5"
     },
     {
       "id": "7cbcaec4-a91c-42ae-ae7d-4d33209aa103",
@@ -1304,7 +1308,9 @@
           "velocity": 0.12,
           "pan": 0.0
         }
-      ]
+      ],
+      "name": "Pattern 3",
+      "color": "#9bb87f"
     },
     {
       "id": "7cbcaec4-a91c-42ae-ae7d-4d33209aa104",
@@ -1886,7 +1892,9 @@
           "velocity": 0.23,
           "pan": 0.42
         }
-      ]
+      ],
+      "name": "Pattern 4",
+      "color": "#c98bb8"
     },
     {
       "id": "7cbcaec4-a91c-42ae-ae7d-4d33209aa105",
@@ -2060,7 +2068,9 @@
           "velocity": 0.19,
           "pan": -0.12
         }
-      ]
+      ],
+      "name": "Pattern 5",
+      "color": "#e58d7f"
     }
   ],
   "clips": [

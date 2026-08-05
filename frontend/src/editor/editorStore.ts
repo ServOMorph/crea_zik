@@ -19,7 +19,15 @@ export type NoteEvent = {
   [key: string]: unknown;
 };
 
-export type Pattern = { id: string; track_id: string; events: NoteEvent[]; [key: string]: unknown };
+export type Pattern = {
+  id: string;
+  track_id: string;
+  events: NoteEvent[];
+  name?: string | null;
+  color?: string | null;
+  length_beats?: number | null;
+  [key: string]: unknown;
+};
 export type Clip = { id: string; pattern_id: string; start_beat: number; length_beats: number; [key: string]: unknown };
 
 export type MixerChannel = {
@@ -51,7 +59,7 @@ export type EditableComposition = {
 
 export type CollectionName = "tracks" | "patterns" | "clips";
 
-export type EditorSelection = Record<CollectionName, string[]>;
+export type EditorSelection = Record<CollectionName, string[]> & { notes: string[] };
 
 export type TimeGrid = {
   snapBeats: number;
@@ -82,7 +90,7 @@ export type EditorState = {
 
 export type EditorOperation = (composition: EditableComposition) => void;
 
-const EMPTY_SELECTION: EditorSelection = { tracks: [], patterns: [], clips: [] };
+const EMPTY_SELECTION: EditorSelection = { tracks: [], patterns: [], clips: [], notes: [] };
 const DEFAULT_GRID: TimeGrid = { snapBeats: 0.25, horizontalZoom: 1, verticalZoom: 1, scrollBeat: 0 };
 const MAX_HISTORY = 200;
 
@@ -94,7 +102,7 @@ function same(left: unknown, right: unknown) {
   return JSON.stringify(left) === JSON.stringify(right);
 }
 
-function newId() {
+export function newId() {
   return crypto.randomUUID();
 }
 
@@ -299,13 +307,43 @@ export function stepBeat(stepIndex: number, stepsPerBeat: number) {
 }
 
 export function patternLengthBeats(pattern: Pattern) {
+  if (typeof pattern.length_beats === "number" && pattern.length_beats > 0) return pattern.length_beats;
   const end = pattern.events.reduce((max, event) => Math.max(max, event.start_beat + event.duration_beats), 0);
   return Math.max(end, 4);
 }
 
-export function stepEvent(events: NoteEvent[], midiNote: number, beat: number) {
-  return events.find((event) => event.midi_note === midiNote && Math.abs(event.start_beat - beat) < 1e-9);
+function makeStepEvent(midiNote: number, beat: number, stepsPerBeat: number): NoteEvent {
+  return {
+    id: newId(),
+    start_beat: beat,
+    duration_beats: Math.min(1 / stepsPerBeat, 0.5),
+    midi_note: midiNote,
+    velocity: 0.7,
+    probability: 1,
+    micro_timing_beats: 0,
+    pan: 0,
+  };
 }
+
+function toggleStep(
+  pattern: Pattern,
+  midiNote: number,
+  stepIndex: number,
+  stepsPerBeat: number,
+  enabled: boolean,
+) {
+  const beat = stepBeat(stepIndex, stepsPerBeat);
+  const existingIndex = pattern.events.findIndex(
+    (event) => event.midi_note === midiNote && Math.abs(event.start_beat - beat) < 1e-9,
+  );
+  if (enabled && existingIndex === -1) {
+    pattern.events.push(makeStepEvent(midiNote, beat, stepsPerBeat));
+  } else if (!enabled && existingIndex !== -1) {
+    pattern.events.splice(existingIndex, 1);
+  }
+}
+
+export type StepCell = { midiNote: number; stepIndex: number };
 
 export function setStep(
   state: EditorState,
@@ -315,28 +353,51 @@ export function setStep(
   stepsPerBeat: number,
   enabled: boolean,
 ): EditorState {
-  const beat = stepBeat(stepIndex, stepsPerBeat);
-  return execute(state, enabled ? "Activer un pas" : "Désactiver un pas", (draft) => {
+  return setSteps(state, patternId, [{ midiNote, stepIndex }], stepsPerBeat, enabled);
+}
+
+export function setSteps(
+  state: EditorState,
+  patternId: string,
+  cells: StepCell[],
+  stepsPerBeat: number,
+  enabled: boolean,
+): EditorState {
+  if (cells.length === 0) return state;
+  return execute(state, enabled ? "Activer des pas" : "Désactiver des pas", (draft) => {
     const pattern = draft.patterns.find((item) => item.id === patternId);
     if (!pattern) return;
-    const existingIndex = pattern.events.findIndex(
-      (event) => event.midi_note === midiNote && Math.abs(event.start_beat - beat) < 1e-9,
-    );
-    if (enabled && existingIndex === -1) {
-      pattern.events.push({
-        id: newId(),
-        start_beat: beat,
-        duration_beats: Math.min(1 / stepsPerBeat, 0.5),
-        midi_note: midiNote,
-        velocity: 0.7,
-        probability: 1,
-        micro_timing_beats: 0,
-        pan: 0,
-      });
-    } else if (!enabled && existingIndex !== -1) {
-      pattern.events.splice(existingIndex, 1);
+    for (const cell of cells) toggleStep(pattern, cell.midiNote, cell.stepIndex, stepsPerBeat, enabled);
+  });
+}
+
+export function setStepFieldCells(
+  state: EditorState,
+  patternId: string,
+  cells: StepCell[],
+  stepsPerBeat: number,
+  field: StepField,
+  value: number,
+): EditorState {
+  if (cells.length === 0) return state;
+  return execute(state, "Modifier des pas", (draft) => {
+    const pattern = draft.patterns.find((item) => item.id === patternId);
+    if (!pattern) return;
+    const [min, max] = STEP_FIELD_BOUNDS[field];
+    const bounded = Math.min(max, Math.max(min, value));
+    for (const cell of cells) {
+      const beat = stepBeat(cell.stepIndex, stepsPerBeat);
+      const event = pattern.events.find(
+        (item) => item.midi_note === cell.midiNote && Math.abs(item.start_beat - beat) < 1e-9,
+      );
+      if (!event) continue;
+      event[field] = bounded;
     }
   });
+}
+
+export function stepEvent(events: NoteEvent[], midiNote: number, beat: number) {
+  return events.find((event) => event.midi_note === midiNote && Math.abs(event.start_beat - beat) < 1e-9);
 }
 
 export function setStepField(
@@ -348,17 +409,7 @@ export function setStepField(
   field: StepField,
   value: number,
 ): EditorState {
-  const beat = stepBeat(stepIndex, stepsPerBeat);
-  return execute(state, "Modifier un pas", (draft) => {
-    const pattern = draft.patterns.find((item) => item.id === patternId);
-    if (!pattern) return;
-    const event = pattern.events.find(
-      (item) => item.midi_note === midiNote && Math.abs(item.start_beat - beat) < 1e-9,
-    );
-    if (!event) return;
-    const [min, max] = STEP_FIELD_BOUNDS[field];
-    event[field] = Math.min(max, Math.max(min, value));
-  });
+  return setStepFieldCells(state, patternId, [{ midiNote, stepIndex }], stepsPerBeat, field, value);
 }
 
 export function setTrackChannelFlag(
@@ -392,5 +443,126 @@ export function setTrackChannelFlag(
 export function addPattern(state: EditorState, trackId: string): EditorState {
   return execute(state, "Ajouter un pattern", (draft) => {
     draft.patterns.push({ id: newId(), track_id: trackId, events: [] });
+  });
+}
+
+export function patternName(state: EditorState, patternId: string) {
+  const pattern = state.composition.patterns.find((item) => item.id === patternId);
+  if (pattern?.name) return pattern.name;
+  const index = state.composition.patterns.findIndex((item) => item.id === patternId);
+  return `Pattern ${index + 1}`;
+}
+
+const PATTERN_LENGTH_MIN = 0.25;
+const PATTERN_LENGTH_MAX = 1024;
+
+export function setPatternLength(
+  state: EditorState,
+  patternId: string,
+  lengthBeats: number,
+  groupWithPrevious = false,
+): EditorState {
+  const bounded = Math.round(Math.min(PATTERN_LENGTH_MAX, Math.max(PATTERN_LENGTH_MIN, lengthBeats)) * 1000) / 1000;
+  return execute(state, "Modifier la longueur du pattern", (draft) => {
+    const pattern = draft.patterns.find((item) => item.id === patternId);
+    if (!pattern) return;
+    pattern.length_beats = bounded;
+  }, groupWithPrevious);
+}
+
+export function renamePattern(
+  state: EditorState,
+  patternId: string,
+  name: string,
+  groupWithPrevious = false,
+): EditorState {
+  const normalized = name.trim();
+  if (!normalized) return state;
+  return execute(state, "Renommer le pattern", (draft) => {
+    const pattern = draft.patterns.find((item) => item.id === patternId);
+    if (!pattern) return;
+    pattern.name = normalized;
+  }, groupWithPrevious);
+}
+
+const PATTERN_COLOR_PATTERN = /^#[0-9a-f]{6}$/i;
+
+export function setPatternColor(state: EditorState, patternId: string, color: string): EditorState {
+  if (!PATTERN_COLOR_PATTERN.test(color)) return state;
+  return execute(state, "Changer la couleur du pattern", (draft) => {
+    const pattern = draft.patterns.find((item) => item.id === patternId);
+    if (!pattern) return;
+    pattern.color = color.toLowerCase();
+  });
+}
+
+export function duplicatePattern(state: EditorState, patternId: string): EditorState {
+  return execute(state, "Dupliquer le pattern", (draft) => {
+    const source = draft.patterns.find((item) => item.id === patternId);
+    if (!source) return;
+    const base = source.name ?? patternName(state, patternId);
+    const events = source.events.map((event) => ({ ...clone(event), id: newId() }));
+    draft.patterns.push({ ...clone(source), id: newId(), name: `${base} (copie)`, events });
+  });
+}
+
+export function fnv1a(text: string) {
+  let hash = 0x811c9dc5;
+  for (let index = 0; index < text.length; index += 1) {
+    hash ^= text.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return hash >>> 0;
+}
+
+export function varyPattern(state: EditorState, patternId: string, salt: number): EditorState {
+  return execute(state, "Créer une variation", (draft) => {
+    const source = draft.patterns.find((item) => item.id === patternId);
+    if (!source) return;
+    const base = source.name ?? patternName(state, patternId);
+    const events = source.events.map((event) => {
+      const modified = { ...clone(event), id: newId() };
+      const choice = fnv1a(`${salt}:${event.id}`) % 5;
+      if (choice === 0) modified.velocity = Math.min(1, Math.max(0.05, event.velocity * 0.85));
+      else if (choice === 1) modified.velocity = Math.min(1, Math.max(0.05, event.velocity * 1.1));
+      else if (choice === 2) modified.probability = Math.min(1, Math.max(0.05, event.probability * 0.8));
+      else if (choice === 3)
+        modified.micro_timing_beats = Math.min(1, Math.max(-1, event.micro_timing_beats + 0.1));
+      return modified;
+    });
+    draft.patterns.push({ ...clone(source), id: newId(), name: `${base} (variation)`, events });
+  });
+}
+
+export function fillPatternRow(
+  state: EditorState,
+  patternId: string,
+  midiNote: number,
+  stepsPerBeat: number,
+  kind: "all" | "beats",
+): EditorState {
+  return execute(state, kind === "all" ? "Remplir la rangée" : "Remplir aux temps", (draft) => {
+    const pattern = draft.patterns.find((item) => item.id === patternId);
+    if (!pattern) return;
+    const stepCount = Math.ceil(patternLengthBeats(pattern) * stepsPerBeat);
+    const otherRows = pattern.events.filter((event) => event.midi_note !== midiNote);
+    const filled: NoteEvent[] = [];
+    for (let stepIndex = 0; stepIndex < stepCount; stepIndex += 1) {
+      const beat = stepBeat(stepIndex, stepsPerBeat);
+      if (kind === "beats" && beat % 1 !== 0) continue;
+      const existing = pattern.events.find(
+        (event) => event.midi_note === midiNote && Math.abs(event.start_beat - beat) < 1e-9,
+      );
+      filled.push(existing ? clone(existing) : makeStepEvent(midiNote, beat, stepsPerBeat));
+    }
+    pattern.events = [...otherRows, ...filled];
+  });
+}
+
+export function clearPatternRow(state: EditorState, patternId: string, midiNote: number): EditorState {
+  return execute(state, "Vider la rangée", (draft) => {
+    const pattern = draft.patterns.find((item) => item.id === patternId);
+    if (!pattern) return;
+    pattern.events = pattern.events.filter((event) => event.midi_note !== midiNote);
   });
 }

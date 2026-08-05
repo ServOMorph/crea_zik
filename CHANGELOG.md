@@ -1,5 +1,51 @@
 # Changelog
 
+## v0.26 — 2026-08-05
+
+### Ajouté
+
+- `frontend/src/editor/PianoRoll.tsx` + `PianoRoll.test.tsx` (nouveaux) : piano roll — clavier
+  vertical, grille, rendu de toutes les notes mélodiques de `Lignes de nuit` et transposition
+  exacte dans Chromium (e2e `studio.spec.ts` « the piano roll renders every melodic note and
+  transposes exactly »).
+- `frontend/src/editor/noteCommands.ts` + `noteCommands.test.ts` (nouveaux) : commandes notes —
+  sélection, addNote/moveNotes/resizeNotes/duplicateNotes/deleteNotes, setNoteFields,
+  quantizeNotes/swingNotes/humanizeNotes seedés, transposeNotes, legatoNotes, uniformDuration,
+  invertNotes, buildChord.
+- `frontend/src/editor/pianoRollGeometry.ts` + `pianoRollGeometry.test.ts` (nouveaux) :
+  conversions beat/pixel, snap, bornes MIDI, clavier vertical, gamme/tonalité (fast-check).
+- `frontend/src/editor/TransportBar.test.tsx` : +1 test — « Sauvegarde impossible, préécoute
+  annulée. » quand `ensureSaved` échoue, sans appel de rendu.
+- `frontend/e2e/studio.spec.ts` : test Chromium du piano roll (rendu des notes et transposition).
+
+### Corrigé
+
+- Course sauvegarde/préécoute : `EditorLanding.save()` partage la promesse PUT en vol
+  (`saveInFlightRef`) — un clic « Lire la sélection » pendant la sauvegarde attend la fin du PUT
+  au lieu d'avorter silencieusement (avant : transport bloqué sur « Rendu de la préécoute… »,
+  e2e route directe en échec) ; `TransportBar.requestPreview` affiche « Sauvegarde impossible,
+  préécoute annulée. » en cas d'échec de sauvegarde.
+- Corruption UTF-8 réparée dans `EditorLanding.tsx`/`TransportBar.tsx` (6 chaînes avec U+FFFD,
+  introduite par une conversion PowerShell antérieure) — cause réelle de 2 échecs unitaires ;
+  import `redo` inutilisé retiré de `noteCommands.test.ts`.
+
+### Modifié
+
+- `frontend/src/editor/editorStore.ts` : patterns (longueur, nom, couleur, duplication, variation
+  FNV-1a seedée, remplissages), `fillPatternRow`/`clearPatternRow`, `patternName`.
+- `frontend/src/editor/StepSequencer.tsx`/`StepSequencer.test.tsx`, `stepSequencer.test.ts` :
+  sélection multiple, remplissages, longueurs, nom/couleur/duplication/variation.
+- `frontend/src/editor/EditorLanding.tsx` : intégration `PatternEditor`, fix course, réparation
+  UTF-8. `TransportBar.tsx` : préécoute piste (`track_ids` + cache `:track:<id>`), fix, réparation
+  UTF-8.
+- `backend/src/crea_zik/models.py` : migration de schéma 2 → 3 (`CURRENT_SCHEMA_VERSION = 3`,
+  `Pattern.name`/`color`/`length_beats`) ; `EDITEUR/contracts/composition.schema.json` et
+  `EDITEUR/fixtures/lignes_de_nuit.composition.json` alignés ;
+  `tests/test_compositions.py` + `tests/test_foundation.py` (migration, version future).
+- `tests_manuels.md` : contrôles manuels des propriétés de patterns ajoutés en file d'attente.
+- `EDITEUR/roadmap_editeur_musical.md` : Phase 6 et V6 [FAIT] (migration v3, PatternEditor,
+  remplissages), Phase 7 [EN COURS] avec constat de session (piano roll de base livré).
+
 ## v0.25 — 2026-08-05
 
 ### Ajouté

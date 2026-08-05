@@ -180,7 +180,7 @@ describe("editorStore — sélection et presse-papier", () => {
     expect(setGrid(state, { snapBeats: 0 })).toBe(state);
     state = copySelection(state, "tracks");
     state = clearSelection(state);
-    expect(state.selection).toEqual({ tracks: [], patterns: [], clips: [] });
+    expect(state.selection).toEqual({ tracks: [], patterns: [], clips: [], notes: [] });
   });
 
   it("supprime en cascade un pattern puis ses clips", () => {
@@ -190,7 +190,7 @@ describe("editorStore — sélection et presse-papier", () => {
     expect(state.composition.patterns.map((pattern) => pattern.id)).toEqual(["pattern-2"]);
     expect(state.composition.clips.map((clip) => clip.id)).toEqual(["clip-2"]);
     expect(state.undoStack.at(-1)?.label).toBe("Supprimer patterns");
-    expect(state.selection).toEqual({ tracks: [], patterns: [], clips: [] });
+    expect(state.selection).toEqual({ tracks: [], patterns: [], clips: [], notes: [] });
     expect(state.undoStack).toHaveLength(1);
     expect(undo(state).composition).toEqual(composition);
   });

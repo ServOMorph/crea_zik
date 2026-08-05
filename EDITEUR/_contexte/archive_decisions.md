@@ -17,3 +17,5 @@ Décisions archivées depuis `_contexte/contexte.md` (append only).
 - 2026-07-30 : Seuil de couverture frontend abaissé temporairement (60 %/75 %) pour
   `TransportBar.tsx`/`EditorLanding.tsx`, non testés en profondeur ; à remonter à 80 % après les
   phases V3/V5 dédiées, pour éviter la couverture artificielle interdite par la roadmap.
+- 2026-07-30 : mutmut reste verrouillé en dépendance mais son exécution est bloquée nativement sous
+  Windows (WSL requis) ; traité comme réserve d'infrastructure documentée, pas comme gate contourné.

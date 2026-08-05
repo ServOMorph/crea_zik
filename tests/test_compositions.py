@@ -214,19 +214,60 @@ def test_beats_to_samples_is_deterministic_and_non_negative(
 
 def test_legacy_project_payload_migrates_to_composition_schema() -> None:
     project = Project.model_validate({"name": "legacy", "schema_version": 1})
-    assert project.schema_version == 2
+    assert project.schema_version == 3
     assert project.compositions == []
+
+
+def test_project_schema_two_composition_patterns_gain_names_colors() -> None:
+    source = reference_composition().model_dump(mode="json")
+    for pattern in source["patterns"]:
+        pattern.pop("name", None)
+        pattern.pop("color", None)
+    legacy = Project.model_validate(
+        {
+            "name": "legacy",
+            "schema_version": 2,
+            "compositions": [{**source, "schema_version": 2}],
+        }
+    )
+    assert legacy.schema_version == 3
+    migrated = legacy.compositions[0]
+    assert migrated.schema_version == 3
+    assert [pattern.name for pattern in migrated.patterns] == [
+        f"Pattern {index + 1}" for index in range(len(migrated.patterns))
+    ]
+    assert all(pattern.color for pattern in migrated.patterns)
 
 
 def test_composition_rejects_invalid_references_and_future_versions() -> None:
     source = reference_composition().model_dump(mode="json")
-    source["schema_version"] = 3
+    source["schema_version"] = 4
     with pytest.raises(ValidationError):
         Composition.model_validate(source)
     source = reference_composition().model_dump(mode="json")
     source["clips"][0]["pattern_id"] = str(uuid4())
     with pytest.raises(ValidationError, match="clips must reference a pattern"):
         Composition.model_validate(source)
+
+
+def test_pattern_rejects_unknown_fields_and_invalid_decorations() -> None:
+    source = reference_composition()
+    payload = source.model_dump(mode="json")
+    pattern = payload["patterns"][0]
+    with pytest.raises(ValidationError):
+        Pattern.model_validate({**pattern, "mystery": 1})
+    with pytest.raises(ValidationError):
+        Pattern.model_validate({**pattern, "color": "red"})
+    with pytest.raises(ValidationError):
+        Pattern.model_validate({**pattern, "length_beats": 0})
+    with pytest.raises(ValidationError):
+        Pattern.model_validate({**pattern, "name": "  "})
+    decorated = Pattern.model_validate(
+        {**pattern, "name": "  Groove  ", "color": "#a1b2c3", "length_beats": 8}
+    )
+    assert decorated.name == "Groove"
+    assert decorated.color == "#a1b2c3"
+    assert decorated.length_beats == 8
 
 
 def test_composition_rejects_mixer_cycles_and_invalid_automation_target() -> None:

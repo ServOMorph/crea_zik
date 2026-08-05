@@ -27,18 +27,16 @@ Music Composer, Adaptive Lab, Analyse & Export) et son backend de rendu, permett
   Csound réel restant avant de poursuivre la roadmap applicative.
 
 ## État actuel (réécrit intégralement à chaque /close)
-Phase 5 close [FAIT] : tempo et métrique dans `TransportBar`, testés. Phase 6 [EN COURS] : Channel
-Rack (ordre, nom, mute, solo) + séquenceur pas à pas livrés (kick/clap/hats reconstitués,
-résolution, vélocité/probabilité/accent/micro-décalage, paint/erase, clavier, préécoute pattern) ;
-backend `probability`/`micro_timing_beats` propagés (gate seedé) et fix solo. Reste : longueur de
-pattern, duplication, renommage, variation, suppression sûre, sélection multiple, remplissages,
-préécoute piste, couleur/nom (migration schéma, `extra="forbid"`). V6 [EN COURS] : runner canonique
-vert 20 checks (`test-results/v1-20260805-102645.json`) ; drag-and-drop Playwright et preuve
-rendu/hash frontend restants.
+Phase 6 close [FAIT] (longueur/duplication/renommage/variation seedée/suppression sûre de
+patterns, sélection multiple, remplissages, préécoute piste, couleur/nom via migration de schéma
+v3) ; V6 close [FAIT] avec réserves assumées (glisser/multi-sélection en unitaire, preuve
+rendu/hash frontend non formalisée). Phase 7 ouverte [EN COURS] : piano roll de base livré
+(`PianoRoll.tsx` + `noteCommands.ts` + `pianoRollGeometry.ts`, e2e Chromium rendu+transposition),
+fix course sauvegarde/préécoute livré (`saveInFlightRef`), runner canonique vert
+(`v1-20260805-161626.json`, success true, mutation 79,17 %). Restent Phase 7 : lanes, ghost
+notes, édition souris UI, qualification V7.
 
 ## Décisions structurantes (append only — 10 entrées max, 5 lignes max/entrée, archiver au-delà)
-- 2026-07-30 : mutmut reste verrouillé en dépendance mais son exécution est bloquée nativement sous
-  Windows (WSL requis) ; traité comme réserve d'infrastructure documentée, pas comme gate contourné.
 - 2026-08-01 : mutmut reste bloqué même sous WSL provisionné (Ubuntu, Python 3.13, Csound) : incompatibilité
   structurelle entre `source_paths` de mutmut et le mode d'import réel du projet (`pythonpath`).
   Acté comme limite documentée (LIM-001) plutôt que poursuivi via restructuration app-wide des imports.
@@ -77,3 +75,13 @@ rendu/hash frontend restants.
   runner canonique vert 20 checks (`v1-20260805-102645.json`, backend 116, frontend 96 unitaires,
   13 e2e). V6 [EN COURS] : reste longueur/duplication/renommage/suppression de patterns,
   sélection multiple, remplissages, couleur (migration schéma), drag-and-drop Playwright.
+- 2026-08-05 : Phases 6 et V6 closes [FAIT] — longueur/duplication/renommage/variation seedée/
+  suppression sûre, sélection multiple, remplissages, préécoute piste, couleur et nom de pattern
+  via migration de schéma v3 (contrat et fixture alignés, golden inchangés) ; runner canonique
+  vert final (`v1-20260805-110735.json`, success true). Réserves assumées : glisser et
+  multi-sélection couverts en unitaire, preuve rendu/hash frontend non formalisée (backend) ;
+  couleur de piste et accès instrument reportés à la Phase 9. Phase 7 (Piano Roll) ouverte.
+- 2026-08-05 : fix de la course sauvegarde/préécoute acté — `save()` partage sa promesse PUT en
+  vol (`saveInFlightRef`) et `requestPreview` affiche « Sauvegarde impossible, préécoute
+  annulée. » en cas d'échec : un clic « Lire la sélection » pendant une sauvegarde attend la fin
+  du PUT (e2e route directe verrouillé).

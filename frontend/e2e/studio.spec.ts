@@ -265,3 +265,44 @@ test("the editor transport plays, pauses, stops and reaches media end", async ({
   await expect(page.getByRole("button", { name: "Relancer" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Lire", exact: true })).toBeVisible({ timeout: 35_000 });
 });
+
+test("the piano roll renders every melodic note and transposes exactly", async ({ page }) => {
+  const projectName = `E2E piano roll ${Date.now()}`;
+  await page.goto("/");
+  await page.getByRole("textbox", { name: "Name", exact: true }).fill(projectName);
+  await page.getByRole("button", { name: "Create", exact: true }).click();
+  await page.getByRole("link", { name: "Éditeur musical" }).click();
+  await page.getByRole("button", { name: "Créer une copie éditable" }).click();
+  await expect(page).toHaveURL(/\/editor\?project=.*&composition=.*/);
+  await expect(page.getByRole("heading", { name: "Lignes de nuit" })).toBeVisible();
+
+  const rackName = (name: string) => page.locator(".channel-rack__name").filter({ hasText: name });
+
+  await rackName("bass").click();
+  await expect(page.getByRole("heading", { name: "Piano Roll" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Note La2, temps 16, durée 0\.42, vélocité 30 %/ })).toBeVisible();
+  await expect(page.locator(".piano-roll__note")).toHaveCount(22);
+
+  await page.getByRole("button", { name: /Note La2, temps 16, durée 0\.42/ }).click();
+  await page.getByRole("button", { name: "Transposer +12" }).click();
+  await expect(page.getByRole("button", { name: /Note La3, temps 16, durée 0\.42/ })).toBeVisible();
+
+  await rackName("pad").click();
+  await expect(page.locator(".piano-roll__note")).toHaveCount(42);
+  await expect(page.getByRole("button", { name: /Note La3, temps 0, durée 4\.8/ })).toBeVisible();
+
+  await rackName("arp").click();
+  await expect(page.locator(".piano-roll__note")).toHaveCount(72);
+
+  await rackName("lead").click();
+  await expect(page.locator(".piano-roll__note")).toHaveCount(21);
+  await expect(page.getByRole("button", { name: /Note La4, temps 10, durée 0\.56/ })).toBeVisible();
+
+  await page.getByRole("button", { name: "Sauvegarder" }).click();
+  await expect(page.getByText("Enregistré")).toBeVisible();
+  const directUrl = page.url();
+  await page.goto(directUrl);
+  await expect(page.getByRole("heading", { name: "Lignes de nuit" })).toBeVisible();
+  await rackName("bass").click();
+  await expect(page.getByRole("button", { name: /Note La3, temps 16, durée 0\.42/ })).toBeVisible();
+});

@@ -29,6 +29,7 @@ type TransportBarProps = {
   compositionId: string;
   ensureSaved: () => Promise<EditableComposition | null>;
   patternRequest?: { patternId: string; requestId: number } | null;
+  trackRequest?: { trackId: string; requestId: number } | null;
 };
 
 function sleep(milliseconds: number) {
@@ -43,7 +44,7 @@ function clipDetected(buffer: AudioBuffer) {
   return false;
 }
 
-export function TransportBar({ composition, projectId, compositionId, ensureSaved, patternRequest }: TransportBarProps) {
+export function TransportBar({ composition, projectId, compositionId, ensureSaved, patternRequest, trackRequest }: TransportBarProps) {
   const durationBeats = compositionDurationBeats(composition);
   const [transport, setTransport] = useState<TransportState>(() => createTransportState(composition));
   const [message, setMessage] = useState("Prêt à préécouter.");
@@ -119,13 +120,17 @@ export function TransportBar({ composition, projectId, compositionId, ensureSave
   }, [transport.monitoringGain, transport.muted]);
 
   const requestPreview = useCallback(
-    async (range: BeatRange) => {
+    async (range: BeatRange, trackId?: string) => {
       cancelPreview();
       const currentRequest = requestGateRef.current.begin();
       setMessage("Rendu de la préécoute…");
       const savedComposition = await ensureSaved();
-      if (!savedComposition || !requestGateRef.current.isCurrent(currentRequest)) return null;
-      const key = previewKey(savedComposition, range);
+      if (!savedComposition) {
+        if (requestGateRef.current.isCurrent(currentRequest)) setMessage("Sauvegarde impossible, préécoute annulée.");
+        return null;
+      }
+      if (!requestGateRef.current.isCurrent(currentRequest)) return null;
+      const key = trackId ? `${previewKey(savedComposition, range)}:track:${trackId}` : previewKey(savedComposition, range);
       const cached = cacheRef.current.get(key);
       if (cached) {
         setMessage("Préécoute chargée depuis le cache.");
@@ -134,7 +139,11 @@ export function TransportBar({ composition, projectId, compositionId, ensureSave
       try {
         let job = await apiRequest<JobResponse>(`/api/projects/${projectId}/compositions/${compositionId}/render`, {
           method: "POST",
-          body: JSON.stringify({ start_beat: range.startBeat, end_beat: range.endBeat }),
+          body: JSON.stringify({
+            start_beat: range.startBeat,
+            end_beat: range.endBeat,
+            ...(trackId ? { track_ids: [trackId] } : {}),
+          }),
         });
         jobIdRef.current = job.id;
         while (job.state === "queued" || job.state === "running") {
@@ -159,10 +168,10 @@ export function TransportBar({ composition, projectId, compositionId, ensureSave
   );
 
   const playRange = useCallback(
-    async (requestedRange: BeatRange) => {
+    async (requestedRange: BeatRange, trackId?: string) => {
       const range = normaliseRange(requestedRange, durationBeats);
       stopPlayback();
-      const wav = await requestPreview(range);
+      const wav = await requestPreview(range, trackId);
       if (!wav) return;
       try {
         const response = await fetch(wav);
@@ -227,6 +236,24 @@ export function TransportBar({ composition, projectId, compositionId, ensureSave
     setTransport((current) => ({ ...current, mode: "pattern" }));
     void playRange({ startBeat: clip.start_beat, endBeat: clip.start_beat + clip.length_beats });
   }, [composition.clips, patternRequest, playRange]);
+
+  const lastTrackRequestRef = useRef(0);
+
+  useEffect(() => {
+    if (!trackRequest) return;
+    if (lastTrackRequestRef.current === trackRequest.requestId) return;
+    lastTrackRequestRef.current = trackRequest.requestId;
+    const patternIds = new Set(
+      composition.patterns
+        .filter((pattern) => pattern.track_id === trackRequest.trackId)
+        .map((pattern) => pattern.id),
+    );
+    const clips = composition.clips.filter((clip) => patternIds.has(clip.pattern_id));
+    if (!clips.length) return;
+    const startBeat = Math.min(...clips.map((clip) => clip.start_beat));
+    const endBeat = Math.max(...clips.map((clip) => clip.start_beat + clip.length_beats));
+    void playRange({ startBeat, endBeat }, trackRequest.trackId);
+  }, [composition.clips, composition.patterns, playRange, trackRequest]);
 
   const pause = () => {
     stopPlayback();

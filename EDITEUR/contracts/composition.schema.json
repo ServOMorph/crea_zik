@@ -6,7 +6,7 @@
   "additionalProperties": false,
   "required": ["schema_version", "id", "revision", "title", "seed", "sample_rate", "tempo_bpm", "time_signature", "tracks", "patterns", "clips", "master_channel", "render_settings"],
   "properties": {
-    "schema_version": {"const": 2},
+    "schema_version": {"const": 3},
     "id": {"type": "string", "format": "uuid"},
     "revision": {"type": "integer", "minimum": 0},
     "title": {"type": "string", "minLength": 1, "maxLength": 160},
@@ -47,7 +47,10 @@
       "properties": {
         "id": {"$ref": "#/$defs/id"},
         "track_id": {"$ref": "#/$defs/id"},
-        "events": {"type": "array", "items": {"$ref": "#/$defs/noteEvent"}}
+        "events": {"type": "array", "items": {"$ref": "#/$defs/noteEvent"}},
+        "name": {"type": ["string", "null"], "minLength": 1, "maxLength": 80},
+        "color": {"type": ["string", "null"], "pattern": "^#[0-9a-f]{6}$"},
+        "length_beats": {"type": ["number", "null"], "exclusiveMinimum": 0, "maximum": 100000}
       }
     },
     "noteEvent": {

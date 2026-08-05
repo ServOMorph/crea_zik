@@ -77,13 +77,13 @@ def test_project_round_trip_in_authorized_root(tmp_path: Path, monkeypatch: pyte
 def test_project_schema_migrates_legacy_payload_and_normalizes_name() -> None:
     project = Project.model_validate({"name": "  Demo   project  ", "schemaVersion": 1})
     assert project.name == "Demo project"
-    assert project.schema_version == 2
+    assert project.schema_version == 3
     assert project.patches == []
 
 
 def test_project_rejects_schema_from_a_newer_application() -> None:
     with pytest.raises(ValidationError, match="newer than this application"):
-        Project.model_validate({"name": "demo", "schema_version": 3})
+        Project.model_validate({"name": "demo", "schema_version": 4})
 
 
 def test_domain_models_validate_references_and_relative_artifacts() -> None:

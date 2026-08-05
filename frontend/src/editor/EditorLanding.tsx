@@ -1,4 +1,4 @@
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 
 import { ApiError, apiRequest } from "../api/client";
 import {
@@ -10,22 +10,46 @@ import {
   duplicateSelection,
   EditableComposition,
   execute,
+  fillPatternRow,
+  clearPatternRow,
   isDirty,
   markSaveFailed,
   markSaved,
   markSaving,
   paste,
   redo,
+  renamePattern,
   select,
   selectAll,
   setGrid,
-  setStep,
-  setStepField,
+  setPatternColor,
+  setPatternLength,
+  setStepFieldCells,
+  setSteps,
   setTrackChannelFlag,
   undo,
+  varyPattern,
+  duplicatePattern,
 } from "./editorStore";
 import { ChannelRackRow } from "./ChannelRack";
-import { StepSequencer } from "./StepSequencer";
+import {
+  addNote,
+  buildChord,
+  deleteNotes,
+  duplicateNotes,
+  humanizeNotes,
+  invertNotes,
+  legatoNotes,
+  moveNotes,
+  quantizeNotes,
+  resizeNotes,
+  selectNotes,
+  setNoteFields,
+  swingNotes,
+  transposeNotes,
+  uniformDuration,
+} from "./noteCommands";
+import { PatternEditor } from "./PatternEditor";
 import { TransportBar } from "./TransportBar";
 import { VirtualList } from "./VirtualList";
 
@@ -57,6 +81,8 @@ export function EditorLanding({ search, onNavigate, onDirtyChange }: EditorLandi
   const [selectedPatternId, setSelectedPatternId] = useState<string | null>(null);
   const [stepsPerBeat, setStepsPerBeat] = useState(2);
   const [patternRequest, setPatternRequest] = useState<{ patternId: string; requestId: number } | null>(null);
+  const [trackRequest, setTrackRequest] = useState<{ trackId: string; requestId: number } | null>(null);
+  const varySeedRef = useRef(1);
 
   useEffect(() => {
     const refreshOnlineState = () => setOffline(!navigator.onLine);
@@ -106,22 +132,31 @@ export function EditorLanding({ search, onNavigate, onDirtyChange }: EditorLandi
       });
   }, [compositionId, projectId]);
 
+  const saveInFlightRef = useRef<Promise<EditableComposition | null> | null>(null);
+
   const save = useCallback(async (): Promise<EditableComposition | null> => {
-    if (!editor || !projectId || !compositionId || editor.saving) return null;
+    if (!editor || !projectId || !compositionId) return null;
     if (!isDirty(editor)) return editor.composition;
+    if (saveInFlightRef.current) return saveInFlightRef.current;
     const pending = markSaving(editor);
     setEditor(pending);
-    try {
-      const saved = await apiRequest<EditableComposition>(`/api/projects/${projectId}/compositions/${compositionId}`, {
-        method: "PUT",
-        body: JSON.stringify({ expected_revision: editor.composition.revision, composition: editor.composition }),
-      });
-      setEditor(markSaved(pending, saved));
-      return saved;
-    } catch (error) {
-      setEditor(markSaveFailed(pending, error instanceof Error ? error.message : "Sauvegarde impossible."));
-      return null;
-    }
+    const request = (async (): Promise<EditableComposition | null> => {
+      try {
+        const saved = await apiRequest<EditableComposition>(`/api/projects/${projectId}/compositions/${compositionId}`, {
+          method: "PUT",
+          body: JSON.stringify({ expected_revision: editor.composition.revision, composition: editor.composition }),
+        });
+        setEditor(markSaved(pending, saved));
+        return saved;
+      } catch (error) {
+        setEditor(markSaveFailed(pending, error instanceof Error ? error.message : "Sauvegarde impossible."));
+        return null;
+      } finally {
+        saveInFlightRef.current = null;
+      }
+    })();
+    saveInFlightRef.current = request;
+    return request;
   }, [compositionId, editor, projectId]);
 
   useEffect(() => {
@@ -260,6 +295,7 @@ export function EditorLanding({ search, onNavigate, onDirtyChange }: EditorLandi
             compositionId={compositionId ?? ""}
             ensureSaved={save}
             patternRequest={patternRequest}
+            trackRequest={trackRequest}
           />
           <h2 className="editor-workspace__title">{editor.composition.title}</h2>
           {editor.saveError && (
@@ -451,105 +487,126 @@ export function EditorLanding({ search, onNavigate, onDirtyChange }: EditorLandi
               )}
             />
           </section>
-          <SequencerPanel
+          <PatternEditor
             editor={editor}
             selectedPatternId={selectedPatternId}
             onSelectPattern={setSelectedPatternId}
             stepsPerBeat={stepsPerBeat}
             onStepsPerBeatChange={setStepsPerBeat}
+            onSetSteps={(patternId, cells, enabled) =>
+              setEditor((current) =>
+                current ? setSteps(current, patternId, cells, stepsPerBeat, enabled) : current,
+              )
+            }
+            onSetStepField={(patternId, cells, field, value) =>
+              setEditor((current) =>
+                current ? setStepFieldCells(current, patternId, cells, stepsPerBeat, field, value) : current,
+              )
+            }
+            onFill={(patternId, midiNote, kind) =>
+              setEditor((current) =>
+                current ? fillPatternRow(current, patternId, midiNote, stepsPerBeat, kind) : current,
+              )
+            }
+            onClearRow={(patternId, midiNote) =>
+              setEditor((current) => (current ? clearPatternRow(current, patternId, midiNote) : current))
+            }
             onPreview={(patternId) =>
               setPatternRequest((current) => ({ patternId, requestId: (current?.requestId ?? 0) + 1 }))
             }
-            onSetStep={(patternId, midiNote, stepIndex, enabled) =>
-              setEditor((current) => (current ? setStep(current, patternId, midiNote, stepIndex, stepsPerBeat, enabled) : current))
+            onSelectNotes={(noteIds, additive) =>
+              setEditor((current) => (current ? selectNotes(current, noteIds, additive) : current))
             }
-            onSetStepField={(patternId, midiNote, stepIndex, field, value) =>
-              setEditor((current) => (current ? setStepField(current, patternId, midiNote, stepIndex, stepsPerBeat, field, value) : current))
+            onAddNote={(patternId, startBeat, durationBeats, midiNote) =>
+              setEditor((current) =>
+                current ? addNote(current, patternId, startBeat, durationBeats, midiNote) : current,
+              )
+            }
+            onMoveNotes={(patternId, noteIds, deltaBeats, deltaMidi, groupWithPrevious) =>
+              setEditor((current) =>
+                current
+                  ? moveNotes(current, patternId, noteIds, deltaBeats, deltaMidi, groupWithPrevious)
+                  : current,
+              )
+            }
+            onResizeNotes={(patternId, noteIds, deltaBeats, groupWithPrevious) =>
+              setEditor((current) =>
+                current ? resizeNotes(current, patternId, noteIds, deltaBeats, groupWithPrevious) : current,
+              )
+            }
+            onDeleteNotes={(patternId, noteIds) =>
+              setEditor((current) => (current ? deleteNotes(current, patternId, noteIds) : current))
+            }
+            onSetNoteFields={(patternId, noteIds, field, value) =>
+              setEditor((current) =>
+                current ? setNoteFields(current, patternId, noteIds, field, value) : current,
+              )
+            }
+            onQuantize={(patternId, noteIds) =>
+              setEditor((current) =>
+                current
+                  ? quantizeNotes(current, patternId, noteIds, current.grid.snapBeats)
+                  : current,
+              )
+            }
+            onSwing={(patternId, noteIds, amount) =>
+              setEditor((current) => (current ? swingNotes(current, patternId, noteIds, amount) : current))
+            }
+            onHumanize={(patternId, noteIds) =>
+              setEditor((current) => (current ? humanizeNotes(current, patternId, noteIds, 42, 0.5) : current))
+            }
+            onTranspose={(patternId, noteIds, semitones) =>
+              setEditor((current) =>
+                current ? transposeNotes(current, patternId, noteIds, semitones) : current,
+              )
+            }
+            onLegato={(patternId, noteIds) =>
+              setEditor((current) => (current ? legatoNotes(current, patternId, noteIds) : current))
+            }
+            onUniformDuration={(patternId, noteIds, durationBeats) =>
+              setEditor((current) =>
+                current ? uniformDuration(current, patternId, noteIds, durationBeats) : current,
+              )
+            }
+            onInvert={(patternId, noteIds, axisMidi) =>
+              setEditor((current) => (current ? invertNotes(current, patternId, noteIds, axisMidi) : current))
+            }
+            onBuildChord={(patternId, rootNoteId, type) =>
+              setEditor((current) => (current ? buildChord(current, patternId, rootNoteId, type) : current))
+            }
+            onDuplicateNotes={(patternId, noteIds, deltaBeats, deltaMidi) =>
+              setEditor((current) =>
+                current ? duplicateNotes(current, patternId, noteIds, deltaBeats, deltaMidi) : current,
+              )
+            }
+            onPreviewTrack={(trackId) =>
+              setTrackRequest((current) => ({ trackId, requestId: (current?.requestId ?? 0) + 1 }))
+            }
+            onRename={(patternId, name) =>
+              setEditor((current) => (current ? renamePattern(current, patternId, name, true) : current))
+            }
+            onSetColor={(patternId, color) =>
+              setEditor((current) => (current ? setPatternColor(current, patternId, color) : current))
+            }
+            onSetLength={(patternId, lengthBeats) =>
+              setEditor((current) => (current ? setPatternLength(current, patternId, lengthBeats, true) : current))
+            }
+            onDuplicate={(patternId) =>
+              setEditor((current) => (current ? duplicatePattern(current, patternId) : current))
+            }
+            onVary={(patternId) =>
+              setEditor((current) =>
+                current ? varyPattern(current, patternId, varySeedRef.current++) : current,
+              )
+            }
+            onDelete={(patternId) =>
+              setEditor((current) =>
+                current ? deleteSelection(select(current, "patterns", [patternId]), "patterns") : current,
+              )
             }
           />
         </section>
       )}
     </section>
-  );
-}
-
-type SequencerPanelProps = {
-  editor: ReturnType<typeof createEditorState>;
-  selectedPatternId: string | null;
-  onSelectPattern: (patternId: string) => void;
-  stepsPerBeat: number;
-  onStepsPerBeatChange: (value: number) => void;
-  onPreview: (patternId: string) => void;
-  onSetStep: (patternId: string, midiNote: number, stepIndex: number, enabled: boolean) => void;
-  onSetStepField: (
-    patternId: string,
-    midiNote: number,
-    stepIndex: number,
-    field: "velocity" | "probability" | "micro_timing_beats" | "duration_beats",
-    value: number,
-  ) => void;
-};
-
-function SequencerPanel({
-  editor,
-  selectedPatternId,
-  onSelectPattern,
-  stepsPerBeat,
-  onStepsPerBeatChange,
-  onPreview,
-  onSetStep,
-  onSetStepField,
-}: SequencerPanelProps) {
-  const selectedTrack =
-    editor.composition.tracks.find((track) => editor.selection.tracks.includes(track.id)) ??
-    editor.composition.tracks.find((track) => track.kind === "drums");
-  const drumPatterns =
-    selectedTrack?.kind === "drums"
-      ? editor.composition.patterns.filter((pattern) => pattern.track_id === selectedTrack.id)
-      : [];
-  const activePattern = drumPatterns.find((pattern) => pattern.id === selectedPatternId) ?? drumPatterns[0] ?? null;
-  if (!activePattern) {
-    return (
-      <section className="step-sequencer" aria-labelledby="sequencer-heading">
-        <h3 id="sequencer-heading">Séquenceur pas à pas</h3>
-        <p className="step-sequencer__hint">
-          {selectedTrack
-            ? "Seuls les patterns des pistes de batterie sont éditables au pas à pas."
-            : "Sélectionnez une piste de batterie pour éditer ses patterns."}
-        </p>
-      </section>
-    );
-  }
-  return (
-    <>
-      {drumPatterns.length > 1 && (
-        <label>
-          Pattern
-          <select
-            aria-label="Pattern de batterie"
-            value={activePattern.id}
-            onChange={(event) => onSelectPattern(event.target.value)}
-          >
-            {drumPatterns.map((pattern, index) => (
-              <option key={pattern.id} value={pattern.id}>
-                Pattern {index + 1}
-              </option>
-            ))}
-          </select>
-        </label>
-      )}
-      <StepSequencer
-        pattern={activePattern}
-        stepsPerBeat={stepsPerBeat}
-        onStepsPerBeatChange={onStepsPerBeatChange}
-        onSetStep={(midiNote, stepIndex, enabled) =>
-          onSetStep(activePattern.id, midiNote, stepIndex, enabled)
-        }
-        onSetStepField={(midiNote, stepIndex, field, value) =>
-          onSetStepField(activePattern.id, midiNote, stepIndex, field, value)
-        }
-        onPreview={() => onPreview(activePattern.id)}
-      />
-    </>
   );
 }

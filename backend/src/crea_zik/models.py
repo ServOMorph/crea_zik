@@ -9,7 +9,16 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-CURRENT_SCHEMA_VERSION = 2
+CURRENT_SCHEMA_VERSION = 3
+
+PATTERN_DEFAULT_COLORS = (
+    "#e0a458",
+    "#7fb3d5",
+    "#9bb87f",
+    "#c98bb8",
+    "#e58d7f",
+    "#d5c76b",
+)
 
 
 class SchemaMigrationError(ValueError):
@@ -221,6 +230,14 @@ class Track(IdentifiedModel):
 class Pattern(IdentifiedModel):
     track_id: UUID
     events: list[NoteEvent] = Field(default_factory=list, max_length=20_000)
+    name: str | None = Field(default=None, min_length=1, max_length=80)
+    color: str | None = Field(default=None, pattern=r"^#[0-9a-f]{6}$")
+    length_beats: float | None = Field(default=None, gt=0, le=100_000)
+
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, value: str | None) -> str | None:
+        return None if value is None else _safe_name(value)
 
 
 class Clip(IdentifiedModel):
@@ -282,7 +299,7 @@ class RenderSettings(DomainModel):
 
 
 class Composition(SeededModel):
-    schema_version: Literal[2] = 2
+    schema_version: Literal[2, 3] = 3
     revision: int = Field(default=0, ge=0)
     title: str = Field(min_length=1, max_length=160)
     sample_rate: Literal[44_100, 48_000, 88_200, 96_000] = 48_000
@@ -442,6 +459,16 @@ def migrate_project_payload(payload: dict[str, Any]) -> dict[str, Any]:
         if version == 1:
             data.setdefault("compositions", [])
             version = 2
+        elif version == 2:
+            for composition in data.get("compositions", []):
+                for index, pattern in enumerate(composition.get("patterns", [])):
+                    pattern.setdefault("name", f"Pattern {index + 1}")
+                    pattern.setdefault(
+                        "color",
+                        PATTERN_DEFAULT_COLORS[index % len(PATTERN_DEFAULT_COLORS)],
+                    )
+                composition["schema_version"] = 3
+            version = 3
         else:
             raise SchemaMigrationError(f"no migration is available from schema version {version}")
     data["schema_version"] = version

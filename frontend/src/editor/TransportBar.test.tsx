@@ -204,6 +204,24 @@ describe("TransportBar", () => {
     await waitFor(() => expect(calls).toContain("POST /api/jobs/job-1/cancel"));
   });
 
+  it("annule la préécoute et affiche un message quand la sauvegarde échoue", async () => {
+    const calls = stubApi();
+    render(
+      <TransportBar
+        composition={baseComposition}
+        projectId="p1"
+        compositionId="c1"
+        ensureSaved={vi.fn(async () => null)}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Lire" }));
+
+    expect(await screen.findByText("Sauvegarde impossible, préécoute annulée.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Lire" })).toBeInTheDocument();
+    expect(calls.filter((call) => call === "POST /api/projects/p1/compositions/c1/render")).toHaveLength(0);
+  });
+
   it("repasse à l’arrêt et positionne la tête à la fin quand la lecture se termine", async () => {
     stubApi();
     renderBar();

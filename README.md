@@ -55,16 +55,16 @@ close [FAIT] : machine d'état testée à horloge contrôlée, `MockAudioContext
 Chromium réel et cache/invalidation/annulation des préécoutes ; runner canonique vert (rapport
 `EDITEUR/test-results/v1-20260804-224727.json`, 20 checks, e2e 12, mutation Stryker 95,37 %).
 La Phase 5 fonctionnelle est close [FAIT] : le tempo et la métrique sont affichés dans la barre
-de transport et couverts par un test. La Phase 6 (Channel Rack et séquenceur pas à pas) est
-ouverte [EN COURS] : le Channel Rack (ordre, nom, mute, solo) et le séquenceur pas à pas
-(résolution 1/1→1/8, vélocité/probabilité/accent/micro-décalage, peinture au glisser, clavier,
-préécoute de pattern) sont livrés, les patterns kick/clap/charleston de `Lignes de nuit` sont
-reconstitués et éditables ; le backend propage `probability` et `micro_timing_beats` (gate seedé
-déterministe) et corrige le mute/solo. Restent longueur de pattern, duplication, renommage,
-variation, suppression sûre, sélection multiple, remplissages, préécoute piste et couleur/nom
-(migration de schéma). La qualification V6 est en cours : runner canonique vert 20 checks
-(`EDITEUR/test-results/v1-20260805-102645.json`, backend 116 tests, frontend 96 unitaires, 13 e2e,
-mutation ~84 %), fast-check et e2e clavier/souris/undo faits.
+de transport et couverts par un test. Les phases 6 et V6 (Channel Rack et séquenceur pas à pas)
+sont closes [FAIT] : longueur, duplication, renommage, variation seedée et suppression sûre des
+patterns, sélection multiple, remplissages, préécoute piste, couleur et nom via migration de
+schéma v3 ; réserves assumées (glisser/multi-sélection en unitaire, preuve rendu/hash frontend
+non formalisée). La Phase 7 (Piano Roll) est ouverte [EN COURS] : piano roll de base livré
+(rendu de toutes les notes mélodiques de `Lignes de nuit` et transposition exacte en Chromium,
+commandes notes complètes, conversions beat/pixel et gamme/tonalité fast-check) ; la course
+sauvegarde/préécoute est corrigée (un clic « Lire la sélection » pendant une sauvegarde attend
+la fin du PUT). Runner canonique vert (`EDITEUR/test-results/v1-20260805-161626.json`, success
+true, 21 checks, mutation Stryker 79,17 %).
 Le gate de déterminisme Csound réel de la phase 1 (roadmap studio audio procédural) est validé (trois rendus indépendants, même SHA-256 du WAV).
 La phase 2 de `roadmap_studio_audio_procedural.md` a été réauditée et close [FAIT] : le code réel
 dépasse largement sa description initiale. Les phases 3 (bibliothèque DSP/Sound Designer) et 4

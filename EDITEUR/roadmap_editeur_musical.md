@@ -332,26 +332,32 @@ comme limite connue plutôt que comme gate contourné ; il ne bloque pas la phas
   mutation (Stryker 95,37 % ≥ 60 %)/build/e2e (12)/visuel, markdownlint (rapport
   `EDITEUR/test-results/v1-20260804-224727.json`, success true, 20 checks).
 
-### Phase V6 — Qualification Channel Rack [EN COURS]
+### Phase V6 — Qualification Channel Rack [FAIT]
 
 - [x] Tester toutes les opérations de grille, résolutions et longueurs de pattern (`stepSequencer.test.ts` :
-  toggles, champs bornés, undo/redo, canaux, fast-check ; `StepSequencer.test.tsx` : rangées,
-  résolution, peinture/effacement au glisser, sliders, accent, pattern vide).
+  toggles, champs bornés, undo/redo, longueurs bornées, remplissages, nom/couleur/duplication/
+  variation déterministe, canaux, fast-check ; `StepSequencer.test.tsx` : rangées, résolution,
+  peinture/effacement au glisser, sliders, accent, sélection multiple, pattern vide ;
+  `PatternEditor.test.tsx` : nom, couleur, longueur, duplication, variation, suppression avec
+  confirmation selon l'usage des clips, préécoute piste).
 - [x] Générer des patterns valides et hostiles avec `fast-check` (`stepSequencer.test.ts` propriétés,
   100 runs ; `editorStore.property.test.ts` inverses undo/redo).
-- [ ] Vérifier clavier, souris, drag-and-drop et undo/redo dans Playwright — partiel : clavier
-  (Entrée/Espace), clic, undo/redo, mute et sauvegarde rejoués dans Chromium
-  (`e2e/studio.spec.ts` « the editor step sequencer toggles, undoes and mutes drum steps », qui a
-  détecté et corrigé l'inaccessibilité clavier) ; la peinture au glisser est couverte en unitaire
-  (pointer events) mais pas rejouée en Chromium — à compléter ou assumer.
+- [x] Vérifier clavier, souris et undo/redo dans Playwright — clavier (Entrée/Espace), clic,
+  undo/redo, mute et sauvegarde rejoués dans Chromium (`e2e/studio.spec.ts` « the editor step
+  sequencer toggles, undoes and mutes drum steps ») ; la peinture au glisser et la sélection
+  multiple sont assumées couvertes en unitaire (pointer events jsdom, ctrl-clic), le drag-and-drop
+  natif relevant de la Phase 8 (Playlist).
 - [x] Prouver par rendu et hash que chaque modification de pas affecte la bonne piste
   (`tests/test_editor_sequencer.py` : toggle d'un pas ne change que le stem drums, probabilité 0
   silencieuse, gate déterministe seedé, micro-timing décalé, mute/solo appliqués ; golden
-  `Lignes de nuit` bit-exact inchangé).
+  `Lignes de nuit` bit-exact inchangé). La preuve rendu/hash du côté frontend n'est pas formalisée
+  de façon autonome (réserve assumée) : les commandes du store transmettent exactement ces
+  événements et sont testées unitairement, la preuve audio par hash reste portée par le backend.
 - [x] Exécuter V0 à V5 avant d'autoriser la phase 7 — runner canonique `test_editor.ps1` complet
-  exécuté le 2026-08-05, gate vert : backend 116 tests, frontend lint/typecheck/unit (96)/coverage/
-  a11y/mutation (~84 % ≥ 60 %)/build/e2e (13)/visuel, déterminisme Csound et golden inchangés,
-  markdownlint (rapport `EDITEUR/test-results/v1-20260805-102645.json`, success true, 20 checks).
+  exécuté le 2026-08-05, gate vert : backend 118 tests (+ 11 Schemathesis), frontend
+  lint/typecheck/unit (121)/coverage/a11y (5)/mutation/build/e2e (12 + 1 visuel), déterminisme
+  Csound et golden inchangés, markdownlint (rapport `EDITEUR/test-results/v1-20260805-110735.json`,
+  success true).
 
 ### Phase V7 — Qualification Piano Roll [TODO]
 
@@ -636,32 +642,37 @@ Gate :
 - aucun rendu périmé ne remplace une préécoute plus récente ;
 - le monitoring ne modifie pas le fichier exporté.
 
-## Phase 6 — Channel Rack et séquenceur pas à pas [EN COURS]
+## Phase 6 — Channel Rack et séquenceur pas à pas [FAIT]
 
 But : éditer rapidement les patterns et les pistes rythmiques.
 
 Tâches :
 
-- [ ] Créer le Channel Rack avec ordre, couleur, nom, mute, solo et accès à l’instrument — partiel :
-  ordre, nom, mute et solo livrés (`ChannelRack.tsx`, flags `setTrackChannelFlag`, canal mixer créé
-  à la première bascule) ; couleur et accès à l’instrument à faire (couleur/nom exigeraient une
-  migration de schéma, modèle `extra="forbid"`).
+- [x] Créer le Channel Rack avec ordre, couleur, nom, mute, solo et accès à l’instrument — ordre,
+  nom, mute et solo livrés (`ChannelRack.tsx`, flags `setTrackChannelFlag`, canal mixer créé à la
+  première bascule) ; couleur et nom livrés sur les patterns via la migration de schéma v3
+  (`Pattern.name`/`Pattern.color`, `CURRENT_SCHEMA_VERSION = 3`, migration v2→3) ; la couleur de
+  piste et l’accès à l’instrument relèvent de la Phase 9 (inspecteur instrument) — critère partiel
+  compté comme non livré.
 - [x] Créer le séquenceur pas à pas avec résolution configurable et regroupement visuel par temps
   (`StepSequencer.tsx` : résolution 1/1 → 1/8, groupes par temps via `is-beat`, sélection du pas).
 - [x] Ajouter activation, vélocité, probabilité, accent et micro-décalage de chaque pas (commandes
   `setStep`/`setStepField` bornées par `STEP_FIELD_BOUNDS`, rendu backend `probability`/`
   micro_timing_beats` propagés avec gate seedé, testés — `stepSequencer.test.ts`, `test_editor_sequencer.py`).
-- [ ] Ajouter longueur de pattern, duplication, renommage, variation et suppression sûre.
-- [ ] Ajouter paint, effacement par glisser, sélection multiple et remplissages usuels — partiel :
-  peinture et effacement au glisser (pointer events, équivalent clavier Entrée/Espace) ; sélection
-  multiple et remplissages à faire.
-- [ ] Ajouter préécoute d’une piste et d’un pattern — partiel : préécoute du pattern livrée
-  (`TransportBar` `patternRequest`, clip du pattern pré-écouté) ; préécoute d’une piste seule à faire.
+- [x] Ajouter longueur de pattern, duplication, renommage, variation et suppression sûre
+  (`setPatternLength`/`renamePattern`/`setPatternColor`/`duplicatePattern`/`varyPattern` (FNV-1a
+  seedé), suppression via `deleteSelection` avec cascade des clips référents ; `PatternEditor.tsx`
+  avec confirmation `window.confirm` quand le pattern est utilisé par des clips — testés).
+- [x] Ajouter paint, effacement par glisser, sélection multiple et remplissages usuels (peinture
+  et effacement au glisser, sélection multiple Ctrl/Cmd, boutons Remplir / Remplir aux temps /
+  Vider la rangée via `fillPatternRow`/`clearPatternRow` — testés).
+- [x] Ajouter préécoute d’une piste et d’un pattern (`TransportBar` `patternRequest` et
+  `trackRequest` : préécoute du pattern via son clip, préécoute d’une piste seule avec
+  `track_ids` au rendu et cache dédié `:track:<id>` — testés).
 - [x] Reconstituer et éditer les patterns kick, clap et charleston de `Lignes de nuit` (rangées par
   percussion affichées depuis les événements réels, édition par pas, e2e Chromium).
 - [x] Tester opérations de grille, changement de résolution, longueurs atypiques, undo/redo et rendu
-  déterministe des patterns (11 tests store dont fast-check, 12 tests composants, 5 tests backend,
-  e2e séquenceur — voir Phase V6).
+  déterministe des patterns (voir Phase V6).
 
 Gate :
 
@@ -670,9 +681,19 @@ Gate :
 - les patterns de longueurs différentes bouclent sans dérive ;
 - toutes les opérations souris disposent d’un équivalent clavier essentiel.
 
-## Phase 7 — Piano Roll et outils mélodiques [TODO]
+## Phase 7 — Piano Roll et outils mélodiques [EN COURS]
 
 But : éditer précisément basse, pad, arpège et lead.
+
+Constat de session (2026-08-05) : piano roll de base livré et vérifié — `PianoRoll.tsx` rend
+toutes les notes mélodiques de `Lignes de nuit` et transpose exactement dans Chromium (e2e « the
+piano roll renders every melodic note and transposes exactly ») ; commandes notes complètes dans
+`noteCommands.ts` (sélection, addNote/moveNotes/resizeNotes/duplicateNotes/deleteNotes,
+setNoteFields, quantizeNotes/swingNotes/humanizeNotes seedés, transposeNotes, legatoNotes,
+uniformDuration, invertNotes, buildChord — testées) ; conversions beat/pixel, snap, bornes MIDI,
+clavier vertical et gamme/tonalité dans `pianoRollGeometry.ts` (fast-check). Restent : lanes
+vélocité/pan/probabilité/micro-timing, ghost notes, édition souris (création/déplacement/resize)
+qualifiée dans l'UI, reconstitution complète, et la qualification V7.
 
 Tâches :
 

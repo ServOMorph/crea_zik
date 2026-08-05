@@ -1,14 +1,16 @@
 import { useRef, useState } from "react";
 
-import type { NoteEvent, Pattern, StepField } from "./editorStore";
+import type { NoteEvent, Pattern, StepCell, StepField } from "./editorStore";
 import { patternLengthBeats, stepBeat, stepEvent } from "./editorStore";
 
 type StepSequencerProps = {
   pattern: Pattern;
   stepsPerBeat: number;
   onStepsPerBeatChange: (value: number) => void;
-  onSetStep: (midiNote: number, stepIndex: number, enabled: boolean) => void;
-  onSetStepField: (midiNote: number, stepIndex: number, field: StepField, value: number) => void;
+  onSetSteps: (cells: StepCell[], enabled: boolean) => void;
+  onSetStepField: (cells: StepCell[], field: StepField, value: number) => void;
+  onFill: (midiNote: number, kind: "all" | "beats") => void;
+  onClearRow: (midiNote: number) => void;
   onPreview: () => void;
 };
 
@@ -35,38 +37,43 @@ function normalise(event: NoteEvent | undefined) {
   };
 }
 
-type Cell = { midiNote: number; stepIndex: number };
+function sameCell(first: StepCell, second: StepCell) {
+  return first.midiNote === second.midiNote && first.stepIndex === second.stepIndex;
+}
 
 export function StepSequencer({
   pattern,
   stepsPerBeat,
   onStepsPerBeatChange,
-  onSetStep,
+  onSetSteps,
   onSetStepField,
+  onFill,
+  onClearRow,
   onPreview,
 }: StepSequencerProps) {
   const midiNotes = [...new Set(pattern.events.map((event) => event.midi_note))].sort((a, b) => a - b);
   const rows = midiNotes.length ? midiNotes : [36];
   const stepCount = Math.ceil(patternLengthBeats(pattern) * stepsPerBeat);
-  const [selected, setSelected] = useState<Cell | null>(null);
+  const [selected, setSelected] = useState<StepCell[]>([]);
   const paintModeRef = useRef<"paint" | "erase" | null>(null);
 
   const eventsByCell = (midiNote: number, stepIndex: number) =>
     stepEvent(pattern.events, midiNote, stepBeat(stepIndex, stepsPerBeat));
 
-  const applyCell = (midiNote: number, stepIndex: number) => {
+  const applyCell = (cell: StepCell) => {
     const mode = paintModeRef.current;
     if (!mode) return;
-    const active = Boolean(eventsByCell(midiNote, stepIndex));
+    const active = Boolean(eventsByCell(cell.midiNote, cell.stepIndex));
     if ((mode === "paint" && !active) || (mode === "erase" && active)) {
-      onSetStep(midiNote, stepIndex, mode === "paint");
+      onSetSteps([cell], mode === "paint");
     }
   };
 
-  const selectedEvent = selected
-    ? eventsByCell(selected.midiNote, selected.stepIndex)
-    : undefined;
-  const selectedValues = selectedEvent ? normalise(selectedEvent) : null;
+  const focus = selected.at(-1) ?? null;
+  const focusEvent = focus ? eventsByCell(focus.midiNote, focus.stepIndex) : undefined;
+  const focusValues = focusEvent ? normalise(focusEvent) : null;
+
+  const fillDisabled = !focus;
 
   return (
     <section className="step-sequencer" aria-labelledby="sequencer-heading">
@@ -85,6 +92,23 @@ export function StepSequencer({
             <option value="8">1/8 temps</option>
           </select>
         </label>
+        <button
+          type="button"
+          disabled={!focus}
+          onClick={() => focus && onFill(focus.midiNote, "all")}
+        >
+          Remplir
+        </button>
+        <button
+          type="button"
+          disabled={!focus}
+          onClick={() => focus && onFill(focus.midiNote, "beats")}
+        >
+          Remplir aux temps
+        </button>
+        <button type="button" disabled={!focus} onClick={() => focus && onClearRow(focus.midiNote)}>
+          Vider la rangée
+        </button>
         <button type="button" onClick={onPreview}>
           Préécouter le pattern
         </button>
@@ -101,7 +125,8 @@ export function StepSequencer({
               const beat = stepBeat(stepIndex, stepsPerBeat);
               const event = eventsByCell(midiNote, stepIndex);
               const values = normalise(event);
-              const isSelected = selected?.midiNote === midiNote && selected?.stepIndex === stepIndex;
+              const cell: StepCell = { midiNote, stepIndex };
+              const isSelected = selected.some((item) => sameCell(item, cell));
               return (
                 <button
                   key={stepIndex}
@@ -124,10 +149,18 @@ export function StepSequencer({
                   onPointerDown={(pointerEvent) => {
                     pointerEvent.preventDefault();
                     paintModeRef.current = event ? "erase" : "paint";
-                    setSelected({ midiNote, stepIndex });
-                    applyCell(midiNote, stepIndex);
+                    if (pointerEvent.ctrlKey || pointerEvent.metaKey) {
+                      setSelected((current) =>
+                        current.some((item) => sameCell(item, cell))
+                          ? current.filter((item) => !sameCell(item, cell))
+                          : [...current, cell],
+                      );
+                    } else {
+                      setSelected([cell]);
+                    }
+                    applyCell(cell);
                   }}
-                  onPointerEnter={() => applyCell(midiNote, stepIndex)}
+                  onPointerEnter={() => applyCell(cell)}
                   onPointerUp={() => {
                     paintModeRef.current = null;
                   }}
@@ -135,8 +168,8 @@ export function StepSequencer({
                     if (keyEvent.key === "Enter" || keyEvent.key === " ") {
                       keyEvent.preventDefault();
                       paintModeRef.current = event ? "erase" : "paint";
-                      setSelected({ midiNote, stepIndex });
-                      applyCell(midiNote, stepIndex);
+                      setSelected([cell]);
+                      applyCell(cell);
                       paintModeRef.current = null;
                     }
                   }}
@@ -147,77 +180,70 @@ export function StepSequencer({
         ))}
       </div>
       <div className="step-sequencer__editor">
-        {selectedValues && selected ? (
+        {focusValues && focus ? (
           <>
             <p>
-              {percussionName(selected.midiNote)} · pas {selected.stepIndex + 1} · temps{" "}
-              {stepBeat(selected.stepIndex, stepsPerBeat)}
+              {percussionName(focus.midiNote)} · pas {focus.stepIndex + 1} · temps{" "}
+              {stepBeat(focus.stepIndex, stepsPerBeat)}
+              {selected.length > 1 ? ` · ${selected.length} pas sélectionnés` : ""}
             </p>
             <label>
               Vélocité
               <input
-                aria-label="Vélocité du pas"
+                aria-label="Vélocité des pas"
                 type="range"
                 min="0.05"
                 max="1"
                 step="0.01"
-                value={selectedValues.velocity}
+                value={focusValues.velocity}
                 onChange={(event) =>
-                  onSetStepField(selected.midiNote, selected.stepIndex, "velocity", Number(event.target.value))
+                  onSetStepField(selected, "velocity", Number(event.target.value))
                 }
               />
-              <output>{Math.round(selectedValues.velocity * 100)} %</output>
+              <output>{Math.round(focusValues.velocity * 100)} %</output>
             </label>
             <label>
               Probabilité
               <input
-                aria-label="Probabilité du pas"
+                aria-label="Probabilité des pas"
                 type="range"
                 min="0.05"
                 max="1"
                 step="0.01"
-                value={selectedValues.probability}
+                value={focusValues.probability}
                 onChange={(event) =>
-                  onSetStepField(selected.midiNote, selected.stepIndex, "probability", Number(event.target.value))
+                  onSetStepField(selected, "probability", Number(event.target.value))
                 }
               />
-              <output>{Math.round(selectedValues.probability * 100)} %</output>
+              <output>{Math.round(focusValues.probability * 100)} %</output>
             </label>
             <label>
               Micro-décalage
               <input
-                aria-label="Micro-décalage du pas"
+                aria-label="Micro-décalage des pas"
                 type="range"
                 min="-1"
                 max="1"
                 step="0.05"
-                value={selectedValues.microTiming}
+                value={focusValues.microTiming}
                 onChange={(event) =>
-                  onSetStepField(
-                    selected.midiNote,
-                    selected.stepIndex,
-                    "micro_timing_beats",
-                    Number(event.target.value),
-                  )
+                  onSetStepField(selected, "micro_timing_beats", Number(event.target.value))
                 }
               />
-              <output>{selectedValues.microTiming} temps</output>
+              <output>{focusValues.microTiming} temps</output>
             </label>
             <button
               type="button"
-              aria-pressed={selectedValues.velocity >= 0.9}
+              aria-pressed={focusValues.velocity >= 0.9}
               onClick={() =>
-                onSetStepField(
-                  selected.midiNote,
-                  selected.stepIndex,
-                  "velocity",
-                  selectedValues.velocity >= 0.9 ? 0.7 : 1,
-                )
+                onSetStepField(selected, "velocity", focusValues.velocity >= 0.9 ? 0.7 : 1)
               }
             >
-              {selectedValues.velocity >= 0.9 ? "Retirer l’accent" : "Accent"}
+              {focusValues.velocity >= 0.9 ? "Retirer l’accent" : "Accent"}
             </button>
-          </>
+            <span className="step-sequencer__fill-hint">
+              {fillDisabled ? "Sélectionnez un pas pour remplir sa rangée." : `Remplissages sur ${percussionName(focus.midiNote)}.`}
+            </span>          </>
         ) : (
           <p className="step-sequencer__hint">Cliquez sur un pas pour l’activer, puis réglez-le ici.</p>
         )}

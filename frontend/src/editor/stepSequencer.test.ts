@@ -3,13 +3,24 @@ import { describe, expect, it } from "vitest";
 
 import {
   addPattern,
+  clearPatternRow,
   createEditorState,
+  duplicatePattern,
+  fillPatternRow,
+  patternLengthBeats,
+  patternName,
   redo,
+  renamePattern,
+  setPatternColor,
+  setPatternLength,
   setStep,
   setStepField,
+  setStepFieldCells,
+  setSteps,
   setTrackChannelFlag,
   stepBeat,
   undo,
+  varyPattern,
 } from "./editorStore";
 
 const composition = {
@@ -138,6 +149,128 @@ describe("séquenceur — canal et patterns", () => {
     const added = state.composition.patterns.at(-1);
     expect(added).toMatchObject({ track_id: "track-2", events: [] });
     expect(added?.id).not.toBe("pattern-1");
+  });
+
+  it("bascule un groupe de pas en une seule commande annulable", () => {
+    let state = createEditorState(composition);
+    state = setSteps(state, "pattern-1", [{ midiNote: kick, stepIndex: 0 }, { midiNote: clap, stepIndex: 2 }], 4, true);
+    expect(state.undoStack).toHaveLength(1);
+    expect(state.composition.patterns[0].events).toHaveLength(2);
+    state = undo(state);
+    expect(state.composition.patterns[0].events).toHaveLength(0);
+  });
+
+  it("applique un champ à un groupe de pas en une seule commande", () => {
+    let state = createEditorState(composition);
+    state = setSteps(state, "pattern-1", [{ midiNote: kick, stepIndex: 0 }, { midiNote: kick, stepIndex: 2 }], 4, true);
+    state = setStepFieldCells(state, "pattern-1", [{ midiNote: kick, stepIndex: 0 }, { midiNote: kick, stepIndex: 2 }], 4, "velocity", 0.3);
+    expect(state.undoStack).toHaveLength(2);
+    expect(state.composition.patterns[0].events.map((event) => event.velocity)).toEqual([0.3, 0.3]);
+    expect(undo(state).composition.patterns[0].events.map((event) => event.velocity)).toEqual([0.7, 0.7]);
+  });
+});
+
+describe("séquenceur — longueur et remplissages", () => {
+  it("fixe la longueur du pattern et la restitue comme longueur de référence", () => {
+    let state = createEditorState(composition);
+    state = setPatternLength(state, "pattern-1", 8);
+    expect(state.composition.patterns[0].length_beats).toBe(8);
+    expect(patternLengthBeats(state.composition.patterns[0])).toBe(8);
+    state = undo(state);
+    expect(state.composition.patterns[0].length_beats).toBeUndefined();
+  });
+
+  it("borne la longueur aux limites de la commande", () => {
+    let state = createEditorState(composition);
+    state = setPatternLength(state, "pattern-1", 0.1);
+    expect(state.composition.patterns[0].length_beats).toBe(0.25);
+    state = setPatternLength(state, "pattern-1", 5000);
+    expect(state.composition.patterns[0].length_beats).toBe(1024);
+  });
+
+  it("remplit toute la rangée puis réduit aux temps entiers puis la vide", () => {
+    let state = createEditorState(composition);
+    state = fillPatternRow(state, "pattern-1", kick, 4, "all");
+    expect(state.composition.patterns[0].events.filter((event) => event.midi_note === kick)).toHaveLength(16);
+    state = fillPatternRow(state, "pattern-1", kick, 4, "beats");
+    const beatsOnly = state.composition.patterns[0].events
+      .filter((event) => event.midi_note === kick)
+      .map((event) => event.start_beat);
+    expect(beatsOnly).toEqual([0, 1, 2, 3]);
+    state = clearPatternRow(state, "pattern-1", kick);
+    expect(state.composition.patterns[0].events.filter((event) => event.midi_note === kick)).toHaveLength(0);
+  });
+
+  it("ne remplit pas sur un temps fractionnaire en mode temps", () => {
+    let state = createEditorState(composition);
+    state = fillPatternRow(state, "pattern-1", kick, 2, "beats");
+    const beats = state.composition.patterns[0].events.map((event) => event.start_beat);
+    expect(beats.every((beat) => beat % 1 === 0)).toBe(true);
+  });
+
+  it("préserve les autres percussions quand on remplit une rangée", () => {
+    let state = createEditorState(composition);
+    state = setStep(state, "pattern-1", clap, 1, 4, true);
+    state = fillPatternRow(state, "pattern-1", kick, 4, "all");
+    expect(state.composition.patterns[0].events.filter((event) => event.midi_note === clap)).toHaveLength(1);
+  });
+});
+
+describe("séquenceur — nom, couleur, duplication et variation", () => {
+  it("renomme un pattern et affiche un nom par défaut sinon", () => {
+    let state = createEditorState(composition);
+    expect(patternName(state, "pattern-1")).toBe("Pattern 1");
+    state = renamePattern(state, "pattern-1", "  Groove principal  ");
+    expect(state.composition.patterns[0].name).toBe("Groove principal");
+    expect(renamePattern(state, "pattern-1", "   ")).toBe(state);
+    state = undo(state);
+    expect(state.composition.patterns[0].name).toBeUndefined();
+  });
+
+  it("applique une couleur valide et refuse les autres", () => {
+    let state = createEditorState(composition);
+    state = setPatternColor(state, "pattern-1", "#A1B2C3");
+    expect(state.composition.patterns[0].color).toBe("#a1b2c3");
+    expect(setPatternColor(state, "pattern-1", "rouge")).toBe(state);
+  });
+
+  it("duplique le pattern avec des identifiants neufs et un nom marqué", () => {
+    let state = createEditorState(composition);
+    state = setStep(state, "pattern-1", kick, 0, 4, true);
+    state = setPatternLength(state, "pattern-1", 8);
+    state = duplicatePattern(state, "pattern-1");
+    const original = state.composition.patterns[0];
+    const copy = state.composition.patterns.at(-1)!;
+    expect(copy.id).not.toBe(original.id);
+    expect(copy.events).toHaveLength(1);
+    expect(copy.events[0].id).not.toBe(original.events[0].id);
+    expect(copy.name).toBe("Pattern 1 (copie)");
+    expect(copy.length_beats).toBe(8);
+    expect(undo(state).composition.patterns).toHaveLength(1);
+  });
+
+  it("crée une variation déterministe : même salt même résultat, salts différents modifient", () => {
+    let state = createEditorState(composition);
+    state = setStep(state, "pattern-1", kick, 0, 4, true);
+    const withoutIds = (next: ReturnType<typeof createEditorState>) =>
+      next.composition.patterns.at(-1)!.events.map((event) => {
+        const { id, ...rest } = event;
+        void id;
+        return rest;
+      });
+    const first = varyPattern(state, "pattern-1", 7);
+    const second = varyPattern(state, "pattern-1", 7);
+    expect(withoutIds(first)).toEqual(withoutIds(second));
+    const distinct = new Set(
+      [7, 8, 9, 10, 11, 12, 13, 14].map((salt) =>
+        JSON.stringify(withoutIds(varyPattern(state, "pattern-1", salt))),
+      ),
+    );
+    expect(distinct.size).toBeGreaterThan(1);
+    expect(first.composition.patterns.at(-1)?.name).toBe("Pattern 1 (variation)");
+    const sourceIds = new Set(state.composition.patterns[0].events.map((event) => event.id));
+    const variationIds = first.composition.patterns.at(-1)!.events.map((event) => event.id);
+    expect(variationIds.some((id) => sourceIds.has(id))).toBe(false);
   });
 });
 
