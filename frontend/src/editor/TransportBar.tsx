@@ -28,6 +28,7 @@ type TransportBarProps = {
   projectId: string;
   compositionId: string;
   ensureSaved: () => Promise<EditableComposition | null>;
+  patternRequest?: { patternId: string; requestId: number } | null;
 };
 
 function sleep(milliseconds: number) {
@@ -42,7 +43,7 @@ function clipDetected(buffer: AudioBuffer) {
   return false;
 }
 
-export function TransportBar({ composition, projectId, compositionId, ensureSaved }: TransportBarProps) {
+export function TransportBar({ composition, projectId, compositionId, ensureSaved, patternRequest }: TransportBarProps) {
   const durationBeats = compositionDurationBeats(composition);
   const [transport, setTransport] = useState<TransportState>(() => createTransportState(composition));
   const [message, setMessage] = useState("Prêt à préécouter.");
@@ -52,6 +53,7 @@ export function TransportBar({ composition, projectId, compositionId, ensureSave
   const contextRef = useRef<AudioContext | null>(null);
   const gainRef = useRef<GainNode | null>(null);
   const playbackRef = useRef<Playback | null>(null);
+  const lastPatternRequestRef = useRef(0);
   const previousCompositionKey = useRef(previewKey(composition, { startBeat: 0, endBeat: durationBeats }));
 
   const cancelPreview = useCallback(() => {
@@ -216,6 +218,16 @@ export function TransportBar({ composition, projectId, compositionId, ensureSave
     ],
   );
 
+  useEffect(() => {
+    if (!patternRequest) return;
+    if (lastPatternRequestRef.current === patternRequest.requestId) return;
+    lastPatternRequestRef.current = patternRequest.requestId;
+    const clip = composition.clips.find((item) => item.pattern_id === patternRequest.patternId);
+    if (!clip) return;
+    setTransport((current) => ({ ...current, mode: "pattern" }));
+    void playRange({ startBeat: clip.start_beat, endBeat: clip.start_beat + clip.length_beats });
+  }, [composition.clips, patternRequest, playRange]);
+
   const pause = () => {
     stopPlayback();
     setTransport((current) => ({ ...current, status: "paused" }));
@@ -257,6 +269,12 @@ export function TransportBar({ composition, projectId, compositionId, ensureSave
         </button>
         <output aria-live="polite">{formatMusicalPosition(transport.positionBeat, composition.time_signature)}</output>
         <span>{Math.round(transport.positionBeat * (60 / composition.tempo_bpm) * 10) / 10}s</span>
+        <span>
+          {composition.tempo_bpm} BPM
+        </span>
+        <span>
+          {composition.time_signature[0]}/{composition.time_signature[1]}
+        </span>
       </div>
       <label className="editor-transport__position">
         Position

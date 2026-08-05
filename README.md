@@ -54,8 +54,17 @@ et intégrée aux pistes de `EditorLanding`. La phase V5 (qualification transpor
 close [FAIT] : machine d'état testée à horloge contrôlée, `MockAudioContext`, parcours de lecture
 Chromium réel et cache/invalidation/annulation des préécoutes ; runner canonique vert (rapport
 `EDITEUR/test-results/v1-20260804-224727.json`, 20 checks, e2e 12, mutation Stryker 95,37 %).
-La Phase 5 fonctionnelle est [EN COURS] : seule l'affichage du tempo et de la métrique dans la
-barre de transport reste à livrer avant l'ouverture de la Phase 6 (Channel Rack).
+La Phase 5 fonctionnelle est close [FAIT] : le tempo et la métrique sont affichés dans la barre
+de transport et couverts par un test. La Phase 6 (Channel Rack et séquenceur pas à pas) est
+ouverte [EN COURS] : le Channel Rack (ordre, nom, mute, solo) et le séquenceur pas à pas
+(résolution 1/1→1/8, vélocité/probabilité/accent/micro-décalage, peinture au glisser, clavier,
+préécoute de pattern) sont livrés, les patterns kick/clap/charleston de `Lignes de nuit` sont
+reconstitués et éditables ; le backend propage `probability` et `micro_timing_beats` (gate seedé
+déterministe) et corrige le mute/solo. Restent longueur de pattern, duplication, renommage,
+variation, suppression sûre, sélection multiple, remplissages, préécoute piste et couleur/nom
+(migration de schéma). La qualification V6 est en cours : runner canonique vert 20 checks
+(`EDITEUR/test-results/v1-20260805-102645.json`, backend 116 tests, frontend 96 unitaires, 13 e2e,
+mutation ~84 %), fast-check et e2e clavier/souris/undo faits.
 Le gate de déterminisme Csound réel de la phase 1 (roadmap studio audio procédural) est validé (trois rendus indépendants, même SHA-256 du WAV).
 La phase 2 de `roadmap_studio_audio_procedural.md` a été réauditée et close [FAIT] : le code réel
 dépasse largement sa description initiale. Les phases 3 (bibliothèque DSP/Sound Designer) et 4

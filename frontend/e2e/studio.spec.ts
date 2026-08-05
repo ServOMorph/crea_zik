@@ -164,6 +164,41 @@ test("an adaptive graph is created and simulated at the next bar", async ({ page
   await expect(page.getByText("intensity >= 0.5 : transition planifiée à 4 beats")).toBeVisible();
 });
 
+test("the editor step sequencer toggles, undoes and mutes drum steps", async ({ page }) => {
+  const projectName = `E2E sequencer ${Date.now()}`;
+  await page.goto("/");
+  await page.getByRole("textbox", { name: "Name", exact: true }).fill(projectName);
+  await page.getByRole("button", { name: "Create", exact: true }).click();
+  await page.getByRole("link", { name: "Éditeur musical" }).click();
+  await page.getByRole("button", { name: "Créer une copie éditable" }).click();
+  await expect(page).toHaveURL(/\/editor\?project=.*&composition=.*/);
+  await expect(page.getByRole("heading", { name: "Lignes de nuit" })).toBeVisible();
+  await expect(page.getByText("Séquenceur pas à pas")).toBeVisible();
+
+  const emptyStep = page.getByRole("button", { name: /Kick, pas 1, temps 0 : inactif/ });
+  await emptyStep.click();
+  await expect(page.getByRole("button", { name: /Kick, pas 1, temps 0 : actif/ })).toBeVisible();
+
+  const occupiedStep = page.getByRole("button", { name: /Kick, pas 17, temps 8 : actif/ });
+  await occupiedStep.click();
+  await expect(page.getByRole("button", { name: /Kick, pas 17, temps 8 : inactif/ })).toBeVisible();
+
+  await page.getByRole("button", { name: "Annuler", exact: true }).click();
+  await expect(page.getByRole("button", { name: /Kick, pas 17, temps 8 : actif/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Kick, pas 1, temps 0 : actif/ })).toBeVisible();
+
+  const clapStep = page.getByRole("button", { name: /Clap, pas 19, temps 9 : actif/ });
+  await clapStep.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("button", { name: /Clap, pas 19, temps 9 : inactif/ })).toBeVisible();
+
+  await page.getByRole("button", { name: /drums — Muet/ }).click();
+  await expect(page.getByRole("button", { name: /drums — Son activé/ })).toHaveAttribute("aria-pressed", "true");
+
+  await page.getByRole("button", { name: "Sauvegarder" }).click();
+  await expect(page.getByText("Enregistré")).toBeVisible();
+});
+
 test("the music editor opens a project composition from a direct route", async ({ page }) => {
   const projectName = `E2E editor ${Date.now()}`;
   await page.goto("/");

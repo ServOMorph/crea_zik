@@ -16,7 +16,7 @@ const baseComposition = {
     { id: "track-1", name: "Batterie", kind: "drums" },
     { id: "track-2", name: "Basse", kind: "bass" },
   ],
-  patterns: [{ id: "pattern-1", track_id: "track-1" }],
+  patterns: [{ id: "pattern-1", track_id: "track-1", events: [] }],
   clips: [{ id: "clip-1", pattern_id: "pattern-1", start_beat: 0, length_beats: 4 }],
 };
 
@@ -83,7 +83,7 @@ const addPattern = integer({ min: 0, max: 11 }).map<Action>((offset) => ({
     if (state.composition.tracks.length === 0) return state;
     const trackId = state.composition.tracks[offset % state.composition.tracks.length].id;
     return execute(state, "Ajouter pattern", (draft) => {
-      draft.patterns.push({ id: crypto.randomUUID(), track_id: trackId });
+      draft.patterns.push({ id: crypto.randomUUID(), track_id: trackId, events: [] });
     });
   },
 }));

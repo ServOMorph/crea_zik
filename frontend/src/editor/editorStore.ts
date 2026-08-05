@@ -7,8 +7,33 @@ export type Track = {
   [key: string]: unknown;
 };
 
-export type Pattern = { id: string; track_id: string; [key: string]: unknown };
+export type NoteEvent = {
+  id: string;
+  start_beat: number;
+  duration_beats: number;
+  midi_note: number;
+  velocity: number;
+  probability: number;
+  micro_timing_beats: number;
+  pan: number;
+  [key: string]: unknown;
+};
+
+export type Pattern = { id: string; track_id: string; events: NoteEvent[]; [key: string]: unknown };
 export type Clip = { id: string; pattern_id: string; start_beat: number; length_beats: number; [key: string]: unknown };
+
+export type MixerChannel = {
+  id: string;
+  track_id: string | null;
+  gain: number;
+  pan: number;
+  mute: boolean;
+  solo: boolean;
+  output: string;
+  sends: Record<string, number>;
+  effects: Record<string, unknown>[];
+  [key: string]: unknown;
+};
 
 export type EditableComposition = {
   id: string;
@@ -19,6 +44,8 @@ export type EditableComposition = {
   tracks: Track[];
   patterns: Pattern[];
   clips: Clip[];
+  mixer_channels?: MixerChannel[];
+  master_channel?: MixerChannel;
   [key: string]: unknown;
 };
 
@@ -256,4 +283,114 @@ export function markSaveFailed(state: EditorState, message: string): EditorState
 export function markSaved(state: EditorState, composition: EditableComposition): EditorState {
   const saved = clone(composition);
   return { ...state, composition: saved, savedComposition: clone(saved), saving: false, saveError: null };
+}
+
+export type StepField = "velocity" | "probability" | "micro_timing_beats" | "duration_beats";
+
+const STEP_FIELD_BOUNDS: Record<StepField, [number, number]> = {
+  velocity: [0.05, 1],
+  probability: [0.05, 1],
+  micro_timing_beats: [-1, 1],
+  duration_beats: [0.05, 4],
+};
+
+export function stepBeat(stepIndex: number, stepsPerBeat: number) {
+  return Math.round(stepIndex * (1 / stepsPerBeat) * 1000) / 1000;
+}
+
+export function patternLengthBeats(pattern: Pattern) {
+  const end = pattern.events.reduce((max, event) => Math.max(max, event.start_beat + event.duration_beats), 0);
+  return Math.max(end, 4);
+}
+
+export function stepEvent(events: NoteEvent[], midiNote: number, beat: number) {
+  return events.find((event) => event.midi_note === midiNote && Math.abs(event.start_beat - beat) < 1e-9);
+}
+
+export function setStep(
+  state: EditorState,
+  patternId: string,
+  midiNote: number,
+  stepIndex: number,
+  stepsPerBeat: number,
+  enabled: boolean,
+): EditorState {
+  const beat = stepBeat(stepIndex, stepsPerBeat);
+  return execute(state, enabled ? "Activer un pas" : "Désactiver un pas", (draft) => {
+    const pattern = draft.patterns.find((item) => item.id === patternId);
+    if (!pattern) return;
+    const existingIndex = pattern.events.findIndex(
+      (event) => event.midi_note === midiNote && Math.abs(event.start_beat - beat) < 1e-9,
+    );
+    if (enabled && existingIndex === -1) {
+      pattern.events.push({
+        id: newId(),
+        start_beat: beat,
+        duration_beats: Math.min(1 / stepsPerBeat, 0.5),
+        midi_note: midiNote,
+        velocity: 0.7,
+        probability: 1,
+        micro_timing_beats: 0,
+        pan: 0,
+      });
+    } else if (!enabled && existingIndex !== -1) {
+      pattern.events.splice(existingIndex, 1);
+    }
+  });
+}
+
+export function setStepField(
+  state: EditorState,
+  patternId: string,
+  midiNote: number,
+  stepIndex: number,
+  stepsPerBeat: number,
+  field: StepField,
+  value: number,
+): EditorState {
+  const beat = stepBeat(stepIndex, stepsPerBeat);
+  return execute(state, "Modifier un pas", (draft) => {
+    const pattern = draft.patterns.find((item) => item.id === patternId);
+    if (!pattern) return;
+    const event = pattern.events.find(
+      (item) => item.midi_note === midiNote && Math.abs(item.start_beat - beat) < 1e-9,
+    );
+    if (!event) return;
+    const [min, max] = STEP_FIELD_BOUNDS[field];
+    event[field] = Math.min(max, Math.max(min, value));
+  });
+}
+
+export function setTrackChannelFlag(
+  state: EditorState,
+  trackId: string,
+  flag: "mute" | "solo",
+  value: boolean,
+): EditorState {
+  return execute(state, `Modifier le ${flag}`, (draft) => {
+    const channels = draft.mixer_channels ?? [];
+    if (!draft.mixer_channels) draft.mixer_channels = channels;
+    let channel = channels.find((item) => item.track_id === trackId);
+    if (!channel) {
+      channel = {
+        id: newId(),
+        track_id: trackId,
+        gain: 1,
+        pan: 0,
+        mute: false,
+        solo: false,
+        output: "master",
+        sends: {},
+        effects: [],
+      };
+      channels.push(channel);
+    }
+    channel[flag] = value;
+  });
+}
+
+export function addPattern(state: EditorState, trackId: string): EditorState {
+  return execute(state, "Ajouter un pattern", (draft) => {
+    draft.patterns.push({ id: newId(), track_id: trackId, events: [] });
+  });
 }

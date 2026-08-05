@@ -479,3 +479,133 @@ audio {
 .track-browser__window p {
   margin: 0;
 }
+
+.channel-rack {
+  display: grid;
+  gap: 4px;
+}
+
+.channel-rack__row {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) auto auto auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 4px 8px;
+  border: 1px solid #3a4a65;
+  border-radius: 8px;
+  background: #182233;
+}
+
+.channel-rack__row.is-selected {
+  outline: 2px solid #9ee5bd;
+}
+
+.channel-rack__name {
+  text-align: left;
+}
+
+.channel-rack__kind {
+  margin-left: 8px;
+  color: #8ba5cf;
+}
+
+.channel-rack__meter {
+  color: #8ba5cf;
+  font-size: 0.85em;
+}
+
+.channel-rack__flag {
+  min-width: 96px;
+}
+
+.step-sequencer {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #3a4a65;
+  border-radius: 12px;
+  background: #182233;
+  overflow: hidden;
+}
+
+.step-sequencer__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.step-sequencer__toolbar h3 {
+  margin: 0 8px 0 0;
+}
+
+.step-sequencer__grid {
+  display: grid;
+  gap: 4px;
+  max-width: 100%;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.step-sequencer__row {
+  display: grid;
+  gap: 2px;
+  align-items: center;
+}
+
+.step-sequencer__row-label {
+  color: #8ba5cf;
+  font-size: 0.85em;
+}
+
+.step-sequencer__step {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid #3a4a65;
+  border-radius: 4px;
+  background: #10151f;
+  cursor: pointer;
+}
+
+.step-sequencer__step.is-active {
+  background: #2f7d55;
+  border-color: #9ee5bd;
+}
+
+.step-sequencer__step.is-accent {
+  background: #c47a2d;
+  border-color: #ffd29e;
+}
+
+.step-sequencer__step.is-beat:not(.is-active) {
+  border-left-color: #8ba5cf;
+}
+
+.step-sequencer__step.is-selected {
+  outline: 2px solid #9ee5bd;
+}
+
+.step-sequencer__editor {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 16px;
+}
+
+.step-sequencer__editor label {
+  display: grid;
+  gap: 6px;
+  min-width: 180px;
+}
+
+.step-sequencer__editor output {
+  color: #8ba5cf;
+  font-size: 0.85em;
+}
+
+.step-sequencer__hint {
+  margin: 0;
+  color: #8ba5cf;
+}

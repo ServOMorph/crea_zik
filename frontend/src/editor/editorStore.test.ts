@@ -33,8 +33,8 @@ const composition = {
     { id: "track-2", name: "Basse", kind: "bass" },
   ],
   patterns: [
-    { id: "pattern-1", track_id: "track-1" },
-    { id: "pattern-2", track_id: "track-2" },
+    { id: "pattern-1", track_id: "track-1", events: [] },
+    { id: "pattern-2", track_id: "track-2", events: [] },
   ],
   clips: [
     { id: "clip-1", pattern_id: "pattern-1", start_beat: 0, length_beats: 4 },
@@ -236,7 +236,7 @@ describe("editorStore — sélection et presse-papier", () => {
   it("traite les bords du rectangle comme inclusifs", () => {
     const edgeComposition = {
       ...composition,
-      patterns: [{ id: "pattern-1", track_id: "track-1" }],
+      patterns: [{ id: "pattern-1", track_id: "track-1", events: [] }],
       clips: [
         { id: "clip-edge-end", pattern_id: "pattern-1", start_beat: 0, length_beats: 8 },
         { id: "clip-edge-start", pattern_id: "pattern-1", start_beat: 10, length_beats: 2 },

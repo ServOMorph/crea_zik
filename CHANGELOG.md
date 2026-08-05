@@ -1,5 +1,39 @@
 # Changelog
 
+## v0.25 — 2026-08-05
+
+### Ajouté
+
+- `frontend/src/editor/ChannelRack.tsx` + `ChannelRack.test.tsx` (nouveaux) : canaux des pistes
+  avec mute/solo (flags `setTrackChannelFlag`, canal mixer créé à la première bascule).
+- `frontend/src/editor/StepSequencer.tsx` + `StepSequencer.test.tsx` (nouveaux) : grille pas à pas
+  avec résolution 1/1→1/8, regroupement par temps, peinture/effacement au glisser, équivalent
+  clavier Entrée/Espace, sliders vélocité/probabilité/micro-décalage et bouton accent.
+- `frontend/src/editor/stepSequencer.test.ts` (nouveau, 11 tests dont fast-check) : toggles,
+  champs bornés par `STEP_FIELD_BOUNDS`, undo/redo, canaux, propriétés 100 runs.
+- `backend/src/crea_zik/compositions.py` : gate `_event_plays` seedé (SHA-256) pour la probabilité
+  et propagation de `micro_timing_beats` (décalage d'onset) ; `tests/test_editor_sequencer.py`
+  (nouveau, 5 tests) ajouté aux gates lint/domain du runner canonique.
+- `frontend/e2e/studio.spec.ts` : test Chromium du séquenceur (toggle clic + clavier, undo, mute,
+  sauvegarde) — a détecté et corrigé l'inaccessibilité clavier du séquenceur.
+
+### Modifié
+
+- `frontend/src/editor/editorStore.ts` : types `NoteEvent`/`Pattern.events`/`MixerChannel`,
+  commandes `setStep`, `setStepField`, `setTrackChannelFlag`, `addPattern`, helpers
+  `stepBeat`/`patternLengthBeats`/`stepEvent`.
+- `frontend/src/editor/TransportBar.tsx` : affichage du tempo (`120 BPM`) et de la métrique
+  (`4/4`) — Phase 5 close [FAIT] ; prop `patternRequest` pour la préécoute du pattern.
+- `frontend/src/editor/EditorLanding.tsx` : ChannelRackRow dans la VirtualList (rowHeight 48),
+  séquenceur affiché par défaut sur la première piste drums ; `frontend/src/styles.css` :
+  styles `.channel-rack__*` et `.step-sequencer__*`.
+- `backend/src/crea_zik/compositions.py` : fix mute/solo — les pistes sans canal mixer sont
+  muettes dès qu'un solo est actif.
+- `EDITEUR/roadmap_editeur_musical.md` : Phase 5 [FAIT] (tempo/métrique testés) ; Phase 6 et
+  Phase V6 passées [EN COURS] (Channel Rack + séquenceur livrés, runner canonique vert 20 checks,
+  rapport `EDITEUR/test-results/v1-20260805-102645.json`).
+- `tests_manuels.md` : contrôles manuels Channel Rack ajoutés en file d'attente.
+
 ## v0.24 — 2026-08-04
 
 ### Ajouté

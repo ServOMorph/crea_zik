@@ -19,8 +19,13 @@ import {
   select,
   selectAll,
   setGrid,
+  setStep,
+  setStepField,
+  setTrackChannelFlag,
   undo,
 } from "./editorStore";
+import { ChannelRackRow } from "./ChannelRack";
+import { StepSequencer } from "./StepSequencer";
 import { TransportBar } from "./TransportBar";
 import { VirtualList } from "./VirtualList";
 
@@ -49,6 +54,9 @@ export function EditorLanding({ search, onNavigate, onDirtyChange }: EditorLandi
   const [state, setState] = useState<"loading" | "ready" | "error" | "missing">("loading");
   const [message, setMessage] = useState("");
   const [offline, setOffline] = useState(!navigator.onLine);
+  const [selectedPatternId, setSelectedPatternId] = useState<string | null>(null);
+  const [stepsPerBeat, setStepsPerBeat] = useState(2);
+  const [patternRequest, setPatternRequest] = useState<{ patternId: string; requestId: number } | null>(null);
 
   useEffect(() => {
     const refreshOnlineState = () => setOffline(!navigator.onLine);
@@ -251,6 +259,7 @@ export function EditorLanding({ search, onNavigate, onDirtyChange }: EditorLandi
             projectId={projectId ?? ""}
             compositionId={compositionId ?? ""}
             ensureSaved={save}
+            patternRequest={patternRequest}
           />
           <h2 className="editor-workspace__title">{editor.composition.title}</h2>
           {editor.saveError && (
@@ -352,7 +361,7 @@ export function EditorLanding({ search, onNavigate, onDirtyChange }: EditorLandi
           </div>
           <section className="track-browser" aria-labelledby="tracks-heading">
             <div className="track-browser__header">
-              <h2 id="tracks-heading">Pistes ({editor.composition.tracks.length})</h2>
+              <h2 id="tracks-heading">Channel Rack ({editor.composition.tracks.length})</h2>
               <div>
                 <button type="button" onClick={() => setEditor((current) => current && selectAll(current, "tracks"))}>
                   Tout sélectionner
@@ -404,33 +413,143 @@ export function EditorLanding({ search, onNavigate, onDirtyChange }: EditorLandi
             <VirtualList
               items={editor.composition.tracks}
               idFor={(track) => track.id}
-              height={320}
-              rowHeight={44}
+              height={280}
+              rowHeight={48}
               overscan={4}
               ariaLabel="Pistes de la composition"
-              renderRow={(track) => {
-                const selected = editor.selection.tracks.includes(track.id);
-                return (
-                  <div className={selected ? "is-selected" : undefined}>
-                    <button
-                      type="button"
-                      aria-pressed={selected}
-                      onClick={(event) =>
-                        setEditor(
-                          (current) =>
-                            current && select(current, "tracks", [track.id], event.ctrlKey || event.metaKey),
-                        )
-                      }
-                    >
-                      {track.name} <span>{track.kind}</span>
-                    </button>
-                  </div>
-                );
-              }}
+              renderRow={(track) => (
+                <ChannelRackRow
+                  track={track}
+                  channel={editor.composition.mixer_channels?.find((c) => c.track_id === track.id)}
+                  selected={editor.selection.tracks.includes(track.id)}
+                  onSelect={(trackId, additive) =>
+                    setEditor((current) => current && select(current, "tracks", [trackId], additive))
+                  }
+                  onToggleMute={(trackId) =>
+                    setEditor((current) =>
+                      current &&
+                      setTrackChannelFlag(
+                        current,
+                        trackId,
+                        "mute",
+                        !(current.composition.mixer_channels?.find((c) => c.track_id === trackId)?.mute ?? false),
+                      ),
+                    )
+                  }
+                  onToggleSolo={(trackId) =>
+                    setEditor((current) =>
+                      current &&
+                      setTrackChannelFlag(
+                        current,
+                        trackId,
+                        "solo",
+                        !(current.composition.mixer_channels?.find((c) => c.track_id === trackId)?.solo ?? false),
+                      ),
+                    )
+                  }
+                />
+              )}
             />
           </section>
+          <SequencerPanel
+            editor={editor}
+            selectedPatternId={selectedPatternId}
+            onSelectPattern={setSelectedPatternId}
+            stepsPerBeat={stepsPerBeat}
+            onStepsPerBeatChange={setStepsPerBeat}
+            onPreview={(patternId) =>
+              setPatternRequest((current) => ({ patternId, requestId: (current?.requestId ?? 0) + 1 }))
+            }
+            onSetStep={(patternId, midiNote, stepIndex, enabled) =>
+              setEditor((current) => (current ? setStep(current, patternId, midiNote, stepIndex, stepsPerBeat, enabled) : current))
+            }
+            onSetStepField={(patternId, midiNote, stepIndex, field, value) =>
+              setEditor((current) => (current ? setStepField(current, patternId, midiNote, stepIndex, stepsPerBeat, field, value) : current))
+            }
+          />
         </section>
       )}
     </section>
+  );
+}
+
+type SequencerPanelProps = {
+  editor: ReturnType<typeof createEditorState>;
+  selectedPatternId: string | null;
+  onSelectPattern: (patternId: string) => void;
+  stepsPerBeat: number;
+  onStepsPerBeatChange: (value: number) => void;
+  onPreview: (patternId: string) => void;
+  onSetStep: (patternId: string, midiNote: number, stepIndex: number, enabled: boolean) => void;
+  onSetStepField: (
+    patternId: string,
+    midiNote: number,
+    stepIndex: number,
+    field: "velocity" | "probability" | "micro_timing_beats" | "duration_beats",
+    value: number,
+  ) => void;
+};
+
+function SequencerPanel({
+  editor,
+  selectedPatternId,
+  onSelectPattern,
+  stepsPerBeat,
+  onStepsPerBeatChange,
+  onPreview,
+  onSetStep,
+  onSetStepField,
+}: SequencerPanelProps) {
+  const selectedTrack =
+    editor.composition.tracks.find((track) => editor.selection.tracks.includes(track.id)) ??
+    editor.composition.tracks.find((track) => track.kind === "drums");
+  const drumPatterns =
+    selectedTrack?.kind === "drums"
+      ? editor.composition.patterns.filter((pattern) => pattern.track_id === selectedTrack.id)
+      : [];
+  const activePattern = drumPatterns.find((pattern) => pattern.id === selectedPatternId) ?? drumPatterns[0] ?? null;
+  if (!activePattern) {
+    return (
+      <section className="step-sequencer" aria-labelledby="sequencer-heading">
+        <h3 id="sequencer-heading">Séquenceur pas à pas</h3>
+        <p className="step-sequencer__hint">
+          {selectedTrack
+            ? "Seuls les patterns des pistes de batterie sont éditables au pas à pas."
+            : "Sélectionnez une piste de batterie pour éditer ses patterns."}
+        </p>
+      </section>
+    );
+  }
+  return (
+    <>
+      {drumPatterns.length > 1 && (
+        <label>
+          Pattern
+          <select
+            aria-label="Pattern de batterie"
+            value={activePattern.id}
+            onChange={(event) => onSelectPattern(event.target.value)}
+          >
+            {drumPatterns.map((pattern, index) => (
+              <option key={pattern.id} value={pattern.id}>
+                Pattern {index + 1}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+      <StepSequencer
+        pattern={activePattern}
+        stepsPerBeat={stepsPerBeat}
+        onStepsPerBeatChange={onStepsPerBeatChange}
+        onSetStep={(midiNote, stepIndex, enabled) =>
+          onSetStep(activePattern.id, midiNote, stepIndex, enabled)
+        }
+        onSetStepField={(midiNote, stepIndex, field, value) =>
+          onSetStepField(activePattern.id, midiNote, stepIndex, field, value)
+        }
+        onPreview={() => onPreview(activePattern.id)}
+      />
+    </>
   );
 }

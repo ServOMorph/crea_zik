@@ -125,6 +125,13 @@ describe("TransportBar", () => {
     vi.unstubAllGlobals();
   });
 
+  it("affiche le tempo et la métrique de la composition", () => {
+    renderBar();
+
+    expect(screen.getByText("120 BPM")).toBeInTheDocument();
+    expect(screen.getByText("4/4")).toBeInTheDocument();
+  });
+
   it("synchronise la tête de lecture avec l’horloge audio simulée", async () => {
     stubApi();
     renderBar();

@@ -332,13 +332,26 @@ comme limite connue plutôt que comme gate contourné ; il ne bloque pas la phas
   mutation (Stryker 95,37 % ≥ 60 %)/build/e2e (12)/visuel, markdownlint (rapport
   `EDITEUR/test-results/v1-20260804-224727.json`, success true, 20 checks).
 
-### Phase V6 — Qualification Channel Rack [TODO]
+### Phase V6 — Qualification Channel Rack [EN COURS]
 
-- [ ] Tester toutes les opérations de grille, résolutions et longueurs de pattern.
-- [ ] Générer des patterns valides et hostiles avec `fast-check`.
-- [ ] Vérifier clavier, souris, drag-and-drop et undo/redo dans Playwright.
-- [ ] Prouver par rendu et hash que chaque modification de pas affecte la bonne piste.
-- [ ] Exécuter V0 à V5 avant d’autoriser la phase 7.
+- [x] Tester toutes les opérations de grille, résolutions et longueurs de pattern (`stepSequencer.test.ts` :
+  toggles, champs bornés, undo/redo, canaux, fast-check ; `StepSequencer.test.tsx` : rangées,
+  résolution, peinture/effacement au glisser, sliders, accent, pattern vide).
+- [x] Générer des patterns valides et hostiles avec `fast-check` (`stepSequencer.test.ts` propriétés,
+  100 runs ; `editorStore.property.test.ts` inverses undo/redo).
+- [ ] Vérifier clavier, souris, drag-and-drop et undo/redo dans Playwright — partiel : clavier
+  (Entrée/Espace), clic, undo/redo, mute et sauvegarde rejoués dans Chromium
+  (`e2e/studio.spec.ts` « the editor step sequencer toggles, undoes and mutes drum steps », qui a
+  détecté et corrigé l'inaccessibilité clavier) ; la peinture au glisser est couverte en unitaire
+  (pointer events) mais pas rejouée en Chromium — à compléter ou assumer.
+- [x] Prouver par rendu et hash que chaque modification de pas affecte la bonne piste
+  (`tests/test_editor_sequencer.py` : toggle d'un pas ne change que le stem drums, probabilité 0
+  silencieuse, gate déterministe seedé, micro-timing décalé, mute/solo appliqués ; golden
+  `Lignes de nuit` bit-exact inchangé).
+- [x] Exécuter V0 à V5 avant d'autoriser la phase 7 — runner canonique `test_editor.ps1` complet
+  exécuté le 2026-08-05, gate vert : backend 116 tests, frontend lint/typecheck/unit (96)/coverage/
+  a11y/mutation (~84 % ≥ 60 %)/build/e2e (13)/visuel, déterminisme Csound et golden inchangés,
+  markdownlint (rapport `EDITEUR/test-results/v1-20260805-102645.json`, success true, 20 checks).
 
 ### Phase V7 — Qualification Piano Roll [TODO]
 
@@ -590,7 +603,7 @@ Gate :
 - une sauvegarde réussie nettoie le dirty state et une sauvegarde échouée le conserve ;
 - les erreurs ciblent le contrôle ou l’objet concerné.
 
-## Phase 5 — Transport et préécoute [EN COURS]
+## Phase 5 — Transport et préécoute [FAIT]
 
 But : écouter et naviguer dans le morceau pendant l’édition.
 
@@ -598,9 +611,9 @@ Tâches :
 
 - [x] Créer une barre de transport persistante : lecture, pause, stop, retour début et position
   (`TransportBar.tsx`, qualifié par V5).
-- [ ] Ajouter affichage mesures/temps, tempo, métrique et mode pattern/morceau — partiel :
-  mesures/temps (`formatMusicalPosition`), temps en secondes et mode pattern/morceau affichés ;
-  le tempo et la métrique ne sont pas encore affichés (à faire).
+- [x] Ajouter affichage mesures/temps, tempo, métrique et mode pattern/morceau (mesures/temps
+  `formatMusicalPosition`, temps en secondes, mode pattern/morceau, tempo `{bpm} BPM` et métrique
+  `{num}/{den}` affichés dans `TransportBar`, testé — `TransportBar.test.tsx`, livré le 2026-08-05).
 - [x] Ajouter playhead cliquable, scrubbing, boucle et lecture d’une sélection (slider de position,
   `Lire la sélection`, `Boucle sélection`, qualifié par V5).
 - [x] Ajouter volume de monitoring, mute global et indicateur de clipping (détection
@@ -623,21 +636,32 @@ Gate :
 - aucun rendu périmé ne remplace une préécoute plus récente ;
 - le monitoring ne modifie pas le fichier exporté.
 
-## Phase 6 — Channel Rack et séquenceur pas à pas [TODO]
+## Phase 6 — Channel Rack et séquenceur pas à pas [EN COURS]
 
 But : éditer rapidement les patterns et les pistes rythmiques.
 
 Tâches :
 
-- [ ] Créer le Channel Rack avec ordre, couleur, nom, mute, solo et accès à l’instrument.
-- [ ] Créer le séquenceur pas à pas avec résolution configurable et regroupement visuel par temps.
-- [ ] Ajouter activation, vélocité, probabilité, accent et micro-décalage de chaque pas.
+- [ ] Créer le Channel Rack avec ordre, couleur, nom, mute, solo et accès à l’instrument — partiel :
+  ordre, nom, mute et solo livrés (`ChannelRack.tsx`, flags `setTrackChannelFlag`, canal mixer créé
+  à la première bascule) ; couleur et accès à l’instrument à faire (couleur/nom exigeraient une
+  migration de schéma, modèle `extra="forbid"`).
+- [x] Créer le séquenceur pas à pas avec résolution configurable et regroupement visuel par temps
+  (`StepSequencer.tsx` : résolution 1/1 → 1/8, groupes par temps via `is-beat`, sélection du pas).
+- [x] Ajouter activation, vélocité, probabilité, accent et micro-décalage de chaque pas (commandes
+  `setStep`/`setStepField` bornées par `STEP_FIELD_BOUNDS`, rendu backend `probability`/`
+  micro_timing_beats` propagés avec gate seedé, testés — `stepSequencer.test.ts`, `test_editor_sequencer.py`).
 - [ ] Ajouter longueur de pattern, duplication, renommage, variation et suppression sûre.
-- [ ] Ajouter paint, effacement par glisser, sélection multiple et remplissages usuels.
-- [ ] Ajouter préécoute d’une piste et d’un pattern.
-- [ ] Reconstituer et éditer les patterns kick, clap et charleston de `Lignes de nuit`.
-- [ ] Tester opérations de grille, changement de résolution, longueurs atypiques, undo/redo et rendu
-  déterministe des patterns.
+- [ ] Ajouter paint, effacement par glisser, sélection multiple et remplissages usuels — partiel :
+  peinture et effacement au glisser (pointer events, équivalent clavier Entrée/Espace) ; sélection
+  multiple et remplissages à faire.
+- [ ] Ajouter préécoute d’une piste et d’un pattern — partiel : préécoute du pattern livrée
+  (`TransportBar` `patternRequest`, clip du pattern pré-écouté) ; préécoute d’une piste seule à faire.
+- [x] Reconstituer et éditer les patterns kick, clap et charleston de `Lignes de nuit` (rangées par
+  percussion affichées depuis les événements réels, édition par pas, e2e Chromium).
+- [x] Tester opérations de grille, changement de résolution, longueurs atypiques, undo/redo et rendu
+  déterministe des patterns (11 tests store dont fast-check, 12 tests composants, 5 tests backend,
+  e2e séquenceur — voir Phase V6).
 
 Gate :
 

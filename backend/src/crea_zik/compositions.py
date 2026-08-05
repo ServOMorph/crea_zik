@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 from collections.abc import Callable, Collection
 from dataclasses import dataclass, replace
 from itertools import pairwise
@@ -32,6 +33,8 @@ class ScheduledCompositionEvent:
     midi_note: int
     velocity: float
     pan: float
+    probability: float = 1
+    micro_timing_beats: float = 0
 
 
 @dataclass(frozen=True)
@@ -80,6 +83,8 @@ def _event(track: Track, clip: Clip, note: NoteEvent) -> ScheduledCompositionEve
         midi_note=max(0, min(127, note.midi_note + clip.transposition)),
         velocity=max(0, min(1, note.velocity)),
         pan=max(-1, min(1, note.pan)),
+        probability=max(0, min(1, note.probability)),
+        micro_timing_beats=max(-1, min(1, note.micro_timing_beats)),
     )
 
 
@@ -151,7 +156,9 @@ def render_composition(
             raise RenderCancelled("render cancelled")
         track = tracks[event.track_id]
         channel = channels.get(track.id)
-        if channel and (channel.mute or soloed and not channel.solo):
+        if channel and channel.mute:
+            continue
+        if soloed and not (channel and channel.solo):
             continue
         channel_gain = channel.gain if channel else 1
         channel_pan = channel.pan if channel else 0
@@ -252,6 +259,15 @@ def _automation_value(
     return default if lane is None else evaluate_automation(lane, beat)
 
 
+def _event_plays(event: ScheduledCompositionEvent, seed: int) -> bool:
+    if event.probability >= 1:
+        return True
+    digest = hashlib.sha256(
+        f"{seed}:{event.track_id}:{event.midi_note}:{event.start_beat}".encode()
+    ).digest()
+    return int.from_bytes(digest[:8], "big") / 2**64 < event.probability
+
+
 def _render_event(
     channels: Audio,
     event: ScheduledCompositionEvent,
@@ -261,8 +277,12 @@ def _render_event(
     lanes: dict[str, AutomationLane],
     cancelled: Callable[[], bool] | None = None,
 ) -> None:
+    if not _event_plays(event, composition.seed):
+        return
     start = beats_to_samples(
-        event.start_beat, composition.tempo_bpm, composition.sample_rate
+        event.start_beat + event.micro_timing_beats,
+        composition.tempo_bpm,
+        composition.sample_rate,
     )
     track = next(track for track in composition.tracks if track.id == event.track_id)
     parameters = track.instrument.parameters

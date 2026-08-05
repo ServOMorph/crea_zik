@@ -27,12 +27,14 @@ Music Composer, Adaptive Lab, Analyse & Export) et son backend de rendu, permett
   Csound réel restant avant de poursuivre la roadmap applicative.
 
 ## État actuel (réécrit intégralement à chaque /close)
-Phases 0→3/V0→V3, V4, Phase 4 et V5 [FAIT]. Virtualisation livrée (`VirtualList` +
-`computeVirtualWindow`) et intégrée à la liste de pistes de `EditorLanding` (fini : pagination).
-Transport et préécoute qualifiés : machine d'état à horloge contrôlée, `MockAudioContext`,
-parcours Chromium réel, cache/invalidation/annulation ; runner canonique vert (rapport
-`test-results/v1-20260804-224727.json`, 20 checks). Phase 5 fonctionnelle [EN COURS] : il ne reste
-que l'affichage du tempo et de la métrique dans la barre de transport avant d'ouvrir la Phase 6.
+Phase 5 close [FAIT] : tempo et métrique dans `TransportBar`, testés. Phase 6 [EN COURS] : Channel
+Rack (ordre, nom, mute, solo) + séquenceur pas à pas livrés (kick/clap/hats reconstitués,
+résolution, vélocité/probabilité/accent/micro-décalage, paint/erase, clavier, préécoute pattern) ;
+backend `probability`/`micro_timing_beats` propagés (gate seedé) et fix solo. Reste : longueur de
+pattern, duplication, renommage, variation, suppression sûre, sélection multiple, remplissages,
+préécoute piste, couleur/nom (migration schéma, `extra="forbid"`). V6 [EN COURS] : runner canonique
+vert 20 checks (`test-results/v1-20260805-102645.json`) ; drag-and-drop Playwright et preuve
+rendu/hash frontend restants.
 
 ## Décisions structurantes (append only — 10 entrées max, 5 lignes max/entrée, archiver au-delà)
 - 2026-07-30 : mutmut reste verrouillé en dépendance mais son exécution est bloquée nativement sous
@@ -68,3 +70,10 @@ que l'affichage du tempo et de la métrique dans la barre de transport avant d'o
   Chromium réel, cache/invalidation/annulation) ; runner canonique vert
   (`EDITEUR/test-results/v1-20260804-224727.json`, 20 checks). La Phase 5 fonctionnelle reste
   ouverte sur un point : affichage du tempo et de la métrique dans `TransportBar`.
+- 2026-08-05 : Phase 5 close [FAIT] — tempo (`120 BPM`) et métrique (`4/4`) affichés et testés.
+  Phase 6 ouverte [EN COURS] : Channel Rack + séquenceur pas à pas (mute/solo, résolution,
+  vélocité/probabilité/accent/micro-décalage, paint/erase, clavier, préécoute pattern) ;
+  `probability`/`micro_timing_beats` propagés au rendu avec gate seedé déterministe et fix du solo ;
+  runner canonique vert 20 checks (`v1-20260805-102645.json`, backend 116, frontend 96 unitaires,
+  13 e2e). V6 [EN COURS] : reste longueur/duplication/renommage/suppression de patterns,
+  sélection multiple, remplissages, couleur (migration schéma), drag-and-drop Playwright.

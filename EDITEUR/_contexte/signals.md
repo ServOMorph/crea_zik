@@ -1,53 +1,62 @@
-# Signals — editeur (MAJ 2026-08-04)
+# Signals — editeur (MAJ 2026-08-05)
 
 ## Actions ouvertes
-- [P1|ouvert] Compléter la Phase 5 fonctionnelle (reste : affichage du tempo et de la métrique dans
-  la barre de transport, bullet laissé partiel au /close) puis ouvrir la Phase 6 (Channel Rack) avec
-  sa qualification V6.
-  - fait quand: le tempo et la métrique sont affichés dans `TransportBar` et couverts par un test,
-    puis le runner canonique vert (V0→V5 inclus) une fois le point fermé
-  - réf: `EDITEUR/roadmap_editeur_musical.md` (Phase 5 bullet affichage, Phase V6),
-    `frontend/src/editor/TransportBar.tsx`
+- [P1|ouvert] Terminer la Phase 6 fonctionnelle (Channel Rack) : longueur de pattern, duplication,
+  renommage, variation, suppression sûre, sélection multiple, remplissages usuels, préécoute piste ;
+  couleur et nom de pattern exigent une migration de schéma (modèle `extra="forbid"`). Puis clore la
+  qualification V6 (drag-and-drop rejoué dans Playwright ou assumé couvert en unitaire ; preuve
+  rendu/hash frontend) et ouvrir la Phase 7 (Piano Roll).
+  - fait quand: tous les bullets Phase 6 cochés, V6 entièrement cochée avec runner canonique vert
+    final (rapport `EDITEUR/test-results/v1-*.json`, success true) et Phase 7 ouverte [EN COURS]
+  - réf: `EDITEUR/roadmap_editeur_musical.md` (Phase 6, Phase V6, Phase 7),
+    `frontend/src/editor/editorStore.ts`, `frontend/src/editor/StepSequencer.tsx`,
+    `frontend/src/editor/ChannelRack.tsx`
 
-## Dernière session (2026-08-04)
-# Session du 2026-08-04
+## Dernière session (2026-08-05)
+# Session du 2026-08-05
 
 ## Décisions prises
-- Phase 4 fonctionnelle close [FAIT] : virtualisation livrée (`VirtualList` +
-  `computeVirtualWindow`) et intégrée à la liste de pistes de `EditorLanding`, qui remplace
-  l'ancienne pagination.
-- Phase V5 close [FAIT] : machine d'état du transport testée à horloge contrôlée, composant à
-  `MockAudioContext`, parcours de lecture Chromium réel ; runner canonique vert (rapport
-  `EDITEUR/test-results/v1-20260804-224727.json`, 20 checks). La Phase 5 fonctionnelle reste
-  toutefois [EN COURS] sur un point : l'affichage tempo/métrique.
+- Phase 5 close [FAIT] : tempo et métrique affichés dans `TransportBar` et couverts par un test ;
+  runner canonique vert (V0→V5).
+- Phase 6 ouverte [EN COURS] : Channel Rack + séquenceur pas à pas livrés (backend
+  probability/micro_timing propagés avec gate seedé, fix du solo) ; V6 [EN COURS], runner canonique
+  vert 20 checks (`EDITEUR/test-results/v1-20260805-102645.json`).
 
 ## Livrables produits ou modifiés
-- `frontend/src/editor/virtualization.ts` + `VirtualList.tsx` (nouveaux) : fenêtre scrollante
-  générique (overscan 4, `aria-setsize`/`aria-posinset`), pure `computeVirtualWindow`.
-- `frontend/src/editor/virtualization.test.ts` + `VirtualList.test.tsx` (nouveaux) : 8 tests,
-  100 % couverture, testée sur 5000 lignes.
-- `frontend/src/editor/EditorLanding.tsx` : `VirtualList` remplace la pagination des pistes
-  (`trackWindowStart` supprimé).
-- `frontend/src/editor/transport.test.ts` +4 tests (horloge contrôlée) ;
-  `TransportBar.test.tsx` (nouveau, MockAudioContext, 6 tests).
-- `frontend/src/editor/TransportBar.tsx` : `cancelPreview` extrait et appelé par `stopPlayback`
-  (corrige un rendu périmé qui pouvait être chargé après un Stop).
-- `frontend/e2e/studio.spec.ts` : test transport Chrome réel (lecture→pause→reprise→stop→fin de
-  média) — un sélecteur `output` ambigu (statut studio vs playhead) est ciblé via
-  `output[aria-live="polite"]`.
+- `backend/src/crea_zik/compositions.py` : gate `_event_plays` seedé (SHA-256
+  `{seed}:{track_id}:{midi_note}:{start_beat}`), `micro_timing_beats` décale l'onset ; fix solo :
+  pistes sans canal muettes quand un solo est actif. `tests/test_editor_sequencer.py` (nouveau,
+  5 tests) ajouté aux gates lint/domain de `EDITEUR/test_editor.ps1`.
+- `frontend/src/editor/editorStore.ts` : types `NoteEvent`/`Pattern.events`/`MixerChannel`,
+  commandes `setStep`, `setStepField`, `setTrackChannelFlag`, `addPattern`, helpers
+  `stepBeat`/`patternLengthBeats`/`stepEvent`/`STEP_FIELD_BOUNDS`.
+- `frontend/src/editor/ChannelRack.tsx` + `ChannelRack.test.tsx` (nouveaux) ; `StepSequencer.tsx` +
+  `StepSequencer.test.tsx` (nouveaux : grille, résolution 1/1→1/8, paint/erase au glisser, sliders
+  vélocité/probabilité/micro-décalage, accent, clavier Entrée/Espace) ; `stepSequencer.test.ts`
+  (nouveau, 11 tests dont fast-check) ; `EditorLanding.tsx` (VirtualList rowHeight 48, SequencerPanel
+  par défaut sur la première piste drums, patternRequest) ; `TransportBar.tsx` (préécoute du pattern,
+  tempo/métrique) ; `styles.css` (`.channel-rack__*`, `.step-sequencer__*`).
+- `frontend/e2e/studio.spec.ts` : test « the editor step sequencer toggles, undoes and mutes drum
+  steps » — a révélé et corrigé l'inaccessibilité clavier du séquenceur (Enter n'émet pas
+  pointerdown).
+- Runner canonique 20/20 gates verts : backend 116 tests, frontend 96 unitaires, 13 e2e, mutation
+  Stryker ~84 %, a11y, visuel, golden `Lignes de nuit` inchangé.
+- `tests_manuels.md` : section Channel Rack ajoutée (4 contrôles en attente de validation manuelle).
 
 ## Hypothèses validées / invalidées
-- VALIDE — la cause des échecs e2e massifs n'était pas le code mais 2 `project.json` corrompus au
-  format prémigration accumulés dans la racine persistée `test-results/projects` ; la purge de la
-  racine (résidus git-ignorés) rend l'e2e 12/12 vert, et le runner canonique isolé avec une racine
-  temp était déjà vert avant.
-- EN ATTENTE — `GET /api/projects` renvoie un 500 brut si un projet du dossier n'est plus validable
-  par le schéma courant ; angle mort de robustesse hors V5, à traiter dans une phase ultérieure.
+- VALIDE — le golden `Lignes de nuit` reste bit-exact après l'ajout de probability/micro_timing
+  (champs absents par défaut, gate inactif) : le run runner complet le confirme.
+- INVALIDE → pivot — le séquenceur était inutilisable au clavier : `applyCell` dépendait de
+  `paintModeRef` jamais initialisé hors pointer ; corrigé par `onKeyDown` (fix détecté par le test
+  e2e, pas par les tests unitaires).
+- EN ATTENTE — drag-and-drop natif non rejoué dans Playwright (peinture au glisser couverte en
+  unitaire via pointer events) ; preuve rendu/hash frontend d'une modification de pas non
+  formalisée (la preuve backend existe via `test_editor_sequencer.py`).
 
 ## Prochaine étape exacte
-Afficher le tempo et la métrique dans la barre de transport (dernier point non livré de la Phase 5),
-le couvrir d'un test, repasser le runner canonique vert (V0→V5), puis ouvrir la Phase 6
-(Channel Rack) avec la qualification V6.
+Terminer la Phase 6 (longueur de pattern, duplication, renommage, variation, suppression sûre,
+sélection multiple, remplissages, préécoute piste, couleur/nom via migration de schéma), clore la
+qualification V6, puis ouvrir la Phase 7 (Piano Roll).
 
 ## Question bloquante pour la session suivante
 Aucune.
