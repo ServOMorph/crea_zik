@@ -34,3 +34,7 @@ Décisions archivées depuis `_contexte/contexte.md` (append only).
 - 2026-08-04 : Phase V1 close [FAIT] — propriétés Hypothesis (round-trip `Composition` + validation
   des références) ajoutées via stratégies composites respectant le graphe de références ; le point
   mutations reste bloqué et documenté (LIM-001). Phase V2 ouverte.
+- 2026-08-04 : Phase V2 et Phase 2 (API de composition et persistance sûre) closes [FAIT] —
+  qualification complète de l'API de composition (routes nominales, erreurs typées, fuzz, concurrence,
+  interruption/reprise, chemins hostiles, isolation) ; runner canonique complet vert. 500 non typé
+  corrigé via `CompositionIdMismatchError` (422 `composition_id_mismatch`).

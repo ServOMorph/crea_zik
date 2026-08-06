@@ -1,9 +1,17 @@
+export type InstrumentParameters = Record<string, unknown>;
+
+export type InstrumentPreset = {
+  parameters: InstrumentParameters;
+  [key: string]: unknown;
+};
+
 export type Track = {
   id: string;
   name: string;
   kind: string;
   gain?: number;
   pan?: number;
+  instrument?: InstrumentPreset;
   [key: string]: unknown;
 };
 
@@ -345,13 +353,7 @@ function makeStepEvent(midiNote: number, beat: number, stepsPerBeat: number): No
   };
 }
 
-function toggleStep(
-  pattern: Pattern,
-  midiNote: number,
-  stepIndex: number,
-  stepsPerBeat: number,
-  enabled: boolean,
-) {
+function toggleStep(pattern: Pattern, midiNote: number, stepIndex: number, stepsPerBeat: number, enabled: boolean) {
   const beat = stepBeat(stepIndex, stepsPerBeat);
   const existingIndex = pattern.events.findIndex(
     (event) => event.midi_note === midiNote && Math.abs(event.start_beat - beat) < 1e-9,
@@ -483,11 +485,16 @@ export function setPatternLength(
   groupWithPrevious = false,
 ): EditorState {
   const bounded = Math.round(Math.min(PATTERN_LENGTH_MAX, Math.max(PATTERN_LENGTH_MIN, lengthBeats)) * 1000) / 1000;
-  return execute(state, "Modifier la longueur du pattern", (draft) => {
-    const pattern = draft.patterns.find((item) => item.id === patternId);
-    if (!pattern) return;
-    pattern.length_beats = bounded;
-  }, groupWithPrevious);
+  return execute(
+    state,
+    "Modifier la longueur du pattern",
+    (draft) => {
+      const pattern = draft.patterns.find((item) => item.id === patternId);
+      if (!pattern) return;
+      pattern.length_beats = bounded;
+    },
+    groupWithPrevious,
+  );
 }
 
 export function renamePattern(
@@ -498,11 +505,16 @@ export function renamePattern(
 ): EditorState {
   const normalized = name.trim();
   if (!normalized) return state;
-  return execute(state, "Renommer le pattern", (draft) => {
-    const pattern = draft.patterns.find((item) => item.id === patternId);
-    if (!pattern) return;
-    pattern.name = normalized;
-  }, groupWithPrevious);
+  return execute(
+    state,
+    "Renommer le pattern",
+    (draft) => {
+      const pattern = draft.patterns.find((item) => item.id === patternId);
+      if (!pattern) return;
+      pattern.name = normalized;
+    },
+    groupWithPrevious,
+  );
 }
 
 const PATTERN_COLOR_PATTERN = /^#[0-9a-f]{6}$/i;
@@ -546,8 +558,7 @@ export function varyPattern(state: EditorState, patternId: string, salt: number)
       if (choice === 0) modified.velocity = Math.min(1, Math.max(0.05, event.velocity * 0.85));
       else if (choice === 1) modified.velocity = Math.min(1, Math.max(0.05, event.velocity * 1.1));
       else if (choice === 2) modified.probability = Math.min(1, Math.max(0.05, event.probability * 0.8));
-      else if (choice === 3)
-        modified.micro_timing_beats = Math.min(1, Math.max(-1, event.micro_timing_beats + 0.1));
+      else if (choice === 3) modified.micro_timing_beats = Math.min(1, Math.max(-1, event.micro_timing_beats + 0.1));
       return modified;
     });
     draft.patterns.push({ ...clone(source), id: newId(), name: `${base} (variation)`, events });
@@ -584,5 +595,140 @@ export function clearPatternRow(state: EditorState, patternId: string, midiNote:
     const pattern = draft.patterns.find((item) => item.id === patternId);
     if (!pattern) return;
     pattern.events = pattern.events.filter((event) => event.midi_note !== midiNote);
+  });
+}
+
+export type ParameterBounds = { minimum: number; maximum: number; default: number };
+
+const PATH_INDEX = /^(.*?)(?:\[(\d+)\])?$/;
+
+export function pathSegments(path: string): Array<{ key: string; index: number | null }> {
+  return path.split(".").map((part) => {
+    const match = PATH_INDEX.exec(part);
+    return { key: match?.[1] ?? part, index: match?.[2] !== undefined ? Number(match[2]) : null };
+  });
+}
+
+export function parameterValue(parameters: InstrumentParameters, path: string): unknown {
+  let current: unknown = parameters;
+  for (const segment of pathSegments(path)) {
+    if (current === null || typeof current !== "object") return undefined;
+    const container = current as Record<string, unknown>;
+    const next =
+      segment.index !== null
+        ? (container[segment.key] as unknown[] | undefined)?.[segment.index]
+        : container[segment.key];
+    if (next === undefined) return undefined;
+    current = next;
+  }
+  return current;
+}
+
+export function writeParameter(parameters: InstrumentParameters, path: string, value: unknown) {
+  const segments = pathSegments(path);
+  let current: unknown = parameters;
+  for (let index = 0; index < segments.length - 1; index += 1) {
+    const segment = segments[index];
+    if (current === null || typeof current !== "object") return;
+    const container = current as Record<string, unknown>;
+    if (segment.index !== null) {
+      const list = container[segment.key];
+      if (!Array.isArray(list)) return;
+      const next = list[segment.index];
+      if (next === null || typeof next !== "object") return;
+      current = next;
+    } else {
+      let next = container[segment.key];
+      if (next === null || typeof next !== "object") {
+        next = {};
+        container[segment.key] = next;
+      }
+      current = next;
+    }
+  }
+  const last = segments[segments.length - 1];
+  if (current === null || typeof current !== "object") return;
+  const container = current as Record<string, unknown>;
+  if (last.index !== null) {
+    const list = container[last.key];
+    if (Array.isArray(list)) list[last.index] = value;
+  } else {
+    container[last.key] = value;
+  }
+}
+
+export function instrumentParameters(track: Track): InstrumentParameters {
+  return track.instrument?.parameters ?? {};
+}
+
+export function setInstrumentParameter(
+  state: EditorState,
+  trackId: string,
+  path: string,
+  value: number,
+  bounds: ParameterBounds,
+  groupWithPrevious = false,
+): EditorState {
+  if (!Number.isFinite(value)) return state;
+  const bounded = Math.min(bounds.maximum, Math.max(bounds.minimum, value));
+  return execute(
+    state,
+    "Modifier le paramètre de l’instrument",
+    (draft) => {
+      const track = draft.tracks.find((item) => item.id === trackId);
+      if (!track) return;
+      if (!track.instrument) track.instrument = { parameters: {} };
+      writeParameter(track.instrument.parameters, path, bounded);
+    },
+    groupWithPrevious,
+  );
+}
+
+export function resetInstrumentParameter(
+  state: EditorState,
+  trackId: string,
+  path: string,
+  bounds: ParameterBounds,
+): EditorState {
+  return setInstrumentParameter(state, trackId, path, bounds.default, bounds);
+}
+
+export function resetInstrumentParameters(state: EditorState, trackId: string): EditorState {
+  return execute(state, "Réinitialiser l’instrument", (draft) => {
+    const track = draft.tracks.find((item) => item.id === trackId);
+    if (!track) return;
+    delete track.instrument;
+  });
+}
+
+export function setInstrumentListLength(
+  state: EditorState,
+  trackId: string,
+  path: string,
+  count: number,
+  itemTemplate: () => unknown,
+): EditorState {
+  const bounded = Math.max(0, Math.floor(count));
+  if (bounded === count && count < 0) return state;
+  return execute(state, "Modifier le nombre d’éléments", (draft) => {
+    const track = draft.tracks.find((item) => item.id === trackId);
+    if (!track) return;
+    if (!track.instrument) track.instrument = { parameters: {} };
+    const existing = parameterValue(track.instrument.parameters, path);
+    const list = Array.isArray(existing) ? existing : [];
+    const items = Array.from({ length: bounded }, (_, index) => (index < list.length ? list[index] : itemTemplate()));
+    writeParameter(track.instrument.parameters, path, items);
+  });
+}
+
+export function restoreInstrumentParameters(
+  state: EditorState,
+  trackId: string,
+  parameters: InstrumentParameters,
+): EditorState {
+  return execute(state, "Restaurer les paramètres", (draft) => {
+    const track = draft.tracks.find((item) => item.id === trackId);
+    if (!track) return;
+    track.instrument = { parameters: clone(parameters) };
   });
 }

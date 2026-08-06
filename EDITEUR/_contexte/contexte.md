@@ -27,13 +27,18 @@ Music Composer, Adaptive Lab, Analyse & Export) et son backend de rendu, permett
   Csound réel restant avant de poursuivre la roadmap applicative.
 
 ## État actuel (réécrit intégralement à chaque /close)
-Phase 8 close, qualification V8 verte : le test e2e rouge était une attente erronée (clip ajouté à
-`compositionEndBeat` = 62, pas 60 ; ripple +8 → 70 beats) ; assertion rendue dynamique (clip suivant
-poussé de la distance exacte du drag). Fix du runner `test_editor.ps1` (stderr de `uv lock --check`
-sous `$ErrorActionPreference="Stop"` → `Invoke-Gate` en `Continue` local). Runner canonique vert
-20/20 (`v1-20260806-060208.json`, success true). Phase 9 (Instruments procéduraux et inspecteur) ouverte [EN COURS].
+Phase 9 et qualification V9 closes [FAIT] : registre typé des instruments (backend, sanitize bornes
++ NaN→défaut) exposé par `GET /api/instrument-registry` et appliqué par `synthesize` ; inspecteur
+d'instrument (sliders/saisie précise, reset, comparaison avant/après, bypass original, préécoute
+note/pattern/piste) intégré à l'éditeur ; parité bornes UI/backend ; runner canonique vert 21/21
+(`v1-20260806-073005.json`, success true). Phase 10 (Automations) ouverte [EN COURS].
 
 ## Décisions structurantes (append only — 10 entrées max, 5 lignes max/entrée, archiver au-delà)
+- 2026-08-06 : Phases 9 et V9 closes [FAIT] — registre typé des instruments (`instrument_registry.py`),
+  sanitize NaN→défaut + clamp, exposé par `GET /api/instrument-registry` ; inspecteur d'instrument
+  (sliders/saisie précise, reset, A/B, bypass original, préécoute note/pattern/piste) intégré ;
+  parité bornes UI/backend, valeurs non finies neutralisées ; runner canonique vert 21/21
+  (`v1-20260806-073005.json`). Phase 10 ouverte.
 - 2026-08-06 : Qualification V8 close — le test e2e rouge était une attente erronée (clip ajouté à
   `compositionEndBeat` = 62 beats, pas 60) ; l'assertion vérifie que le clip suivant est poussé de
   la distance exacte du drag. Fix du runner `test_editor.ps1` (stderr de `uv lock --check` sous
@@ -44,10 +49,6 @@ sous `$ErrorActionPreference="Stop"` → `Invoke-Gate` en `Continue` local). Run
   e2e pilote le défilement horizontal par `scrollLeft` explicite (`scrollIntoViewIfNeeded` fait
   passer le contenu sous le side sticky 220 px ou hors viewport). Test e2e V8 encore rouge
   (nth(1) = 6720 px vs 6528 px attendu).
-- 2026-08-04 : Phase V2 et Phase 2 (API de composition et persistance sûre) closes [FAIT] —
-  qualification complète de l'API de composition (routes nominales, erreurs typées, fuzz, concurrence,
-  interruption/reprise, chemins hostiles, isolation) ; runner canonique complet vert. 500 non typé
-  corrigé via `CompositionIdMismatchError` (422 `composition_id_mismatch`).
 - 2026-08-04 : Phase V3 et Phase 3 (shell, sidebar et routage) closes [FAIT] — composants et états
   de page testés (Vitest+RTL), axe-core sur l'éditeur réel et ses états introuvable/vide, parcours
   Playwright URL directe/historique/sidebar active/conservation du projet, snapshots visuels

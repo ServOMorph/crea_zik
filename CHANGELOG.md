@@ -1,5 +1,33 @@
 # Changelog
 
+## v0.30 — 2026-08-06
+
+### Ajouté
+
+- `backend/src/crea_zik/instrument_registry.py` : registre typé des instruments (Phase 9) — groupes
+  par kind (drums/bass/pad/arp/lead), scalaires et listes avec bornes/unités/défauts, `sanitize_parameters`
+  (NaN→défaut, clamp, bursts triés, bandpass ordonné), `default_parameters`, `registry_payload`.
+- `backend/src/crea_zik/api.py` : `GET /api/instrument-registry` ; `POST .../instrument-preview`
+  acceptant des `parameters` explicites (préécoute sans sauvegarde).
+- `frontend/src/editor/InstrumentInspector.tsx` : inspecteur d'instrument — sliders + saisie précise
+  bornées, reset, comparaison avant/après avec restauration, bypass « écouter l'original », préécoute
+  note/pattern/piste.
+- `frontend/src/editor/instrumentRegistry.ts` : types TS du payload + fetch mémoïsé.
+- `tests/test_editor_instruments.py` (50 tests), `frontend/src/editor/editorStore.instrument.test.ts`
+  (9 tests), `frontend/src/editor/InstrumentInspector.test.tsx` (13 tests).
+
+### Modifié
+
+- `backend/src/crea_zik/composition_dsp.py` : `synthesize` applique `sanitize_parameters` en début
+  de corps (burst protection).
+- `frontend/src/editor/editorStore.ts` : `Track.instrument`, `setInstrumentParameter` (NaN ignoré,
+  clamp, undo/redo, groupement drag), reset, `setInstrumentListLength`, `restoreInstrumentParameters`.
+- `frontend/src/editor/EditorLanding.tsx` + `frontend/src/styles.css` : intégration de l'inspecteur
+  (affiché quand une seule piste est sélectionnée).
+- Phase 9 et qualification V9 closes [FAIT] : runner canonique complet vert
+  (`EDITEUR/test-results/v1-20260806-073005.json`, success true, 21 checks), backend 179 tests,
+  frontend 239 unitaires, e2e 15/15, mutation Stryker 77.02. Phase 10 (Automations) ouverte.
+
 ## v0.29 — 2026-08-06
 
 ### Corrigé

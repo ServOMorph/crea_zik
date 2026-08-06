@@ -69,7 +69,11 @@ success true). Réserve assumée : comparaison audio post-édition hors Chromium
 ↑/↓, chevauchements visibles, alerte densité 300), e2e drag-and-drop vert — le test resté rouge était
 une attente erronée (clip ajouté à `compositionEndBeat`, pas à 60) ; runner canonique vert
 (`v1-20260806-060208.json`, success true, 20 checks). La Phase 9 (Instruments procéduraux et
-inspecteur) est ouverte [EN COURS].
+inspecteur) et sa qualification V9 sont closes [FAIT] : registre typé des instruments (défauts,
+bornes, sanitize NaN→défaut) exposé par `GET /api/instrument-registry` et appliqué par `synthesize` ;
+inspecteur d'instrument (sliders, saisie précise, reset, comparaison avant/après, bypass original,
+préécoute note/pattern/piste) ; parité des bornes UI/backend ; runner canonique vert
+(`v1-20260806-073005.json`, success true, 21 checks). La Phase 10 (Automations) est ouverte [EN COURS].
 Le gate de déterminisme Csound réel de la phase 1 (roadmap studio audio procédural) est validé (trois rendus indépendants, même SHA-256 du WAV).
 La phase 2 de `roadmap_studio_audio_procedural.md` a été réauditée et close [FAIT] : le code réel
 dépasse largement sa description initiale. Les phases 3 (bibliothèque DSP/Sound Designer) et 4

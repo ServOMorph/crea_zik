@@ -407,13 +407,16 @@ comme limite connue plutôt que comme gate contourné ; il ne bloque pas la phas
   lint/typecheck/unit/coverage/a11y/mutation/build/visuel/markdownlint (rapport
   `EDITEUR/test-results/v1-20260806-060208.json`, success true, 20 checks).
 
-### Phase V9 — Qualification instruments et paramètres [TODO]
+### Phase V9 — Qualification instruments et paramètres [FAIT]
 
-- [ ] Tester chaque paramètre aux minima, maxima, défauts et valeurs invalides.
-- [ ] Générer des combinaisons valides avec Hypothesis et vérifier finitude et absence de crash.
-- [ ] Mesurer clipping, DC, silence inattendu, aliasing budgété et continuité.
-- [ ] Vérifier la parité exacte des métadonnées de paramètres entre backend et UI.
-- [ ] Exécuter V0 à V8 avant d’autoriser la phase 10.
+- [x] Tester chaque paramètre aux minima, maxima, défauts et valeurs invalides.
+- [x] Générer des combinaisons valides avec Hypothesis et vérifier finitude et absence de crash.
+- [x] Mesurer clipping, DC, silence inattendu, aliasing budgété et continuité.
+- [x] Vérifier la parité exacte des métadonnées de paramètres entre backend et UI.
+- [x] Exécuter V0 à V8 avant d’autoriser la phase 10.
+      Exécuté le 2026-08-06 : runner canonique `test_editor.ps1` complet vert, backend 179 tests,
+      frontend 239 unitaires, e2e 15/15, mutation Stryker 77.02 (rapport
+      `EDITEUR/test-results/v1-20260806-073005.json`, success true, 21 checks).
 
 ### Phase V10 — Qualification automations [TODO]
 
@@ -422,7 +425,6 @@ comme limite connue plutôt que comme gate contourné ; il ne bloque pas la phas
 - [ ] Vérifier résolution moteur, continuité et absence de zipper noise mesurable.
 - [ ] Tester dans Playwright création, déplacement, suppression et undo/redo d’une automation.
 - [ ] Exécuter V0 à V9 avant d’autoriser la phase 11.
-
 ### Phase V11 — Qualification mixer et routage [TODO]
 
 - [ ] Tester mute, solo, gain, pan, sends, bypass et ordre d’effets.
@@ -790,20 +792,31 @@ Gate :
 - aucun clip n’est tronqué ou rendu deux fois sans que l’UI le montre ;
 - la Playlist reste fluide avec le budget de densité défini en phase 0.
 
-## Phase 9 — Instruments procéduraux et inspecteur [EN COURS]
+## Phase 9 — Instruments procéduraux et inspecteur [FAIT]
+
+Constat de session (2026-08-06, clôture) : registre typé des instruments livré
+(`backend/src/crea_zik/instrument_registry.py` : groupes, scalaires, listes, défauts, bornes ;
+`sanitize_parameters` NaN→défaut + clamp + ordres bandpass/bursts), exposé par
+`GET /api/instrument-registry` et appliqué par `synthesize`. Inspecteur d'instrument livré
+(`InstrumentInspector.tsx`, affiché quand une piste est sélectionnée) : sliders + saisie précise
+bornées, reset, comparaison avant/après avec restauration, bypass « écouter l'original » (défauts
+du registre), préécoute note (POST `.../instrument-preview` acceptant des `parameters` explicites,
+préécoute sans sauvegarde), pattern et piste. Parité bornes UI/backend, valeurs non finies
+neutralisées, combinaisons Hypothesis finies. Runner canonique complet vert
+(`v1-20260806-073005.json`, success true, 21 checks).
 
 But : rendre modifiable la fabrication sonore de chaque piste.
 
 Tâches :
 
-- [ ] Créer un registre typé des instruments procéduraux et de leurs paramètres.
-- [ ] Créer l’inspecteur contextuel avec contrôles adaptés, unités, bornes et valeurs par défaut.
-- [ ] Exposer oscillateurs, harmoniques, accordage, enveloppe, filtre, modulation et polyphonie.
-- [ ] Exposer les paramètres propres aux drums, basse, pad, arpège et lead.
-- [ ] Ajouter reset de paramètre, saisie précise, modulation et comparaison avant/après.
-- [ ] Ajouter bypass sûr et protection contre NaN, infini, instabilité et valeurs hors bande.
-- [ ] Ajouter préécoute de note, pattern et piste depuis l’inspecteur.
-- [ ] Tester chaque paramètre aux bornes, stabilité numérique, clics, aliasing, polyphonie et
+- [x] Créer un registre typé des instruments procéduraux et de leurs paramètres.
+- [x] Créer l’inspecteur contextuel avec contrôles adaptés, unités, bornes et valeurs par défaut.
+- [x] Exposer oscillateurs, harmoniques, accordage, enveloppe, filtre, modulation et polyphonie.
+- [x] Exposer les paramètres propres aux drums, basse, pad, arpège et lead.
+- [x] Ajouter reset de paramètre, saisie précise, modulation et comparaison avant/après.
+- [x] Ajouter bypass sûr et protection contre NaN, infini, instabilité et valeurs hors bande.
+- [x] Ajouter préécoute de note, pattern et piste depuis l’inspecteur.
+- [x] Tester chaque paramètre aux bornes, stabilité numérique, clics, aliasing, polyphonie et
   cohérence entre UI, spec et rendu.
 
 Gate :
@@ -813,7 +826,7 @@ Gate :
 - les bornes UI et backend sont identiques ;
 - aucun réglage valide ne produit de valeur non finie ou de crash moteur.
 
-## Phase 10 — Automations [TODO]
+## Phase 10 — Automations [EN COURS]
 
 But : faire évoluer les paramètres dans le temps.
 

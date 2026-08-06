@@ -18,3 +18,8 @@
 - [ ] Sélectionner plusieurs pas (Ctrl+clic) et régler vélocité ou probabilité : tous les pas sélectionnés doivent être modifiés.
 - [ ] Remplir la rangée d’une percussion, puis « Remplir aux temps », puis « Vider la rangée », et vérifier à la préécoute que le rythme suit.
 - [ ] « Préécouter la piste » depuis le panneau des patterns : seuls les clips de la piste drums doivent être audibles.
+
+## Inspecteur d'instrument
+
+- [ ] Ouvrir une copie éditable de `Lignes de nuit`, sélectionner la piste basse : l’inspecteur affiche les groupes Oscillateurs, Filtre et Enveloppe avec sliders et champs précis bornés ; modifier le passe-bas puis « Écouter la note » doit refléter le changement, « Écouter l’original (bypass) » doit reprendre le son par défaut.
+- [ ] « Comparer avant/après », modifier un paramètre (les différences s’affichent), « Restaurer l’avant » doit ramener les réglages initiaux ; « Préécouter le pattern » et « Préécouter la piste » doivent lire les clips concernés.

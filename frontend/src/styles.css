@@ -749,9 +749,7 @@ audio {
 
 .piano-roll__board {
   position: relative;
-  background:
-    repeating-linear-gradient(to bottom, rgba(139, 165, 207, 0.1) 0 1px, transparent 1px 24px),
-    #10151f;
+  background: repeating-linear-gradient(to bottom, rgba(139, 165, 207, 0.1) 0 1px, transparent 1px 24px), #10151f;
   border: 1px solid #3a4a65;
   border-radius: 8px;
   overflow: hidden;
@@ -1102,11 +1100,7 @@ audio {
 }
 
 .playlist__clip.is-obscured {
-  background-image: repeating-linear-gradient(
-    45deg,
-    rgba(0, 0, 0, 0.25) 0 6px,
-    transparent 6px 12px
-  );
+  background-image: repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.25) 0 6px, transparent 6px 12px);
 }
 
 .playlist__clip-title {
@@ -1152,4 +1146,142 @@ audio {
   margin: 0;
   color: #ff9d9d;
   font-weight: 700;
+}
+
+.instrument-inspector {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #3a4a65;
+  border-radius: 12px;
+  background: #182233;
+}
+
+.instrument-inspector__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.instrument-inspector__header h3 {
+  margin: 0;
+}
+
+.instrument-inspector__kind {
+  margin-left: 8px;
+  color: #8ba5cf;
+}
+
+.instrument-inspector__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.instrument-inspector__preview {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.instrument-inspector__preview label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.instrument-inspector__preview input {
+  width: 72px;
+}
+
+.instrument-inspector__error {
+  margin: 0;
+  color: #ff9d9d;
+  font-weight: 700;
+}
+
+.instrument-inspector__group {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid #3a4a65;
+  border-radius: 8px;
+  min-width: 0;
+}
+
+.instrument-inspector__group legend {
+  padding: 0 6px;
+  color: #8ba5cf;
+}
+
+.instrument-inspector__control {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.instrument-inspector__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.instrument-inspector__label {
+  color: #eafff2;
+  font-size: 0.85em;
+}
+
+.instrument-inspector__before {
+  margin-left: 8px;
+  color: #8ba5cf;
+  font-size: 0.8em;
+}
+
+.instrument-inspector__before.is-changed {
+  color: #ffd29e;
+}
+
+.instrument-inspector__slider {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) 96px auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.instrument-inspector__slider input[type="number"] {
+  width: 96px;
+}
+
+.instrument-inspector__value {
+  color: #8ba5cf;
+  font-size: 0.85em;
+  text-align: right;
+  min-width: 72px;
+}
+
+.instrument-inspector__reset {
+  padding: 2px 8px;
+  font-size: 0.8em;
+}
+
+.instrument-inspector__items {
+  display: flex;
+  gap: 4px;
+}
+
+.instrument-inspector__item-count {
+  width: 28px;
+  padding: 2px 0;
+}
+
+.instrument-inspector__item {
+  display: grid;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid #2a3a55;
+  border-radius: 8px;
 }

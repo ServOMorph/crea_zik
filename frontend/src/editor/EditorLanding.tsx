@@ -27,6 +27,10 @@ import {
   setStepFieldCells,
   setSteps,
   setTrackChannelFlag,
+  restoreInstrumentParameters,
+  resetInstrumentParameters,
+  setInstrumentListLength,
+  setInstrumentParameter,
   undo,
   varyPattern,
   duplicatePattern,
@@ -73,6 +77,8 @@ import { PatternEditor } from "./PatternEditor";
 import { Playlist } from "./Playlist";
 import { TransportBar } from "./TransportBar";
 import { VirtualList } from "./VirtualList";
+import { InstrumentInspector } from "./InstrumentInspector";
+import { fetchInstrumentRegistry, type InstrumentRegistryPayload } from "./instrumentRegistry";
 
 type ProjectSummary = { id: string; name: string; compositions: { id: string; title: string }[] };
 type GalleryComposition = { id: string; title: string; tempo_bpm: number; time_signature: [number, number] };
@@ -103,6 +109,7 @@ export function EditorLanding({ search, onNavigate, onDirtyChange }: EditorLandi
   const [stepsPerBeat, setStepsPerBeat] = useState(2);
   const [patternRequest, setPatternRequest] = useState<{ patternId: string; requestId: number } | null>(null);
   const [trackRequest, setTrackRequest] = useState<{ trackId: string; requestId: number } | null>(null);
+  const [registry, setRegistry] = useState<InstrumentRegistryPayload | null>(null);
   const varySeedRef = useRef(1);
 
   useEffect(() => {
@@ -112,6 +119,20 @@ export function EditorLanding({ search, onNavigate, onDirtyChange }: EditorLandi
     return () => {
       window.removeEventListener("online", refreshOnlineState);
       window.removeEventListener("offline", refreshOnlineState);
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchInstrumentRegistry()
+      .then((loaded) => {
+        if (!cancelled) setRegistry(loaded);
+      })
+      .catch(() => {
+        if (!cancelled) setRegistry(null);
+      });
+    return () => {
+      cancelled = true;
     };
   }, []);
 
@@ -163,10 +184,13 @@ export function EditorLanding({ search, onNavigate, onDirtyChange }: EditorLandi
     setEditor(pending);
     const request = (async (): Promise<EditableComposition | null> => {
       try {
-        const saved = await apiRequest<EditableComposition>(`/api/projects/${projectId}/compositions/${compositionId}`, {
-          method: "PUT",
-          body: JSON.stringify({ expected_revision: editor.composition.revision, composition: editor.composition }),
-        });
+        const saved = await apiRequest<EditableComposition>(
+          `/api/projects/${projectId}/compositions/${compositionId}`,
+          {
+            method: "PUT",
+            body: JSON.stringify({ expected_revision: editor.composition.revision, composition: editor.composition }),
+          },
+        );
         setEditor(markSaved(pending, saved));
         return saved;
       } catch (error) {
@@ -233,6 +257,14 @@ export function EditorLanding({ search, onNavigate, onDirtyChange }: EditorLandi
         Erreur : {message}
       </p>
     );
+
+  const selectedTrack =
+    editor?.selection.tracks.length === 1
+      ? editor.composition.tracks.find((track) => track.id === editor.selection.tracks[0])
+      : undefined;
+  const selectedTrackPattern = selectedTrack
+    ? editor?.composition.patterns.find((pattern) => pattern.track_id === selectedTrack.id)
+    : undefined;
 
   return (
     <section className="editor-page" aria-labelledby="editor-title">
@@ -483,45 +515,87 @@ export function EditorLanding({ search, onNavigate, onDirtyChange }: EditorLandi
                     setEditor((current) => current && select(current, "tracks", [trackId], additive))
                   }
                   onToggleMute={(trackId) =>
-                    setEditor((current) =>
-                      current &&
-                      setTrackChannelFlag(
-                        current,
-                        trackId,
-                        "mute",
-                        !(current.composition.mixer_channels?.find((c) => c.track_id === trackId)?.mute ?? false),
-                      ),
+                    setEditor(
+                      (current) =>
+                        current &&
+                        setTrackChannelFlag(
+                          current,
+                          trackId,
+                          "mute",
+                          !(current.composition.mixer_channels?.find((c) => c.track_id === trackId)?.mute ?? false),
+                        ),
                     )
                   }
                   onToggleSolo={(trackId) =>
-                    setEditor((current) =>
-                      current &&
-                      setTrackChannelFlag(
-                        current,
-                        trackId,
-                        "solo",
-                        !(current.composition.mixer_channels?.find((c) => c.track_id === trackId)?.solo ?? false),
-                      ),
+                    setEditor(
+                      (current) =>
+                        current &&
+                        setTrackChannelFlag(
+                          current,
+                          trackId,
+                          "solo",
+                          !(current.composition.mixer_channels?.find((c) => c.track_id === trackId)?.solo ?? false),
+                        ),
                     )
                   }
                 />
               )}
             />
           </section>
+          {selectedTrack && (
+            <InstrumentInspector
+              key={selectedTrack.id}
+              track={selectedTrack}
+              registry={registry ? (registry[selectedTrack.kind] ?? null) : null}
+              projectId={projectId ?? ""}
+              compositionId={compositionId ?? ""}
+              onSetParameter={(path, value, bounds, groupWithPrevious) =>
+                setEditor((current) =>
+                  current
+                    ? setInstrumentParameter(current, selectedTrack.id, path, value, bounds, groupWithPrevious)
+                    : current,
+                )
+              }
+              onResetAll={() =>
+                setEditor((current) => (current ? resetInstrumentParameters(current, selectedTrack.id) : current))
+              }
+              onSetListLength={(path, count, itemTemplate) =>
+                setEditor((current) =>
+                  current ? setInstrumentListLength(current, selectedTrack.id, path, count, itemTemplate) : current,
+                )
+              }
+              onRestoreParameters={(parameters) =>
+                setEditor((current) =>
+                  current ? restoreInstrumentParameters(current, selectedTrack.id, parameters) : current,
+                )
+              }
+              onPreviewPattern={
+                selectedTrackPattern
+                  ? () =>
+                      setPatternRequest((current) => ({
+                        patternId: selectedTrackPattern.id,
+                        requestId: (current?.requestId ?? 0) + 1,
+                      }))
+                  : null
+              }
+              onPreviewTrack={() =>
+                setTrackRequest((current) => ({
+                  trackId: selectedTrack.id,
+                  requestId: (current?.requestId ?? 0) + 1,
+                }))
+              }
+            />
+          )}
           <Playlist
             editor={editor}
             onSelect={(collection, ids, additive) =>
               setEditor((current) => (current ? select(current, collection, ids, additive) : current))
             }
             onMoveClip={(clipId, deltaBeats, groupWithPrevious) =>
-              setEditor((current) =>
-                current ? moveClip(current, clipId, deltaBeats, groupWithPrevious) : current,
-              )
+              setEditor((current) => (current ? moveClip(current, clipId, deltaBeats, groupWithPrevious) : current))
             }
             onResizeClip={(clipId, deltaBeats, groupWithPrevious) =>
-              setEditor((current) =>
-                current ? resizeClip(current, clipId, deltaBeats, groupWithPrevious) : current,
-              )
+              setEditor((current) => (current ? resizeClip(current, clipId, deltaBeats, groupWithPrevious) : current))
             }
             onRippleMoveClip={(clipId, deltaBeats, groupWithPrevious) =>
               setEditor((current) =>
@@ -534,7 +608,12 @@ export function EditorLanding({ search, onNavigate, onDirtyChange }: EditorLandi
             onAddClip={(patternId, startBeat) =>
               setEditor((current) =>
                 current
-                  ? addClip(current, patternId, startBeat, current.composition.patterns.find((p) => p.id === patternId)?.length_beats ?? 4)
+                  ? addClip(
+                      current,
+                      patternId,
+                      startBeat,
+                      current.composition.patterns.find((p) => p.id === patternId)?.length_beats ?? 4,
+                    )
                   : current,
               )
             }
@@ -564,21 +643,15 @@ export function EditorLanding({ search, onNavigate, onDirtyChange }: EditorLandi
             onDeleteTime={(beat, lengthBeats) =>
               setEditor((current) => (current ? deleteTime(current, beat, lengthBeats) : current))
             }
-            onAddMarker={(beat) =>
-              setEditor((current) => (current ? addMarker(current, beat, "repère") : current))
-            }
+            onAddMarker={(beat) => setEditor((current) => (current ? addMarker(current, beat, "repère") : current))}
             onMoveMarker={(markerId, beat) =>
               setEditor((current) => (current ? moveMarker(current, markerId, beat) : current))
             }
             onRenameMarker={(markerId, label) =>
               setEditor((current) => (current ? renameMarker(current, markerId, label) : current))
             }
-            onDeleteMarker={(markerId) =>
-              setEditor((current) => (current ? deleteMarker(current, markerId) : current))
-            }
-            onAddTrack={(name, kind) =>
-              setEditor((current) => (current ? addTrack(current, name, kind) : current))
-            }
+            onDeleteMarker={(markerId) => setEditor((current) => (current ? deleteMarker(current, markerId) : current))}
+            onAddTrack={(name, kind) => setEditor((current) => (current ? addTrack(current, name, kind) : current))}
             onRenameTrack={(trackId, name) =>
               setEditor((current) => (current ? renameTrack(current, trackId, name) : current))
             }
@@ -593,9 +666,7 @@ export function EditorLanding({ search, onNavigate, onDirtyChange }: EditorLandi
             stepsPerBeat={stepsPerBeat}
             onStepsPerBeatChange={setStepsPerBeat}
             onSetSteps={(patternId, cells, enabled) =>
-              setEditor((current) =>
-                current ? setSteps(current, patternId, cells, stepsPerBeat, enabled) : current,
-              )
+              setEditor((current) => (current ? setSteps(current, patternId, cells, stepsPerBeat, enabled) : current))
             }
             onSetStepField={(patternId, cells, field, value) =>
               setEditor((current) =>
@@ -623,9 +694,7 @@ export function EditorLanding({ search, onNavigate, onDirtyChange }: EditorLandi
             }
             onMoveNotes={(patternId, noteIds, deltaBeats, deltaMidi, groupWithPrevious) =>
               setEditor((current) =>
-                current
-                  ? moveNotes(current, patternId, noteIds, deltaBeats, deltaMidi, groupWithPrevious)
-                  : current,
+                current ? moveNotes(current, patternId, noteIds, deltaBeats, deltaMidi, groupWithPrevious) : current,
               )
             }
             onResizeNotes={(patternId, noteIds, deltaBeats, groupWithPrevious) =>
@@ -638,16 +707,12 @@ export function EditorLanding({ search, onNavigate, onDirtyChange }: EditorLandi
             }
             onSetNoteFields={(patternId, noteIds, field, value, groupWithPrevious) =>
               setEditor((current) =>
-                current
-                  ? setNoteFields(current, patternId, noteIds, field, value, groupWithPrevious)
-                  : current,
+                current ? setNoteFields(current, patternId, noteIds, field, value, groupWithPrevious) : current,
               )
             }
             onQuantize={(patternId, noteIds) =>
               setEditor((current) =>
-                current
-                  ? quantizeNotes(current, patternId, noteIds, current.grid.snapBeats)
-                  : current,
+                current ? quantizeNotes(current, patternId, noteIds, current.grid.snapBeats) : current,
               )
             }
             onSwing={(patternId, noteIds, amount) =>
@@ -657,17 +722,13 @@ export function EditorLanding({ search, onNavigate, onDirtyChange }: EditorLandi
               setEditor((current) => (current ? humanizeNotes(current, patternId, noteIds, 42, 0.5) : current))
             }
             onTranspose={(patternId, noteIds, semitones) =>
-              setEditor((current) =>
-                current ? transposeNotes(current, patternId, noteIds, semitones) : current,
-              )
+              setEditor((current) => (current ? transposeNotes(current, patternId, noteIds, semitones) : current))
             }
             onLegato={(patternId, noteIds) =>
               setEditor((current) => (current ? legatoNotes(current, patternId, noteIds) : current))
             }
             onUniformDuration={(patternId, noteIds, durationBeats) =>
-              setEditor((current) =>
-                current ? uniformDuration(current, patternId, noteIds, durationBeats) : current,
-              )
+              setEditor((current) => (current ? uniformDuration(current, patternId, noteIds, durationBeats) : current))
             }
             onInvert={(patternId, noteIds, axisMidi) =>
               setEditor((current) => (current ? invertNotes(current, patternId, noteIds, axisMidi) : current))
@@ -696,9 +757,7 @@ export function EditorLanding({ search, onNavigate, onDirtyChange }: EditorLandi
               setEditor((current) => (current ? duplicatePattern(current, patternId) : current))
             }
             onVary={(patternId) =>
-              setEditor((current) =>
-                current ? varyPattern(current, patternId, varySeedRef.current++) : current,
-              )
+              setEditor((current) => (current ? varyPattern(current, patternId, varySeedRef.current++) : current))
             }
             onDelete={(patternId) =>
               setEditor((current) =>

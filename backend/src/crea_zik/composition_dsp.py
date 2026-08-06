@@ -10,6 +10,7 @@ from numpy.typing import NDArray
 from scipy import signal  # type: ignore[import-untyped]
 from scipy.io import wavfile  # type: ignore[import-untyped]
 
+from .instrument_registry import sanitize_parameters
 from .plugins import render_plugin, resolve_params
 
 Audio = NDArray[np.float64]
@@ -39,9 +40,7 @@ def envelope(
     if sustain_n:
         parts.append(np.full(sustain_n, sustain))
     if release_n:
-        parts.append(
-            np.linspace(sustain if body_n else 1, 0, release_n, endpoint=True)
-        )
+        parts.append(np.linspace(sustain if body_n else 1, 0, release_n, endpoint=True))
     result = np.concatenate(parts) if parts else np.zeros(length)
     return np.pad(result, (0, max(0, length - len(result))))[:length]
 
@@ -57,9 +56,7 @@ def add(buffer: Audio, voice: Audio, start: int) -> None:
     source_start = max(0, -start)
     destination = max(0, start)
     end = min(len(buffer), start + len(voice))
-    buffer[destination:end] += voice[
-        source_start : source_start + end - destination
-    ]
+    buffer[destination:end] += voice[source_start : source_start + end - destination]
 
 
 def synthesize(
@@ -72,6 +69,7 @@ def synthesize(
     sample_rate: int,
     seed: int,
 ) -> Audio:
+    parameters = sanitize_parameters(track_kind, parameters)
     if track_kind == "drums":
         if midi_note == 39:
             return _clap(sample_rate, seed, amplitude, parameters.get("clap", {}))
@@ -177,9 +175,7 @@ def _kick(
     sweep_decay = float(frequency.get("decay", 30))
     phase = 2 * pi * np.cumsum(base + drop * np.exp(-time * sweep_decay))
     phase /= sample_rate
-    body = np.sin(phase) * np.exp(
-        -time * float(parameters.get("body_decay", 9.5))
-    )
+    body = np.sin(phase) * np.exp(-time * float(parameters.get("body_decay", 9.5)))
     click = (
         np.sin(2 * pi * float(parameters.get("click_hz", 1900)) * time)
         * np.exp(-time * float(parameters.get("click_decay", 65)))
@@ -223,7 +219,7 @@ def _clap(
     width = float(parameters.get("burst_width_seconds", 0.011))
     bursts = sum(
         (
-            np.exp(-((time - float(position)) / width) ** 2)
+            np.exp(-(((time - float(position)) / width) ** 2))
             for position in parameters.get("bursts_seconds", [0, 0.018, 0.036])
         ),
         start=np.zeros(count),
@@ -306,10 +302,7 @@ def write_wav(
     else:
         sample_width = 2
         frames = (
-            np.rint(np.clip(audio, -1, 1) * 32_767)
-            .astype("<i2")
-            .reshape(-1)
-            .tobytes()
+            np.rint(np.clip(audio, -1, 1) * 32_767).astype("<i2").reshape(-1).tobytes()
         )
     with open_wave(str(path), "wb") as output:
         output.setnchannels(2)
