@@ -1,5 +1,33 @@
 # Changelog
 
+## v0.31 — 2026-08-06
+
+### Ajouté
+
+- `frontend/src/editor/Automations.tsx` : panneau d'automation — lanes par piste/paramètre, courbes
+  SVG step/linéaire/lissée, points ajoutés/déplacés/supprimés au clic et au glisser avec snap sur la
+  grille, panneau d'édition précise (temps/valeur/interpolation), dupliquer/copier/×2/÷2/inverser,
+  valeur évaluée affichée sous le playhead.
+- `frontend/src/editor/Automations.test.tsx` : 12 tests.
+- `frontend/src/editor/editorStore.ts` : `automationLaneLabel`, `automationTarget`,
+  `groupWithPrevious` sur `updateAutomationPoint` ; 9 nouveaux tests dans `editorStore.test.ts`.
+
+### Corrigé
+
+- Régression préexistante sur `EMPTY_SELECTION` (ajout de `automation_lanes` non répercuté sur 2
+  assertions de test de sélection).
+- Lint bloquant (`playheadBeat` assigné mais jamais consommé dans `EditorLanding.tsx`), symptôme
+  d'un chantier Automations laissé sans vue par une session interrompue — corrigé en construisant
+  le panneau manquant plutôt qu'en supprimant le state.
+
+### Notes
+
+- Phase 10 (Automations) reste [EN COURS] : moteur backend et store frontend complets et testés
+  (hérités d'une session précédente, vérifiés cette session), panneau UI livré ; manquent les tests
+  `fast-check` et le parcours Playwright exigés par la Phase V10. Deux écarts assumés à trancher :
+  panneau dédié plutôt que lanes dans la Playlist, scope `master` d'automation non appliqué par le
+  moteur de rendu.
+
 ## v0.30 — 2026-08-06
 
 ### Ajouté

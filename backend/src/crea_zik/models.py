@@ -266,7 +266,7 @@ class Marker(IdentifiedModel):
 class AutomationPoint(DomainModel):
     beat: float = Field(ge=0, le=100_000)
     value: float
-    interpolation: Literal["step", "linear"] = "linear"
+    interpolation: Literal["step", "linear", "smooth"] = "linear"
 
     @field_validator("value")
     @classmethod
@@ -277,7 +277,9 @@ class AutomationPoint(DomainModel):
 
 
 class AutomationLane(IdentifiedModel):
-    target: str = Field(pattern=r"^(track|master)\.[0-9a-f-]+\.(gain|pan|parameter\.[a-z][a-z0-9_]*)$")
+    target: str = Field(
+        pattern=r"^(track|master)\.[0-9a-f-]+\.(gain|pan|parameter\.[a-z][a-z0-9_]*(?:\.[a-z0-9_]+|\[\d+\])*)$"
+    )
     points: list[AutomationPoint] = Field(min_length=1, max_length=20_000)
 
     @model_validator(mode="after")

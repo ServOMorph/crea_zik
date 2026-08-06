@@ -73,7 +73,12 @@ inspecteur) et sa qualification V9 sont closes [FAIT] : registre typé des instr
 bornes, sanitize NaN→défaut) exposé par `GET /api/instrument-registry` et appliqué par `synthesize` ;
 inspecteur d'instrument (sliders, saisie précise, reset, comparaison avant/après, bypass original,
 préécoute note/pattern/piste) ; parité des bornes UI/backend ; runner canonique vert
-(`v1-20260806-073005.json`, success true, 21 checks). La Phase 10 (Automations) est ouverte [EN COURS].
+(`v1-20260806-073005.json`, success true, 21 checks). La Phase 10 (Automations) est ouverte
+[EN COURS] : moteur backend et store frontend complets et testés, panneau `Automations.tsx` livré
+(lanes, courbes step/linéaire/lissée, points, snap, dupliquer/copier/échelle/inverser, valeur sous
+le playhead) ; il manque les tests de propriétés et le parcours Playwright exigés par la Phase V10,
+et deux écarts restent à trancher (panneau dédié plutôt que lanes dans la Playlist, scope `master`
+non appliqué par le moteur de rendu).
 Le gate de déterminisme Csound réel de la phase 1 (roadmap studio audio procédural) est validé (trois rendus indépendants, même SHA-256 du WAV).
 La phase 2 de `roadmap_studio_audio_procedural.md` a été réauditée et close [FAIT] : le code réel
 dépasse largement sa description initiale. Les phases 3 (bibliothèque DSP/Sound Designer) et 4

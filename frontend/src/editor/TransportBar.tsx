@@ -30,6 +30,7 @@ type TransportBarProps = {
   ensureSaved: () => Promise<EditableComposition | null>;
   patternRequest?: { patternId: string; requestId: number } | null;
   trackRequest?: { trackId: string; requestId: number } | null;
+  onPositionChange?: (beat: number) => void;
 };
 
 function sleep(milliseconds: number) {
@@ -44,7 +45,15 @@ function clipDetected(buffer: AudioBuffer) {
   return false;
 }
 
-export function TransportBar({ composition, projectId, compositionId, ensureSaved, patternRequest, trackRequest }: TransportBarProps) {
+export function TransportBar({
+  composition,
+  projectId,
+  compositionId,
+  ensureSaved,
+  patternRequest,
+  trackRequest,
+  onPositionChange,
+}: TransportBarProps) {
   const durationBeats = compositionDurationBeats(composition);
   const [transport, setTransport] = useState<TransportState>(() => createTransportState(composition));
   const [message, setMessage] = useState("Prêt à préécouter.");
@@ -114,6 +123,11 @@ export function TransportBar({ composition, projectId, compositionId, ensureSave
     const animationFrameRef = { current: window.requestAnimationFrame(frame) };
     return () => window.cancelAnimationFrame(animationFrameRef.current);
   }, [composition.tempo_bpm, transport.loop.enabled, transport.loop.range.endBeat, transport.loop.range.startBeat]);
+
+  useEffect(() => {
+    if (!onPositionChange) return;
+    onPositionChange(transport.positionBeat);
+  }, [onPositionChange, transport.positionBeat]);
 
   useEffect(() => {
     if (gainRef.current) gainRef.current.gain.value = transport.muted ? 0 : transport.monitoringGain;

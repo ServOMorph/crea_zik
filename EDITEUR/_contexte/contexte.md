@@ -27,13 +27,19 @@ Music Composer, Adaptive Lab, Analyse & Export) et son backend de rendu, permett
   Csound réel restant avant de poursuivre la roadmap applicative.
 
 ## État actuel (réécrit intégralement à chaque /close)
-Phase 9 et qualification V9 closes [FAIT] : registre typé des instruments (backend, sanitize bornes
-+ NaN→défaut) exposé par `GET /api/instrument-registry` et appliqué par `synthesize` ; inspecteur
-d'instrument (sliders/saisie précise, reset, comparaison avant/après, bypass original, préécoute
-note/pattern/piste) intégré à l'éditeur ; parité bornes UI/backend ; runner canonique vert 21/21
-(`v1-20260806-073005.json`, success true). Phase 10 (Automations) ouverte [EN COURS].
+Phase 9 et qualification V9 closes [FAIT] (voir décisions structurantes). Phase 10 (Automations)
+ouverte [EN COURS] : moteur backend et store frontend complets et testés, panneau UI
+`Automations.tsx` livré (lanes, courbes, points, snap, dupliquer/copier/échelle/inverser, valeur sous
+playhead). Manquent pour clore V10 : tests `fast-check` et parcours Playwright. Deux écarts à
+trancher (voir `_contexte/signals.md`) : panneau dédié plutôt que lanes dans `Playlist.tsx`, et
+scope `master` d'automation validé par le schéma mais non appliqué par le moteur de rendu.
 
 ## Décisions structurantes (append only — 10 entrées max, 5 lignes max/entrée, archiver au-delà)
+- 2026-08-06 : Automations (Phase 10) — moteur backend et store frontend hérités d'une session
+  interrompue (lint cassé, aucune vue), vérifiés complets et verts puis complétés par le panneau
+  `Automations.tsx`. Écart assumé : panneau dédié plutôt que lanes dans `Playlist.tsx` ; scope
+  `master` d'automation exclu de l'UI car non appliqué par le moteur. V10 reste ouverte (fast-check
+  et Playwright manquants).
 - 2026-08-06 : Phases 9 et V9 closes [FAIT] — registre typé des instruments (`instrument_registry.py`),
   sanitize NaN→défaut + clamp, exposé par `GET /api/instrument-registry` ; inspecteur d'instrument
   (sliders/saisie précise, reset, A/B, bypass original, préécoute note/pattern/piste) intégré ;
@@ -49,10 +55,6 @@ note/pattern/piste) intégré à l'éditeur ; parité bornes UI/backend ; runner
   e2e pilote le défilement horizontal par `scrollLeft` explicite (`scrollIntoViewIfNeeded` fait
   passer le contenu sous le side sticky 220 px ou hors viewport). Test e2e V8 encore rouge
   (nth(1) = 6720 px vs 6528 px attendu).
-- 2026-08-04 : Phase V3 et Phase 3 (shell, sidebar et routage) closes [FAIT] — composants et états
-  de page testés (Vitest+RTL), axe-core sur l'éditeur réel et ses états introuvable/vide, parcours
-  Playwright URL directe/historique/sidebar active/conservation du projet, snapshots visuels
-  approuvés ; runner canonique complet vert (V0→V2 inclus).
 - 2026-08-04 : Phase V4 (store, commandes et sauvegarde) close [FAIT] — store 100 % lignes et
   branches, fast-check des inverses, cent opérations puis cent undo/redo comparées, Stryker sur
   `editorStore.ts`/`transport.ts` (break 60 %) ; runner canonique vert (20 checks). La Phase 4

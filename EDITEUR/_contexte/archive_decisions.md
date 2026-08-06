@@ -38,3 +38,7 @@ Décisions archivées depuis `_contexte/contexte.md` (append only).
   qualification complète de l'API de composition (routes nominales, erreurs typées, fuzz, concurrence,
   interruption/reprise, chemins hostiles, isolation) ; runner canonique complet vert. 500 non typé
   corrigé via `CompositionIdMismatchError` (422 `composition_id_mismatch`).
+- 2026-08-04 : Phase V3 et Phase 3 (shell, sidebar et routage) closes [FAIT] — composants et états
+  de page testés (Vitest+RTL), axe-core sur l'éditeur réel et ses états introuvable/vide, parcours
+  Playwright URL directe/historique/sidebar active/conservation du projet, snapshots visuels
+  approuvés ; runner canonique complet vert (V0→V2 inclus).

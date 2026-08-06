@@ -1148,6 +1148,145 @@ audio {
   font-weight: 700;
 }
 
+.automations {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #3a4a65;
+  border-radius: 12px;
+  background: #182233;
+}
+
+.automations__header {
+  display: grid;
+  gap: 8px;
+}
+
+.automations__header h2 {
+  margin: 0;
+}
+
+.automations__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 8px;
+}
+
+.automations__toolbar label {
+  display: grid;
+  gap: 4px;
+  min-width: 140px;
+}
+
+.automations__empty {
+  margin: 0;
+  color: #8ba5cf;
+}
+
+.automations__scroll {
+  display: grid;
+  gap: 10px;
+  overflow: auto;
+  max-height: 520px;
+}
+
+.automations__lane {
+  border: 1px solid #2a3a55;
+  border-radius: 8px;
+  background: #101827;
+  padding: 8px;
+}
+
+.automations__lane.is-selected {
+  outline: 2px solid #9ee5bd;
+}
+
+.automations__lane-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.automations__lane-name {
+  font-weight: 700;
+  background: transparent;
+  border: none;
+  color: #c8d6ef;
+  cursor: pointer;
+  padding: 0;
+}
+
+.automations__lane-value {
+  color: #8ba5cf;
+  font-size: 0.85em;
+}
+
+.automations__lane-actions {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.automations__lane-actions button {
+  padding: 2px 6px;
+}
+
+.automations__curve {
+  display: block;
+  background: #0b1220;
+  border-radius: 6px;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.automations__playhead {
+  stroke: #ff9d9d;
+  stroke-width: 1;
+}
+
+.automations__polyline {
+  fill: none;
+  stroke: #6fa8ff;
+  stroke-width: 2;
+  pointer-events: none;
+}
+
+.automations__point {
+  fill: #6fa8ff;
+  stroke: #eafff2;
+  stroke-width: 1;
+  cursor: grab;
+}
+
+.automations__point.is-selected {
+  fill: #ffd29e;
+  stroke: #c47a2d;
+}
+
+.automations__point-editor {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 10px;
+  padding: 8px;
+  border: 1px solid #3a4a65;
+  border-radius: 8px;
+}
+
+.automations__point-editor label {
+  display: grid;
+  gap: 4px;
+  min-width: 100px;
+}
+
+.automations__hint {
+  margin: 0;
+  color: #8ba5cf;
+}
+
 .instrument-inspector {
   display: grid;
   gap: 12px;

@@ -5,15 +5,26 @@ from collections.abc import Callable, Collection
 from dataclasses import dataclass, replace
 from itertools import pairwise
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 from uuid import UUID, uuid4
 
 import numpy as np
+from numpy.typing import NDArray
 
-from .composition_dsp import Audio, add, reverb, stereo, synthesize, write_wav
+from .composition_dsp import (
+    Audio,
+    add,
+    reverb,
+    stereo,
+    stereo_envelope,
+    synthesize,
+    write_wav,
+)
 from .engine import RenderCancelled
+from .instrument_registry import set_parameter_path
 from .models import (
     AutomationLane,
+    AutomationPoint,
     Clip,
     Composition,
     EffectInstance,
@@ -102,15 +113,53 @@ def _event(track: Track, clip: Clip, note: NoteEvent) -> ScheduledCompositionEve
 
 def evaluate_automation(lane: AutomationLane, beat: float) -> float:
     points = lane.points
-    if beat <= points[0].beat:
+    for point in points:
+        if beat == point.beat:
+            return point.value
+    if beat < points[0].beat:
         return points[0].value
     for left, right in pairwise(points):
-        if beat <= right.beat:
+        if beat < right.beat:
+            progress = (beat - left.beat) / (right.beat - left.beat)
             if left.interpolation == "step":
                 return left.value
-            progress = (beat - left.beat) / (right.beat - left.beat)
+            if left.interpolation == "smooth":
+                progress = progress * progress * (3 - 2 * progress)
             return left.value + (right.value - left.value) * progress
     return points[-1].value
+
+
+def evaluate_automation_values(
+    lane: AutomationLane, beats: NDArray[np.float64]
+) -> NDArray[np.float64]:
+    points = lane.points
+    count = len(points)
+    if count == 1:
+        return np.full(beats.shape, points[0].value, dtype=np.float64)
+    left_beats = np.array([point.beat for point in points], dtype=np.float64)
+    values = np.array([point.value for point in points], dtype=np.float64)
+    result = np.empty(beats.shape, dtype=np.float64)
+    result[beats <= left_beats[0]] = values[0]
+    result[beats >= left_beats[-1]] = values[-1]
+    interior = (beats > left_beats[0]) & (beats < left_beats[-1])
+    if not interior.any():
+        return result
+    segment = beats[interior]
+    right_index = np.searchsorted(left_beats, segment, side="right")
+    right_index = np.clip(right_index, 1, count - 1)
+    left_index = right_index - 1
+    span = left_beats[right_index] - left_beats[left_index]
+    progress = (segment - left_beats[left_index]) / span
+    linear = progress
+    for index in range(count - 1):
+        if points[index].interpolation == "smooth":
+            mask = left_index == index
+            linear[mask] = progress[mask] * progress[mask] * (3 - 2 * progress[mask])
+        elif points[index].interpolation == "step":
+            mask = left_index == index
+            linear[mask] = 0
+    result[interior] = values[left_index] + (values[right_index] - values[left_index]) * linear
+    return result
 
 
 def render_composition(
@@ -174,28 +223,14 @@ def render_composition(
             continue
         channel_gain = channel.gain if channel else 1
         channel_pan = channel.pan if channel else 0
-        gain = (
-            track.gain
-            * channel_gain
-            * _automation_value(lanes, track.id, "gain", event.start_beat, 1)
-        )
-        pan = max(
-            -1,
-            min(
-                1,
-                track.pan
-                + channel_pan
-                + event.pan
-                + _automation_value(lanes, track.id, "pan", event.start_beat, 0),
-            ),
-        )
         _render_event(
             stems[event.track_id],
             replace(event, start_beat=event.start_beat - start_beat),
             composition,
-            gain,
-            pan,
+            channel_gain,
+            channel_pan,
             lanes,
+            event.start_beat,
             cancelled,
         )
         if progress:
@@ -260,33 +295,14 @@ def render_composition(
     )
 
 
-def _automation_value(
-    lanes: dict[str, AutomationLane],
-    track_id: UUID,
-    parameter: str,
-    beat: float,
-    default: float,
-) -> float:
-    lane = lanes.get(f"track.{track_id}.{parameter}")
-    return default if lane is None else evaluate_automation(lane, beat)
-
-
-def _event_plays(event: ScheduledCompositionEvent, seed: int) -> bool:
-    if event.probability >= 1:
-        return True
-    digest = hashlib.sha256(
-        f"{seed}:{event.track_id}:{event.midi_note}:{event.start_beat}".encode()
-    ).digest()
-    return int.from_bytes(digest[:8], "big") / 2**64 < event.probability
-
-
 def _render_event(
     channels: Audio,
     event: ScheduledCompositionEvent,
     composition: Composition,
-    gain: float,
-    pan: float,
+    channel_gain: float,
+    channel_pan: float,
     lanes: dict[str, AutomationLane],
+    absolute_start_beat: float,
     cancelled: Callable[[], bool] | None = None,
 ) -> None:
     if not _event_plays(event, composition.seed):
@@ -297,31 +313,99 @@ def _render_event(
         composition.sample_rate,
     )
     track = next(track for track in composition.tracks if track.id == event.track_id)
-    parameters = track.instrument.parameters
-    automated_ratio = _automation_value(
-        lanes, track.id, "parameter.frequency_ratio", event.start_beat, 1
-    )
-    if automated_ratio != 1:
-        parameters = {
-            **parameters,
-            "frequency_ratio": float(parameters.get("frequency_ratio", 1))
-            * automated_ratio,
-        }
-    seed_offset = round(event.start_beat * 2)
+    parameters = _automated_parameters(track, absolute_start_beat, lanes)
+    gain_lane = lanes.get(f"track.{event.track_id}.gain")
+    pan_lane = lanes.get(f"track.{event.track_id}.pan")
+    seed_offset = round(absolute_start_beat * 2)
     if event.track_kind == "drums" and event.midi_note == 42:
         seed_offset += 1000
+    if gain_lane is None and pan_lane is None:
+        gain = track.gain * channel_gain
+        pan = max(-1, min(1, track.pan + channel_pan + event.pan))
+        voice = synthesize(
+            track_kind=event.track_kind,
+            midi_note=event.midi_note,
+            duration_seconds=event.duration_beats * 60 / composition.tempo_bpm,
+            amplitude=event.velocity * gain,
+            parameters=parameters,
+            sample_rate=composition.sample_rate,
+            seed=composition.seed + seed_offset,
+        )
+        if cancelled and cancelled():
+            raise RenderCancelled("render cancelled")
+        add(channels, stereo(voice, pan), start)
+        return
     voice = synthesize(
         track_kind=event.track_kind,
         midi_note=event.midi_note,
         duration_seconds=event.duration_beats * 60 / composition.tempo_bpm,
-        amplitude=event.velocity * gain,
+        amplitude=event.velocity * channel_gain,
         parameters=parameters,
         sample_rate=composition.sample_rate,
         seed=composition.seed + seed_offset,
     )
     if cancelled and cancelled():
         raise RenderCancelled("render cancelled")
-    add(channels, stereo(voice, pan), start)
+    samples = len(voice)
+    beats = absolute_start_beat + (
+        np.arange(samples, dtype=np.float64)
+        / composition.sample_rate
+        * composition.tempo_bpm
+        / 60
+    )
+    if gain_lane is None:
+        gain_envelope = np.full(samples, track.gain, dtype=np.float64)
+    else:
+        gain_envelope = evaluate_automation_values(gain_lane, beats)
+    if pan_lane is None:
+        pan_envelope = np.full(
+            samples,
+            max(-1, min(1, track.pan + channel_pan + event.pan)),
+            dtype=np.float64,
+        )
+    else:
+        pan_envelope = evaluate_automation_values(pan_lane, beats) + channel_pan + event.pan
+    add(channels, stereo_envelope(voice * gain_envelope, pan_envelope), start)
+
+
+def _automated_parameters(
+    track: Track,
+    beat: float,
+    lanes: dict[str, AutomationLane],
+) -> dict[str, Any]:
+    parameters = dict(track.instrument.parameters)
+    prefix = f"track.{track.id}.parameter."
+    for target, lane in lanes.items():
+        if not target.startswith(prefix):
+            continue
+        path = target[len(prefix) :]
+        value = evaluate_automation(lane, beat)
+        _, updated = set_parameter_path(track.kind, parameters, path, value)
+        if updated is not parameters:
+            parameters = updated
+            continue
+        _write_parameter_path(parameters, path, value)
+    return parameters
+
+
+def _write_parameter_path(parameters: dict[str, Any], path: str, value: float) -> None:
+    pieces = path.split(".")
+    current: Any = parameters
+    for index, piece in enumerate(pieces):
+        last = index == len(pieces) - 1
+        if last:
+            current[piece] = value
+        else:
+            current = current.setdefault(piece, {})
+
+
+def _event_plays(event: ScheduledCompositionEvent, seed: int) -> bool:
+    if event.probability >= 1:
+        return True
+    digest = hashlib.sha256(
+        f"{seed}:{event.track_id}:{event.midi_note}:{event.start_beat}".encode()
+    ).digest()
+    return int.from_bytes(digest[:8], "big") / 2**64 < event.probability
 
 
 def _effect_track_ids(
@@ -467,3 +551,73 @@ def _remap_mixer(value: Any, track_ids: dict[UUID, UUID]) -> Any:
             return value
         return str(track_ids.get(identifier, identifier))
     return value
+
+
+DEMO_AUTOMATION_PATTERNS: dict[
+    str, tuple[tuple[float, float, Literal["step", "linear", "smooth"]], ...]
+] = {
+    "gain": ((0.0, 0.9, "smooth"), (0.5, 1.15, "smooth"), (1.0, 0.9, "smooth")),
+    "pan": ((0.0, -0.3, "linear"), (1.0, 0.3, "linear")),
+    "lowpass_hz": (
+        (0.0, 1200.0, "smooth"),
+        (0.5, 3600.0, "smooth"),
+        (1.0, 1200.0, "smooth"),
+    ),
+}
+
+
+def _demo_points(
+    end_beat: float,
+    pattern: tuple[tuple[float, float, Literal["step", "linear", "smooth"]], ...],
+) -> list[AutomationPoint]:
+    return [
+        AutomationPoint(beat=end_beat * fraction, value=value, interpolation=kind)
+        for fraction, value, kind in pattern
+    ]
+
+
+def with_demo_automations(composition: Composition) -> Composition:
+    """Ajoute des lanes d'automation démonstratives à une copie éditable.
+
+    La référence de galerie reste immuable : cette fonction n'est appelée que sur
+    les copies créées depuis la galerie (create_composition et
+    copy_composition_gallery_example).
+    """
+    end_beat = composition_end_beat(composition) or 16
+    lanes = list(composition.automation_lanes)
+    existing = {lane.target for lane in lanes}
+    for index, track in enumerate(composition.tracks):
+        kind = track.kind
+        if kind not in {"pad", "arp", "lead"}:
+            continue
+        pan_target = f"track.{track.id}.pan"
+        if pan_target not in existing:
+            lanes.append(
+                AutomationLane(
+                    target=pan_target,
+                    points=_demo_points(end_beat, DEMO_AUTOMATION_PATTERNS["pan"]),
+                )
+            )
+        if kind == "lead":
+            gain_target = f"track.{track.id}.gain"
+            if gain_target not in existing:
+                lanes.append(
+                    AutomationLane(
+                        target=gain_target,
+                        points=_demo_points(
+                            end_beat, DEMO_AUTOMATION_PATTERNS["gain"]
+                        ),
+                    )
+                )
+        if kind == "pad":
+            filter_target = f"track.{track.id}.parameter.lowpass_hz"
+            if filter_target not in existing:
+                lanes.append(
+                    AutomationLane(
+                        target=filter_target,
+                        points=_demo_points(
+                            end_beat, DEMO_AUTOMATION_PATTERNS["lowpass_hz"]
+                        ),
+                    )
+                )
+    return composition.model_copy(update={"automation_lanes": lanes}, deep=True)

@@ -828,20 +828,43 @@ Gate :
 
 ## Phase 10 — Automations [EN COURS]
 
+Constat de session (2026-08-06) : session précédente interrompue en cours de route — moteur backend
+(`compositions.py`, `models.py`, `composition_dsp.py`) et logique de store frontend (`editorStore.ts`)
+livrés et testés, mais aucune vue ne les consommait (bug de lint bloquant sur `playheadBeat` jamais
+consommé, symptôme de l'arrêt net). Session courante : construction du panneau `Automations.tsx`
+(lanes par piste/paramètre, courbes SVG step/linéaire/lissée, points au clic et au glisser avec snap,
+panneau d'édition précise, dupliquer/copier/×2/÷2/inverser, valeur évaluée sous le playhead), câblage
+dans `EditorLanding.tsx`, 21 nouveaux tests unitaires (12 composant + 9 store), correction de 2
+régressions préexistantes sur `EMPTY_SELECTION`. Deux écarts assumés, non résolus : (1) les lanes
+vivent dans un panneau dédié sous la Playlist plutôt que comme lanes dans la timeline `Playlist.tsx`
+comme envisagé initialement ; (2) le scope `master` des cibles d'automation, accepté par la validation
+Pydantic, n'est jamais appliqué par le moteur de rendu — exclu du picker UI plutôt qu'exposé sans
+effet. Aucun test `fast-check` ni Playwright écrit sur les automations cette session : phase non
+close, gate V10 non rempli.
+
 But : faire évoluer les paramètres dans le temps.
 
 Tâches :
 
-- [ ] Ajouter la création d’une automation depuis tout paramètre automatisable.
-- [ ] Créer des lanes et clips d’automation dans la Playlist.
-- [ ] Ajouter points, déplacement, suppression et courbes step, linéaire et lissée.
-- [ ] Ajouter snap, copie, duplication, mise à l’échelle et inversion.
-- [ ] Définir la priorité entre valeur de base, automation et mute/bypass.
-- [ ] Appliquer les automations au moteur avec une résolution documentée et sans zipper noise.
-- [ ] Afficher la valeur évaluée sous le playhead.
-- [ ] Ajouter des automations démonstratives à la copie éditable sans modifier la référence immuable.
+- [x] Ajouter la création d’une automation depuis tout paramètre automatisable (scope `track` :
+  gain, pan, paramètres scalaires du registre d'instruments ; scope `master` non applicable au
+  rendu, volontairement exclu du picker).
+- [ ] Créer des lanes et clips d’automation dans la Playlist — livré comme panneau `Automations.tsx`
+  séparé, pas intégré à la timeline `Playlist.tsx` ; écart à trancher.
+- [x] Ajouter points, déplacement, suppression et courbes step, linéaire et lissée.
+- [x] Ajouter snap, copie, duplication, mise à l’échelle et inversion.
+- [x] Définir la priorité entre valeur de base, automation et mute/bypass (backend, testé :
+  `test_automation_gain_overrides_track_gain_and_removal_restores_base`,
+  `test_muted_track_silences_automated_gain`).
+- [x] Appliquer les automations au moteur avec une résolution documentée et sans zipper noise
+  (backend, testé : `test_gain_automation_is_sample_continuous_without_zipper`).
+- [x] Afficher la valeur évaluée sous le playhead.
+- [x] Ajouter des automations démonstratives à la copie éditable sans modifier la référence immuable
+  (`with_demo_automations`, testé).
 - [ ] Tester interpolation, points superposés, limites de clip, précision temporelle et rendu
-  déterministe.
+  déterministe — couvert côté backend (`tests/test_editor_automation.py`, 15 tests) ; côté frontend,
+  seuls des tests unitaires Vitest/RTL existent, pas de propriétés `fast-check` ni de parcours
+  Playwright (exigés par la Phase V10).
 
 Gate :
 

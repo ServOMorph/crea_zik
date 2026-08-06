@@ -18,7 +18,7 @@ from .audio_info import wav_info
 from .cli import PROJECT_ROOT, load_project, replace_composition, save_project
 from .composer import render_score
 from .composition_dsp import synthesize, write_wav
-from .compositions import copy_composition
+from .compositions import copy_composition, with_demo_automations
 from .errors import (
     CompositionNotFoundError,
     CompositionRevisionConflictError,
@@ -385,7 +385,7 @@ def create_composition(project_id: UUID, payload: CompositionCreate) -> Composit
             status_code=status.HTTP_404_NOT_FOUND,
             detail="composition gallery example not found",
         )
-    composition = copy_composition(source)
+    composition = with_demo_automations(copy_composition(source))
     project.compositions.append(composition)
     save_project(project, project_path(project.id))
     return composition
@@ -750,7 +750,7 @@ def copy_composition_gallery_example(project_id: UUID, example_id: UUID) -> Proj
             status_code=status.HTTP_404_NOT_FOUND,
             detail="composition gallery example not found",
         )
-    project.compositions.append(copy_composition(source))
+    project.compositions.append(with_demo_automations(copy_composition(source)))
     save_project(project, project_path(project.id))
     return project
 

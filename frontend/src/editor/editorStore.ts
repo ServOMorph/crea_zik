@@ -69,6 +69,19 @@ export type MixerChannel = {
   [key: string]: unknown;
 };
 
+export type AutomationPoint = {
+  beat: number;
+  value: number;
+  interpolation: "step" | "linear" | "smooth";
+};
+
+export type AutomationLane = {
+  id: string;
+  target: string;
+  points: AutomationPoint[];
+  [key: string]: unknown;
+};
+
 export type EditableComposition = {
   id: string;
   revision: number;
@@ -82,10 +95,11 @@ export type EditableComposition = {
   render_settings?: { duration_seconds?: number; [key: string]: unknown };
   mixer_channels?: MixerChannel[];
   master_channel?: MixerChannel;
+  automation_lanes?: AutomationLane[];
   [key: string]: unknown;
 };
 
-export type CollectionName = "tracks" | "patterns" | "clips" | "markers";
+export type CollectionName = "tracks" | "patterns" | "clips" | "markers" | "automation_lanes";
 
 export type EditorSelection = Record<CollectionName, string[]> & { notes: string[] };
 
@@ -118,7 +132,14 @@ export type EditorState = {
 
 export type EditorOperation = (composition: EditableComposition) => void;
 
-const EMPTY_SELECTION: EditorSelection = { tracks: [], patterns: [], clips: [], markers: [], notes: [] };
+const EMPTY_SELECTION: EditorSelection = {
+  tracks: [],
+  patterns: [],
+  clips: [],
+  markers: [],
+  automation_lanes: [],
+  notes: [],
+};
 const DEFAULT_GRID: TimeGrid = { snapBeats: 0.25, horizontalZoom: 1, verticalZoom: 1, scrollBeat: 0 };
 const MAX_HISTORY = 200;
 
@@ -272,6 +293,12 @@ function deleteFromDraft(composition: EditableComposition, collection: Collectio
   if (collection === "patterns") {
     composition.patterns = composition.patterns.filter((pattern) => !ids.has(pattern.id));
     composition.clips = composition.clips.filter((clip) => !ids.has(clip.pattern_id));
+    return;
+  }
+  if (collection === "automation_lanes") {
+    composition.automation_lanes = (composition.automation_lanes ?? []).filter(
+      (lane) => !ids.has(lane.id),
+    );
     return;
   }
   composition.clips = composition.clips.filter((clip) => !ids.has(clip.id));
@@ -731,4 +758,240 @@ export function restoreInstrumentParameters(
     if (!track) return;
     track.instrument = { parameters: clone(parameters) };
   });
+}
+
+export const AUTOMATION_TARGET_PATTERN =
+  /^(track|master)\.[0-9a-f-]+\.(gain|pan|parameter\.[a-z][a-z0-9_]*(?:\.[a-z0-9_]+|\[\d+\])*)$/;
+
+export function automationLanes(composition: EditableComposition): AutomationLane[] {
+  return composition.automation_lanes ?? [];
+}
+
+export function automationLaneTargetParts(target: string) {
+  const [scope, identifier, ...rest] = target.split(".");
+  return { scope, identifier, property: rest.join(".") };
+}
+
+export function evaluateAutomation(lane: AutomationLane, beat: number): number {
+  const points = lane.points;
+  if (points.length === 0) return 0;
+  for (const point of points) {
+    if (beat === point.beat) return point.value;
+  }
+  if (beat < points[0].beat) return points[0].value;
+  for (let index = 0; index < points.length - 1; index += 1) {
+    const left = points[index];
+    const right = points[index + 1];
+    if (beat < right.beat) {
+      const progress = (beat - left.beat) / (right.beat - left.beat);
+      if (left.interpolation === "step") return left.value;
+      const eased = left.interpolation === "smooth" ? progress * progress * (3 - 2 * progress) : progress;
+      return left.value + (right.value - left.value) * eased;
+    }
+  }
+  return points[points.length - 1].value;
+}
+
+export function automationValueAtBeat(composition: EditableComposition, target: string, beat: number) {
+  const lane = automationLanes(composition).find((item) => item.target === target);
+  if (!lane) return undefined;
+  return evaluateAutomation(lane, beat);
+}
+
+export function addAutomationLane(
+  state: EditorState,
+  target: string,
+  points?: AutomationPoint[],
+): EditorState {
+  if (!AUTOMATION_TARGET_PATTERN.test(target)) return state;
+  return execute(state, "Créer une automation", (draft) => {
+    if (!draft.automation_lanes) draft.automation_lanes = [];
+    if (draft.automation_lanes.some((lane) => lane.target === target)) return;
+    const lanePoints =
+      points && points.length > 0
+        ? points
+        : [
+            { beat: 0, value: 0, interpolation: "linear" as const },
+            { beat: 4, value: 1, interpolation: "linear" as const },
+          ];
+    draft.automation_lanes.push({ id: newId(), target, points: lanePoints });
+  });
+}
+
+export function removeAutomationLane(state: EditorState, laneId: string): EditorState {
+  return execute(state, "Supprimer l’automation", (draft) => {
+    if (!draft.automation_lanes) return;
+    draft.automation_lanes = draft.automation_lanes.filter((lane) => lane.id !== laneId);
+  });
+}
+
+function normalizeAutomationPoints(points: AutomationPoint[]): AutomationPoint[] {
+  return points
+    .map((point) => ({ ...point, beat: Math.round(point.beat * 1000) / 1000 }))
+    .filter((point, index, all) => all.findIndex((item) => item.beat === point.beat) === index)
+    .sort((left, right) => left.beat - right.beat);
+}
+
+export function addAutomationPoint(
+  state: EditorState,
+  laneId: string,
+  point: AutomationPoint,
+): EditorState {
+  return execute(state, "Ajouter un point d’automation", (draft) => {
+    const lane = (draft.automation_lanes ?? []).find((item) => item.id === laneId);
+    if (!lane) return;
+    const points = normalizeAutomationPoints([...lane.points, point]);
+    lane.points = points;
+  });
+}
+
+export function updateAutomationPoint(
+  state: EditorState,
+  laneId: string,
+  beat: number,
+  patch: Partial<Omit<AutomationPoint, "beat">>,
+  groupWithPrevious = false,
+): EditorState {
+  return execute(
+    state,
+    "Modifier le point d’automation",
+    (draft) => {
+      const lane = (draft.automation_lanes ?? []).find((item) => item.id === laneId);
+      if (!lane) return;
+      const point = lane.points.find((item) => item.beat === beat);
+      if (!point) return;
+      if (patch.value !== undefined) point.value = patch.value;
+      if (patch.interpolation !== undefined) point.interpolation = patch.interpolation;
+    },
+    groupWithPrevious,
+  );
+}
+
+export function moveAutomationPoint(
+  state: EditorState,
+  laneId: string,
+  fromBeat: number,
+  toBeat: number,
+  groupWithPrevious = false,
+): EditorState {
+  return execute(
+    state,
+    "Déplacer le point d’automation",
+    (draft) => {
+      const lane = (draft.automation_lanes ?? []).find((item) => item.id === laneId);
+      if (!lane) return;
+      const source = lane.points.find((item) => item.beat === fromBeat);
+      if (!source) return;
+      const remaining = lane.points.filter((item) => item.beat !== fromBeat);
+      const moved = { ...source, beat: Math.round(toBeat * 1000) / 1000 };
+      lane.points = normalizeAutomationPoints([...remaining, moved]);
+    },
+    groupWithPrevious,
+  );
+}
+
+export function removeAutomationPoint(state: EditorState, laneId: string, beat: number): EditorState {
+  return execute(state, "Supprimer le point d’automation", (draft) => {
+    const lane = (draft.automation_lanes ?? []).find((item) => item.id === laneId);
+    if (!lane) return;
+    lane.points = lane.points.filter((item) => item.beat !== beat);
+  });
+}
+
+export function setAutomationInterpolation(
+  state: EditorState,
+  laneId: string,
+  beat: number,
+  interpolation: AutomationPoint["interpolation"],
+): EditorState {
+  return updateAutomationPoint(state, laneId, beat, { interpolation });
+}
+
+export function snapBeat(beat: number, snapBeats: number): number {
+  if (snapBeats <= 0) return beat;
+  const stepped = Math.round(beat / snapBeats) * snapBeats;
+  return Math.round(stepped * 1000) / 1000;
+}
+
+export function addAutomationPointSnapped(
+  state: EditorState,
+  laneId: string,
+  point: AutomationPoint,
+): EditorState {
+  const snapped = snapBeat(point.beat, state.grid.snapBeats);
+  return addAutomationPoint(state, laneId, { ...point, beat: snapped });
+}
+
+export function copyAutomationLanes(state: EditorState): EditorState {
+  const copies = automationLanes(state.composition).map((lane) => ({
+    ...clone(lane),
+    id: newId(),
+  }));
+  if (copies.length === 0) return state;
+  return execute(state, "Copier les automations", (draft) => {
+    const lanes = draft.automation_lanes ?? [];
+    if (!draft.automation_lanes) draft.automation_lanes = lanes;
+    lanes.push(...copies);
+  });
+}
+export function duplicateAutomationLane(state: EditorState, laneId: string): EditorState {
+  return execute(state, "Dupliquer l’automation", (draft) => {
+    const source = (draft.automation_lanes ?? []).find((item) => item.id === laneId);
+    if (!source) return;
+    const lanes = draft.automation_lanes ?? [];
+    if (!draft.automation_lanes) draft.automation_lanes = lanes;
+    lanes.push({ ...clone(source), id: newId() });
+  });
+}
+
+export function scaleAutomationValues(
+  state: EditorState,
+  laneId: string,
+  factor: number,
+): EditorState {
+  if (!Number.isFinite(factor)) return state;
+  return execute(state, "Mettre l’automation à l’échelle", (draft) => {
+    const lane = (draft.automation_lanes ?? []).find((item) => item.id === laneId);
+    if (!lane) return;
+    lane.points = lane.points.map((point) => ({ ...point, value: point.value * factor }));
+  });
+}
+
+export function invertAutomationValues(state: EditorState, laneId: string): EditorState {
+  return execute(state, "Inverser l’automation", (draft) => {
+    const lane = (draft.automation_lanes ?? []).find((item) => item.id === laneId);
+    if (!lane) return;
+    const values = lane.points.map((point) => point.value);
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const span = max - min;
+    lane.points = lane.points.map((point, index) => ({
+      ...point,
+      value: span === 0 ? point.value : min + (max - values[index]),
+    }));
+  });
+}
+
+export function automationLaneBaseValue(composition: EditableComposition, target: string): number {
+  const { scope, identifier, property } = automationLaneTargetParts(target);
+  if (scope === "master") return 1;
+  const track = composition.tracks.find((item) => item.id === identifier);
+  if (!track) return 0;
+  if (property === "gain") return typeof track.gain === "number" ? track.gain : 1;
+  if (property === "pan") return typeof track.pan === "number" ? track.pan : 0;
+  const value = parameterValue(track.instrument?.parameters ?? {}, property.replace(/^parameter\./, ""));
+  return typeof value === "number" ? value : 0;
+}
+
+export function automationLaneLabel(composition: EditableComposition, target: string): string {
+  const { identifier, property } = automationLaneTargetParts(target);
+  const track = composition.tracks.find((item) => item.id === identifier);
+  const trackLabel = track?.name ?? "Piste inconnue";
+  if (property === "gain") return `${trackLabel} · Gain`;
+  if (property === "pan") return `${trackLabel} · Pan`;
+  return `${trackLabel} · ${property.replace(/^parameter\./, "")}`;
+}
+
+export function automationTarget(trackId: string, property: string): string {
+  return `track.${trackId}.${property}`;
 }

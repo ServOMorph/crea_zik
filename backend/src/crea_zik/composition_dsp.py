@@ -50,6 +50,12 @@ def stereo(mono: Audio, pan: float) -> Audio:
     return np.column_stack((mono * cos(angle), mono * sin(angle)))
 
 
+def stereo_envelope(mono: Audio, pan: NDArray[np.float64]) -> Audio:
+    clipped = np.clip(pan, -1, 1)
+    angle = (clipped + 1) * pi / 4
+    return np.column_stack((mono * np.cos(angle), mono * np.sin(angle)))
+
+
 def add(buffer: Audio, voice: Audio, start: int) -> None:
     if start >= len(buffer) or start + len(voice) <= 0:
         return

@@ -95,12 +95,24 @@
     "$ref": "#/$defs/clip"
    }
   },
-  "master_channel": {
-   "$ref": "#/$defs/mixerChannel"
-  },
-  "render_settings": {
-   "$ref": "#/$defs/renderSettings"
-  },
+   "master_channel": {
+    "$ref": "#/$defs/mixerChannel"
+   },
+   "mixer_channels": {
+    "type": "array",
+    "items": {
+     "$ref": "#/$defs/mixerChannel"
+    }
+   },
+   "render_settings": {
+    "$ref": "#/$defs/renderSettings"
+   },
+   "automation_lanes": {
+    "type": "array",
+    "items": {
+     "$ref": "#/$defs/automationLane"
+    }
+   },
   "markers": {
    "type": "array",
    "items": {
@@ -386,33 +398,87 @@
       "wav_float32"
      ]
     },
-    "channels": {
-     "const": 2
+     "channels": {
+      "const": 2
+     },
+     "stems": {
+      "type": "boolean"
+     }
     }
-   }
-  },
-  "marker": {
-   "type": "object",
-   "additionalProperties": false,
-   "required": [
-    "id",
-    "beat",
-    "label"
-   ],
-   "properties": {
-    "id": {
-     "$ref": "#/$defs/id"
-    },
-    "beat": {
-     "type": "number",
-     "minimum": 0
-    },
-    "label": {
-     "type": "string",
-     "minLength": 1,
-     "maxLength": 80
+   },
+   "marker": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "id",
+     "beat",
+     "label"
+    ],
+    "properties": {
+     "id": {
+      "$ref": "#/$defs/id"
+     },
+     "beat": {
+      "type": "number",
+      "minimum": 0
+     },
+     "label": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+     }
+    }
+   },
+   "automationPoint": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "beat",
+     "value",
+     "interpolation"
+    ],
+    "properties": {
+     "beat": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100000
+     },
+     "value": {
+      "type": "number"
+     },
+     "interpolation": {
+      "enum": [
+       "step",
+       "linear",
+       "smooth"
+      ]
+     }
+    }
+   },
+   "automationLane": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "id",
+     "target",
+     "points"
+    ],
+    "properties": {
+     "id": {
+      "$ref": "#/$defs/id"
+     },
+     "target": {
+      "type": "string",
+      "pattern": "^(track|master)\\.[0-9a-f-]+\\.(gain|pan|parameter\\.[a-z][a-z0-9_]*(?:\\.[a-z0-9_]+|\\[\\d+\\])*)$"
+     },
+     "points": {
+      "type": "array",
+      "items": {
+       "$ref": "#/$defs/automationPoint"
+      },
+      "minItems": 1
+     }
     }
    }
   }
  }
-}

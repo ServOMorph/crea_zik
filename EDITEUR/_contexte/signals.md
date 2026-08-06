@@ -1,59 +1,77 @@
 # Signals — editeur (MAJ 2026-08-06)
 
 ## Actions ouvertes
-- [P1|ouvert] Mener la Phase 10 (Automations) et sa qualification V10 : automation depuis tout
-  paramètre automatisable, lanes et clips d'automation dans la Playlist, points/courbes
-  step/linéaire/lissée, snap/copie/duplication/échelle/inversion, priorité valeur de base/
-  automation/mute/bypass, application au moteur sans zipper noise, valeur évaluée sous le playhead,
-  automations démonstratives sans modifier la référence immuable.
+- [P1|ouvert] Terminer la Phase 10 (Automations) et sa qualification V10 : tests de propriétés
+  `fast-check` sur les commandes d'automation, parcours Playwright (création, déplacement,
+  suppression, undo/redo d'une automation dans Chromium), puis runner canonique complet.
   - fait quand: runner canonique complet vert (rapport `v1-*.json` success true) et Phase 11 ouverte [EN COURS]
-  - réf: `EDITEUR/roadmap_editeur_musical.md` (Phase 10, Phase V10), `backend/src/crea_zik/api.py`,
-    `frontend/src/editor/editorStore.ts`, `frontend/src/editor/InstrumentInspector.tsx` (sources
-    d'automation), `frontend/src/editor/Playlist.tsx` (lanes d'automation)
+  - réf: `EDITEUR/roadmap_editeur_musical.md` (Phase 10, Phase V10), `frontend/src/editor/Automations.tsx`,
+    `frontend/src/editor/Automations.test.tsx`, `frontend/src/editor/editorStore.ts`
+- [P3|ouvert] Réévaluer l'intégration visuelle des automations : elles vivent dans un panneau
+  `Automations.tsx` dédié sous la Playlist plutôt que comme lanes dans la timeline `Playlist.tsx`
+  comme envisagé initialement. Décider si cet écart est assumé définitivement ou si les lanes
+  doivent être déplacées dans la Playlist.
+  - fait quand: décision actée et documentée (assumée ou lanes déplacées dans `Playlist.tsx`)
+  - réf: `frontend/src/editor/Automations.tsx`, `frontend/src/editor/Playlist.tsx`
+- [P3|ouvert] Le scope `master` des cibles d'automation est accepté par la validation Pydantic
+  (`AutomationLane.target`) mais jamais appliqué par le moteur de rendu (`compositions.py` n'applique
+  que le scope `track`). Décider si c'est un gap backend à combler ou un scope à retirer du schéma.
+  - fait quand: le scope `master` est soit appliqué au rendu, soit retiré du pattern de validation
+  - réf: `backend/src/crea_zik/models.py` (AutomationLane.target), `backend/src/crea_zik/compositions.py`
 
 ## Contexte chaud
-- Qualification V9 close le 2026-08-06 : runner canonique 21/21 vert (rapport
-  `EDITEUR/test-results/v1-20260806-073005.json`, success true) ; backend 179 tests, frontend 239
-  unitaires, e2e 15/15, mutation Stryker 77.02.
-- `POST .../instrument-preview` accepte des `parameters` explicites → l'inspecteur préécoute l'état
-  en cours d'édition sans sauvegarde ; le bypass « écouter l'original » envoie les défauts du registre.
-- Parité bornes UI/backend : `setInstrumentParameter` (frontend) clamp ; `sanitize_parameters`
-  (backend) clamp + NaN→défaut. L'inspecteur est affiché par `EditorLanding` quand une seule piste
-  est sélectionnée.
-- Runner `test_editor.ps1` : `uv lock --check` écrit sur stderr même en succès → `Invoke-Gate`
-  abaisse `$ErrorActionPreference` à `Continue` localement ; les échecs réels restent détectés via
-  `$LASTEXITCODE`.
+- Le lint bloquant de la session précédente (`playheadBeat` assigné mais jamais consommé) était le
+  symptôme d'un chantier UI Automations laissé inachevé (store et backend complets, aucune vue) — pas
+  un bug isolé. Corrigé en construisant `Automations.tsx` plutôt qu'en supprimant le state.
+- Backend d'automation (hérité de la session interrompue, vérifié cette session) : priorité
+  automation > mute/bypass > valeur de base déjà testée (`test_muted_track_silences_automated_gain`,
+  `test_automation_gain_overrides_track_gain_and_removal_restores_base`), continuité sample-accurate
+  sans zipper noise testée (`test_gain_automation_is_sample_continuous_without_zipper`), automations
+  démonstratives sur copie éditable sans toucher la référence (`with_demo_automations`).
+- `Automations.tsx` : le picker de cible n'expose que gain/pan/paramètres scalaires du registre
+  d'instruments, scope `track` uniquement (voir action P3 ci-dessus sur le scope `master`).
+- Régression détectée et corrigée : l'ajout de `automation_lanes` à `EMPTY_SELECTION` (session
+  précédente) avait cassé 2 assertions de test de sélection déjà en place, non mises à jour à
+  l'époque.
 
 ## Dernière session
 # Session du 2026-08-06
 
 ## Décisions prises
-- Phase 9 close : la préécoute d'instrument accepte des `parameters` explicites (POST
-  `instrument-preview`) — l'inspecteur préécoute l'état en cours d'édition sans sauvegarde ; le
-  bypass « écouter l'original » envoie les défauts du registre.
-- Bornes UI = backend : `setInstrumentParameter` (store) clamp comme `sanitize_parameters` (NaN
-  ignoré côté UI, NaN→défaut côté backend).
+- Diagnostic du lint cassé : arrêt net d'un chantier Automations (Phase 10) entamé par une session
+  précédente — store et backend complets, aucune vue construite. Décision de terminer la vue plutôt
+  que de contourner le lint.
+- Automations construites comme panneau dédié (`Automations.tsx`) sous la Playlist, pas comme lanes
+  intégrées dans `Playlist.tsx` — écart assumé pour cette session, à trancher explicitement (voir
+  actions ouvertes).
+- Scope `master` des cibles d'automation exclu du picker UI car non appliqué par le moteur de rendu.
 
 ## Livrables produits ou modifiés
-- `backend/src/crea_zik/instrument_registry.py` : registre typé + sanitize.
-- `backend/src/crea_zik/composition_dsp.py` : `synthesize` applique `sanitize_parameters`.
-- `backend/src/crea_zik/api.py` : `GET /api/instrument-registry`, `POST .../instrument-preview`.
-- `tests/test_editor_instruments.py` : 50 tests (parité, bornes, Hypothesis, endpoint).
-- `frontend/src/editor/editorStore.ts` : `Track.instrument` + commandes bornées (undo/redo).
-- `frontend/src/editor/instrumentRegistry.ts` : types TS + fetch mémoïsé.
-- `frontend/src/editor/InstrumentInspector.tsx` : inspecteur complet.
-- `frontend/src/editor/editorStore.instrument.test.ts` (9 tests) + `InstrumentInspector.test.tsx` (13 tests).
-- `frontend/src/editor/EditorLanding.tsx`, `frontend/src/styles.css` : intégration inspecteur.
+- `frontend/src/editor/Automations.tsx` (nouveau) : lanes par piste/paramètre, courbes SVG
+  step/linéaire/lissée, points (ajout/déplacement/suppression au clic et au glisser, snap grille),
+  panneau d'édition précise, dupliquer/copier/×2/÷2/inverser lane, valeur évaluée sous le playhead.
+- `frontend/src/editor/Automations.test.tsx` (nouveau, 12 tests).
+- `frontend/src/editor/editorStore.ts` : `groupWithPrevious` sur `updateAutomationPoint`,
+  `automationLaneLabel`, `automationTarget`.
+- `frontend/src/editor/editorStore.test.ts` : +9 tests automations, correction de 2 régressions
+  préexistantes sur `EMPTY_SELECTION`.
+- `frontend/src/editor/EditorLanding.tsx`, `frontend/src/styles.css` : câblage complet et styles.
+- Backend (`models.py`, `compositions.py`, `composition_dsp.py`, `api.py`,
+  `EDITEUR/contracts/composition.schema.json`, `tests/test_editor_automation.py`) : hérité de la
+  session interrompue précédente, vérifié complet et vert (71 tests domaine/API + 15 tests
+  automation) sans modification.
 
 ## Hypothèses validées / invalidées
-- VALIDE : parité défauts fixture ↔ défauts registre (testé pour les 5 kinds).
-- VALIDE : préécoute avec paramètres hors bornes reste finie (sanitize via endpoint).
-- EN ATTENTE : les « 5 échecs » frontend signalés en V8 ne se reproduisent pas sur la suite actuelle
-  (239 tests verts) — non re-investigués.
+- VALIDE : le moteur backend d'automation était déjà complet et testé avant cette session.
+- VALIDE : lint, typecheck, build et suite unitaire frontend complète (260 tests) verts après les
+  changements.
+- EN ATTENTE : tests `fast-check` et parcours Playwright sur les automations (exigés par le gate
+  V10) non écrits cette session — seuls des tests unitaires Vitest/RTL couvrent la nouvelle UI.
 
 ## Prochaine étape exacte
-Ouvrir la Phase 10 (Automations) ; Phase 9 close (runner canonique vert
-`v1-20260806-073005.json`, success true, 21 checks).
+Écrire les tests de propriétés et le parcours Playwright (création/déplacement/undo-redo d'une
+automation) exigés par la Phase V10, trancher l'écart Playlist/panneau dédié, puis lancer le runner
+canonique complet avant de clore Phase 10/V10.
 
 ## Question bloquante pour la session suivante
 Aucune.

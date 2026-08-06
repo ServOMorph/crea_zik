@@ -2,23 +2,32 @@ import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 
 import { ApiError, apiRequest } from "../api/client";
 import {
+  addAutomationLane,
+  addAutomationPointSnapped,
   clearSelection,
+  copyAutomationLanes,
   copySelection,
   cutSelection,
   createEditorState,
   deleteSelection,
+  duplicateAutomationLane,
   duplicateSelection,
   EditableComposition,
   execute,
   fillPatternRow,
   clearPatternRow,
+  invertAutomationValues,
   isDirty,
   markSaveFailed,
   markSaved,
   markSaving,
+  moveAutomationPoint,
   paste,
   redo,
+  removeAutomationLane,
+  removeAutomationPoint,
   renamePattern,
+  scaleAutomationValues,
   select,
   selectAll,
   setGrid,
@@ -32,6 +41,7 @@ import {
   setInstrumentListLength,
   setInstrumentParameter,
   undo,
+  updateAutomationPoint,
   varyPattern,
   duplicatePattern,
 } from "./editorStore";
@@ -73,6 +83,7 @@ import {
   transposeNotes,
   uniformDuration,
 } from "./noteCommands";
+import { Automations } from "./Automations";
 import { PatternEditor } from "./PatternEditor";
 import { Playlist } from "./Playlist";
 import { TransportBar } from "./TransportBar";
@@ -110,6 +121,7 @@ export function EditorLanding({ search, onNavigate, onDirtyChange }: EditorLandi
   const [patternRequest, setPatternRequest] = useState<{ patternId: string; requestId: number } | null>(null);
   const [trackRequest, setTrackRequest] = useState<{ trackId: string; requestId: number } | null>(null);
   const [registry, setRegistry] = useState<InstrumentRegistryPayload | null>(null);
+  const [playheadBeat, setPlayheadBeat] = useState(0);
   const varySeedRef = useRef(1);
 
   useEffect(() => {
@@ -349,6 +361,7 @@ export function EditorLanding({ search, onNavigate, onDirtyChange }: EditorLandi
             ensureSaved={save}
             patternRequest={patternRequest}
             trackRequest={trackRequest}
+            onPositionChange={setPlayheadBeat}
           />
           <h2 className="editor-workspace__title">{editor.composition.title}</h2>
           {editor.saveError && (
@@ -657,6 +670,44 @@ export function EditorLanding({ search, onNavigate, onDirtyChange }: EditorLandi
             }
             onMoveTrack={(trackId, offset) =>
               setEditor((current) => (current ? moveTrack(current, trackId, offset) : current))
+            }
+          />
+          <Automations
+            editor={editor}
+            registry={registry}
+            playheadBeat={playheadBeat}
+            onSelect={(ids, additive) =>
+              setEditor((current) => (current ? select(current, "automation_lanes", ids, additive) : current))
+            }
+            onAddLane={(target) => setEditor((current) => (current ? addAutomationLane(current, target) : current))}
+            onRemoveLane={(laneId) =>
+              setEditor((current) => (current ? removeAutomationLane(current, laneId) : current))
+            }
+            onDuplicateLane={(laneId) =>
+              setEditor((current) => (current ? duplicateAutomationLane(current, laneId) : current))
+            }
+            onCopyLanes={() => setEditor((current) => (current ? copyAutomationLanes(current) : current))}
+            onScaleLane={(laneId, factor) =>
+              setEditor((current) => (current ? scaleAutomationValues(current, laneId, factor) : current))
+            }
+            onInvertLane={(laneId) =>
+              setEditor((current) => (current ? invertAutomationValues(current, laneId) : current))
+            }
+            onAddPoint={(laneId, point) =>
+              setEditor((current) => (current ? addAutomationPointSnapped(current, laneId, point) : current))
+            }
+            onMovePoint={(laneId, fromBeat, toBeat, groupWithPrevious) =>
+              setEditor((current) =>
+                current ? moveAutomationPoint(current, laneId, fromBeat, toBeat, groupWithPrevious) : current,
+              )
+            }
+            onUpdatePoint={(laneId, beat, patch, groupWithPrevious) =>
+              setEditor((current) =>
+                current ? updateAutomationPoint(current, laneId, beat, patch, groupWithPrevious) : current,
+              )
+            }
+            onRemovePoint={(laneId, beat) =>
+              setEditor((current) => (current ? removeAutomationPoint(current, laneId, beat) : current))
             }
           />
           <PatternEditor
