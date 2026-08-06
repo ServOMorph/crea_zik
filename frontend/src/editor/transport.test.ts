@@ -5,9 +5,11 @@ import {
   compositionDurationBeats,
   createTransportState,
   formatMusicalPosition,
+  peakOf,
   PreviewCache,
   PreviewRequestGate,
   previewKey,
+  rmsOf,
   seek,
 } from "./transport";
 
@@ -106,5 +108,22 @@ describe("transport", () => {
     expect(gate.isCurrent(second)).toBe(true);
     gate.cancel();
     expect(gate.isCurrent(second)).toBe(false);
+  });
+
+  it("calcule le pic et le RMS d’un buffer silencieux à zéro", () => {
+    const silence = [new Float32Array(100), new Float32Array(100)];
+    expect(peakOf(silence)).toBe(0);
+    expect(rmsOf(silence)).toBe(0);
+  });
+
+  it("détecte le pic exact sur plusieurs canaux", () => {
+    const left = new Float32Array([0.1, -0.7, 0.2]);
+    const right = new Float32Array([0.3, 0.4, -0.95]);
+    expect(peakOf([left, right])).toBeCloseTo(0.95);
+  });
+
+  it("calcule le RMS attendu d’un signal constant", () => {
+    const channel = new Float32Array(4).fill(0.5);
+    expect(rmsOf([channel])).toBeCloseTo(0.5);
   });
 });

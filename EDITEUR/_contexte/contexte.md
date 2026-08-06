@@ -27,20 +27,25 @@ Music Composer, Adaptive Lab, Analyse & Export) et son backend de rendu, permett
   Csound réel restant avant de poursuivre la roadmap applicative.
 
 ## État actuel (réécrit intégralement à chaque /close)
-Phases 9 et 10 (Automations) et leurs qualifications V9/V10 closes [FAIT] (voir décisions
-structurantes). Panneau `Automations.tsx` livré et qualifié : lanes, courbes step/linéaire/lissée,
-points (ajout/déplacement/suppression), snap, dupliquer/copier/échelle/inverser, valeur sous
-playhead, tests `fast-check` et parcours Playwright complets. Phase 11 (Mixer et routage) à ouvrir.
-Deux écarts restent à trancher (voir `_contexte/signals.md`) : panneau Automations dédié plutôt que
-lanes dans `Playlist.tsx`, et scope `master` d'automation validé par le schéma mais non appliqué par
-le moteur de rendu.
+Phases 9, 10 et 11 (instruments, Automations, Mixer/routage/effets) et leurs qualifications V9/V10/
+V11 closes [FAIT] (voir décisions structurantes). Chemin audio complet livré : pistes, bus, sends,
+master, chaînes d'effets ordonnées (EQ/saturation/compresseur/délai/réverbération), routage validé
+sans cycle, stems pré/post-fader, comparaison A/B via préécoute non persistante. Phase 12 (Rendu
+final, QA et export) à ouvrir. Deux écarts restent à trancher (voir `_contexte/signals.md`) : panneau
+Automations dédié plutôt que lanes dans `Playlist.tsx`, et scope `master` d'automation validé par le
+schéma mais non appliqué par le moteur de rendu.
 
 ## Décisions structurantes (append only — 10 entrées max, 5 lignes max/entrée, archiver au-delà)
+- 2026-08-06 : Phases 11 et V11 (Mixer, routage et effets) closes [FAIT] — routage topologique
+  piste→bus→master avec sends, DSP réel mais minimal (EQ biquad, saturation, compresseur, délai,
+  réverbération existante conservée), cycle détecté sur `output` ET `sends` (extension backend +
+  portage frontend), A/B via endpoint de préécoute non persistant (`mixer-preview`), stems pré/post-
+  fader. Runner canonique vert (`v1-20260806-144211.json`, Stryker 63,69 %). Phase 12 à ouvrir.
 - 2026-08-06 : Phases 10 et V10 (Automations) closes [FAIT] — tests `fast-check` sur les commandes
   d'automation et parcours Playwright (création/déplacement/suppression/undo-redo) ajoutés ; bug réel
   mineur corrigé dans `execute()` (`editorStore.ts`) trouvé par le test de propriétés : `composition:
   after` non cloné désynchronisait l'état courant de l'état reconstruit par undo/redo sur les valeurs
-  `-0`. Runner canonique vert (`v1-20260806-112817.json`). Phase 11 à ouvrir.
+  `-0`. Runner canonique vert (`v1-20260806-112817.json`).
 - 2026-08-06 : Automations (Phase 10) — moteur backend et store frontend hérités d'une session
   interrompue (lint cassé, aucune vue), vérifiés complets et verts puis complétés par le panneau
   `Automations.tsx`. Écart assumé : panneau dédié plutôt que lanes dans `Playlist.tsx` ; scope
@@ -84,7 +89,3 @@ le moteur de rendu.
   vert final (`v1-20260805-110735.json`, success true). Réserves assumées : glisser et
   multi-sélection couverts en unitaire, preuve rendu/hash frontend non formalisée (backend) ;
   couleur de piste et accès instrument reportés à la Phase 9. Phase 7 (Piano Roll) ouverte.
-- 2026-08-05 : fix de la course sauvegarde/préécoute acté — `save()` partage sa promesse PUT en
-  vol (`saveInFlightRef`) et `requestPreview` affiche « Sauvegarde impossible, préécoute
-  annulée. » en cas d'échec : un clic « Lire la sélection » pendant une sauvegarde attend la fin
-  du PUT (e2e route directe verrouillé).

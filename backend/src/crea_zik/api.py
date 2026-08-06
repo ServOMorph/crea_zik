@@ -18,7 +18,8 @@ from .audio_info import wav_info
 from .cli import PROJECT_ROOT, load_project, replace_composition, save_project
 from .composer import render_score
 from .composition_dsp import synthesize, write_wav
-from .compositions import copy_composition, with_demo_automations
+from .compositions import copy_composition, render_composition, with_demo_automations
+from .effect_registry import registry_payload as effect_registry_payload
 from .errors import (
     CompositionNotFoundError,
     CompositionRevisionConflictError,
@@ -277,10 +278,22 @@ def read_instrument_registry() -> dict[str, object]:
     return registry_payload()
 
 
+@app.get("/api/effect-registry")
+def read_effect_registry() -> dict[str, object]:
+    return effect_registry_payload()
+
+
 class InstrumentPreviewRequest(BaseModel):
     track_id: UUID
     midi_note: int = Field(default=60, ge=0, le=127)
     parameters: dict[str, Any] | None = None
+
+
+class MixerPreviewRequest(BaseModel):
+    mixer_channels: list[MixerChannel] | None = None
+    master_channel: MixerChannel | None = None
+    start_beat: float = Field(default=0, ge=0)
+    end_beat: float | None = Field(default=None, gt=0)
 
 
 @app.get("/api/projects", response_model=list[Project])
@@ -682,6 +695,42 @@ def preview_composition_instrument(
     write_wav(path, audio, composition.sample_rate, "wav_pcm24")
     payload = wav_info(path)
     payload["wav"] = path.resolve().relative_to(PROJECT_ROOT.resolve()).as_posix()
+    return ArtifactResponse.model_validate(payload)
+
+
+@app.post(
+    "/api/projects/{project_id}/compositions/{composition_id}/mixer-preview",
+    response_model=ArtifactResponse,
+)
+def preview_composition_mixer(
+    project_id: UUID,
+    composition_id: UUID,
+    request: MixerPreviewRequest,
+) -> ArtifactResponse:
+    project = get_project(project_id)
+    composition = get_composition(project, composition_id)
+    updates: dict[str, Any] = {}
+    if request.mixer_channels is not None:
+        updates["mixer_channels"] = request.mixer_channels
+    if request.master_channel is not None:
+        updates["master_channel"] = request.master_channel
+    preview_composition = composition.model_copy(update=updates, deep=True)
+    destination = resolve_project_path(
+        PROJECT_ROOT,
+        str(project.id),
+        "compositions",
+        str(composition_id),
+        "previews",
+        "mixer",
+    )
+    rendered = render_composition(
+        preview_composition,
+        destination,
+        start_beat=request.start_beat,
+        end_beat=request.end_beat,
+    )
+    payload = wav_info(rendered.mix_path)
+    payload["wav"] = rendered.mix_path.resolve().relative_to(PROJECT_ROOT.resolve()).as_posix()
     return ArtifactResponse.model_validate(payload)
 
 

@@ -80,7 +80,12 @@ points, snap, dupliquer/copier/échelle/inverser, valeur sous le playhead), test
 réel mineur trouvé par le test de propriétés (`execute()` désynchronisait une valeur `-0` entre
 l'état courant et l'état reconstruit par undo/redo) a été corrigé. Deux écarts restent à trancher
 (panneau dédié plutôt que lanes dans la Playlist, scope `master` non appliqué par le moteur de
-rendu). La Phase 11 (Mixer, routage et effets) est ouverte [EN COURS].
+rendu). La Phase 11 (Mixer, routage et effets) et sa qualification V11 sont closes [FAIT] : chemin
+audio complet (pistes, bus, sends, master), chaînes d'effets ordonnées (égalisation, saturation,
+compresseur, délai, réverbération), routage validé sans cycle, stems pré/post-fader, comparaison A/B
+via un rendu de préécoute qui ne persiste jamais la composition ; runner canonique vert
+(`EDITEUR/test-results/v1-20260806-144211.json`, success true, 20 checks, mutation Stryker 63,69 %).
+La Phase 12 (Rendu final, QA et export) est à ouvrir.
 Le gate de déterminisme Csound réel de la phase 1 (roadmap studio audio procédural) est validé (trois rendus indépendants, même SHA-256 du WAV).
 La phase 2 de `roadmap_studio_audio_procedural.md` a été réauditée et close [FAIT] : le code réel
 dépasse largement sa description initiale. Les phases 3 (bibliothèque DSP/Sound Designer) et 4

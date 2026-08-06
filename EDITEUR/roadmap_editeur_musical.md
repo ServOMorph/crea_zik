@@ -441,13 +441,29 @@ comme limite connue plutôt que comme gate contourné ; il ne bloque pas la phas
   courant mais pas dans l’état reconstruit par un undo/redo ultérieur — corrigé en clonant `after`
   avant assignation.
 
-### Phase V11 — Qualification mixer et routage [TODO]
+### Phase V11 — Qualification mixer et routage [FAIT]
 
-- [ ] Tester mute, solo, gain, pan, sends, bypass et ordre d’effets.
-- [ ] Générer des graphes de routage et refuser automatiquement tous les cycles invalides.
-- [ ] Recombiner les stems et comparer au mix selon la tolérance numérique verrouillée.
-- [ ] Vérifier vu-mètres, clipping et actions mixer dans Chromium.
-- [ ] Exécuter V0 à V10 avant d’autoriser la phase 12.
+- [x] Tester mute, solo, gain, pan, sends, bypass et ordre d’effets
+  (`tests/test_editor_mixer.py`, `Mixer.test.tsx`, `editorStore.property.test.ts` étendu avec les
+  générateurs `fast-check` des commandes mixer, inverses undo/redo vérifiés).
+- [x] Générer des graphes de routage et refuser automatiquement tous les cycles invalides
+  (`_has_mixer_cycle` backend étendu aux arêtes `sends`, tests `test_mixer_output_cycle_is_rejected`/
+  `test_mixer_send_cycle_is_rejected`/`test_send_to_unknown_channel_is_rejected` ; portage frontend
+  `mixerRouting.ts` avec test `fast-check` dédié `mixerRouting.test.ts`, chaînes acycliques et cycles
+  fermés par routage ou par send).
+- [x] Recombiner les stems et comparer au mix selon la tolérance numérique verrouillée
+  (`test_stems_recombine_close_to_the_master_mix` ; non-régression bit-exacte des hashes golden de
+  `Lignes de nuit` vérifiée : le pipeline de rendu refactoré préserve l'ordre de sommation flottante
+  historique quand aucun bus n'est en jeu, confirmé par la suite pytest complète restée verte à 216
+  tests avant et après refactor).
+- [x] Vérifier vu-mètres, clipping et actions mixer dans Chromium (e2e `studio.spec.ts` « the mixer
+  routes a track through a bus, chains an effect and keeps changes after undo/redo » : mute/solo,
+  routage vers un bus, ajout et bypass d'un effet, undo/redo, sauvegarde).
+- [x] Exécuter V0 à V10 avant d’autoriser la phase 12 — runner canonique `test_editor.ps1` complet
+  exécuté le 2026-08-06, gate vert : backend (lint, types, contrats, domaine, fuzz OpenAPI, couverture,
+  golden `Lignes de nuit`), frontend lint/typecheck/unit (283)/coverage/a11y/mutation (Stryker
+  63,69 % ≥ 60 %)/build/e2e (17)/visuel, markdownlint (rapport
+  `EDITEUR/test-results/v1-20260806-144211.json`, success true, 20 checks).
 
 ### Phase V12 — Qualification rendu, QA et export [TODO]
 
@@ -893,22 +909,65 @@ Gate :
 - aucun saut non demandé ne survient aux limites de clips ;
 - une automation supprimée restaure la valeur de base.
 
-## Phase 11 — Mixer, routage et effets [EN COURS]
+## Phase 11 — Mixer, routage et effets [FAIT]
 
 But : contrôler tout le chemin audio du morceau.
 
+Constat de session (2026-08-06, clôture) : chemin audio complet livré (pistes, bus, sends, master),
+routage topologique testé, chaînes d'effets ordonnées appliquées au rendu, comparaison A/B sans
+risque de perte de données (rendu via un endpoint de préécoute dédié qui ne persiste jamais la
+composition), stems pré/post-fader réels. Trois décisions de portée validées avec l'utilisateur avant
+implémentation (voir ci-dessous) : DSP réel mais minimal, vu-mètres post-rendu, A/B côté client.
+
 Tâches :
 
-- [ ] Créer les tranches des cinq pistes, des bus, des sends et du master.
-- [ ] Ajouter fader, pan, mute, solo, vu-mètre, peak hold et indicateur de clipping.
-- [ ] Ajouter routage validé sans cycle interdit.
-- [ ] Ajouter chaînes d’effets ordonnées, bypass, déplacement et suppression.
-- [ ] Exposer égalisation, saturation, dynamique, délai et réverbération algorithmique disponibles.
-- [ ] Représenter la réverbération et la chaîne master de `Lignes de nuit` dans la spec et le mixer.
-- [ ] Ajouter comparaison A/B du mix avec loudness matching lorsque la métrique est disponible.
-- [ ] Garantir stems pré-fader ou post-fader selon un choix d’export explicite.
-- [ ] Tester solo/mute, sommation, routage, sends, ordre d’effets, latence, stems et sécurité
-  numérique.
+- [x] Créer les tranches des cinq pistes, des bus, des sends et du master (`Mixer.tsx`, commandes
+  `addBusChannel`/`removeBusChannel`/`setChannelSend` dans `editorStore.ts`).
+- [x] Ajouter fader, pan, mute, solo, vu-mètre, peak hold et indicateur de clipping — vu-mètre en
+  peak/RMS post-rendu (décision de portée assumée : pas d'`AnalyserNode` temps réel, cohérent avec
+  le seul mécanisme de mesure existant `clipDetected` de `TransportBar.tsx`), rafraîchi à la demande
+  via le bouton « Mesurer le niveau » (`measureTrack` dans `Mixer.tsx`, `peakOf`/`rmsOf`/
+  `meterStatsFromBuffer` dans `transport.ts`).
+- [x] Ajouter routage validé sans cycle interdit — `_has_mixer_cycle` (backend, `models.py`) étendu
+  pour suivre aussi les arêtes `sends` (pas seulement `output`), nécessaire pour garantir un ordre de
+  traitement topologique strict au rendu ; portage direct côté frontend (`mixerRouting.ts`,
+  `hasMixerCycle`/`wouldOutputCreateCycle`/`wouldSendCreateCycle`) qui bloque la mutation avant tout
+  appel serveur.
+- [x] Ajouter chaînes d’effets ordonnées, bypass, déplacement et suppression (`EffectInstance` par
+  canal, commandes `addChannelEffect`/`removeChannelEffect`/`moveChannelEffect`/
+  `setChannelEffectBypass`/`setChannelEffectParameter`, appliquées dans l'ordre de la liste par
+  `_apply_effect_chain` côté rendu).
+- [x] Exposer égalisation, saturation, dynamique, délai et réverbération algorithmique disponibles —
+  DSP réel mais minimal (décision de portée assumée) : EQ un bande biquad RBJ (`eq_band`), saturation
+  waveshaper paramétrable (`saturate`), compresseur feed-forward à enveloppe RMS lissée (`compress`),
+  délai à réinjection par blocs (`delay_line`), réverbération existante conservée
+  (`composition_dsp.py`) ; registre de bornes et valeurs par défaut dans `effect_registry.py`, exposé
+  par `GET /api/effect-registry`.
+- [x] Représenter la réverbération et la chaîne master de `Lignes de nuit` dans la spec et le mixer —
+  déjà pleinement pilotée par la spec depuis une session antérieure
+  (`EDITEUR/fixtures/lignes_de_nuit.composition.json`, `master_channel.effects` : reverb avec
+  `send_tracks`/`taps`, limiter avec fade et normalisation), désormais aussi visible et modifiable
+  depuis la tranche Master du panneau.
+- [x] Ajouter comparaison A/B du mix avec loudness matching lorsque la métrique est disponible —
+  nouvel endpoint `POST /api/projects/{id}/compositions/{id}/mixer-preview` (calqué sur
+  `instrument-preview` de la Phase 9) qui rend une composition avec `mixer_channels`/`master_channel`
+  arbitraires sans jamais persister l'état sauvegardé (décision de portée assumée : évite tout risque
+  de conflit de révision ou d'écrasement) ; le RMS des deux préécoutes déjà décodées compense le gain
+  de lecture pour une sonie perçue égalisée (`playAB` dans `Mixer.tsx`, `rmsOf` dans `transport.ts`).
+- [x] Garantir stems pré-fader ou post-fader selon un choix d’export explicite — `RenderSettings.
+  stem_fader: "pre" | "post"` (défaut `"post"`, rétrocompatible) ; en `"pre"`, les stems exportés
+  proviennent d'une seconde passe de synthèse avec gain/pan de canal neutres (`dry_stems` dans
+  `render_composition`), en `"post"` (comportement historique) ils incluent gain, pan et chaîne
+  d'effets du canal. Choix persisté dans la spec via `setStemFaderMode`, visible dans `Mixer.tsx` ;
+  le déclenchement d'un export dédié dans l'UI reste porté par la Phase 12.
+- [x] Tester solo/mute, sommation, routage, sends, ordre d’effets, stems et sécurité numérique
+  (`tests/test_editor_mixer.py` : mute/solo, gain/pan, routage à deux niveaux de bus, atténuation de
+  bus, sends sans double comptage, ordre d'effets significatif, bypass sans effet, cycles `output` et
+  `sends` rejetés au niveau modèle, send vers cible inexistante rejeté, stems pré/post différents,
+  sécurité numérique Hypothesis sur gain/pan/drive/ratio/feedback extrêmes ; `tests/
+  test_effect_registry.py` : bornes, sanitize, valeurs par défaut). Réserve assumée : « latence » ne
+  s'applique pas à ce pipeline de rendu offline (aucun traitement temps réel), donc non testée en tant
+  que telle — seule la reproductibilité déterministe du rendu est vérifiée.
 
 Gate :
 
@@ -916,6 +975,10 @@ Gate :
 - mute, solo, gain, pan, sends et bypass correspondent au rendu ;
 - les stems se recombinent au mix selon la tolérance définie ;
 - les cycles invalides sont refusés avant le moteur.
+
+Qualifié par la Phase V11 (2026-08-06) : runner canonique `test_editor.ps1` complet exécuté, gate vert
+(rapport `EDITEUR/test-results/v1-20260806-144211.json`, `success: true`, 20 checks) — voir Phase V11
+ci-dessous pour le détail.
 
 ## Phase 12 — Rendu final, QA et export [TODO]
 

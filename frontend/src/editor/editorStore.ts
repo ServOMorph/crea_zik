@@ -1,3 +1,5 @@
+import { type RoutingChannel, wouldOutputCreateCycle, wouldSendCreateCycle } from "./mixerRouting";
+
 export type InstrumentParameters = Record<string, unknown>;
 
 export type InstrumentPreset = {
@@ -56,16 +58,25 @@ export type Marker = {
   [key: string]: unknown;
 };
 
+export type EffectInstance = {
+  id: string;
+  kind: string;
+  bypass: boolean;
+  parameters: Record<string, number>;
+  [key: string]: unknown;
+};
+
 export type MixerChannel = {
   id: string;
   track_id: string | null;
+  name?: string | null;
   gain: number;
   pan: number;
   mute: boolean;
   solo: boolean;
   output: string;
   sends: Record<string, number>;
-  effects: Record<string, unknown>[];
+  effects: EffectInstance[];
   [key: string]: unknown;
 };
 
@@ -461,6 +472,49 @@ export function setStepField(
   return setStepFieldCells(state, patternId, [{ midiNote, stepIndex }], stepsPerBeat, field, value);
 }
 
+export type ChannelSelector =
+  | { kind: "track"; trackId: string }
+  | { kind: "bus"; channelId: string }
+  | { kind: "master" };
+
+function defaultMixerChannel(trackId: string | null): MixerChannel {
+  return {
+    id: newId(),
+    track_id: trackId,
+    gain: 1,
+    pan: 0,
+    mute: false,
+    solo: false,
+    output: "master",
+    sends: {},
+    effects: [],
+  };
+}
+
+function ensureTrackChannel(draft: EditableComposition, trackId: string): MixerChannel {
+  const channels = draft.mixer_channels ?? [];
+  if (!draft.mixer_channels) draft.mixer_channels = channels;
+  let channel = channels.find((item) => item.track_id === trackId);
+  if (!channel) {
+    channel = defaultMixerChannel(trackId);
+    channels.push(channel);
+  }
+  return channel;
+}
+
+function findChannel(draft: EditableComposition, channelId: string): MixerChannel | undefined {
+  return (draft.mixer_channels ?? []).find((item) => item.id === channelId);
+}
+
+function resolveChannel(draft: EditableComposition, selector: ChannelSelector): MixerChannel | undefined {
+  if (selector.kind === "master") {
+    if (!draft.master_channel) draft.master_channel = defaultMixerChannel(null);
+    return draft.master_channel;
+  }
+  if (selector.kind === "track") return ensureTrackChannel(draft, selector.trackId);
+  return findChannel(draft, selector.channelId);
+}
+
 export function setTrackChannelFlag(
   state: EditorState,
   trackId: string,
@@ -468,24 +522,192 @@ export function setTrackChannelFlag(
   value: boolean,
 ): EditorState {
   return execute(state, `Modifier le ${flag}`, (draft) => {
+    ensureTrackChannel(draft, trackId)[flag] = value;
+  });
+}
+
+export function setChannelFlag(
+  state: EditorState,
+  selector: ChannelSelector,
+  flag: "mute" | "solo",
+  value: boolean,
+): EditorState {
+  return execute(state, `Modifier le ${flag}`, (draft) => {
+    const channel = resolveChannel(draft, selector);
+    if (!channel) return;
+    channel[flag] = value;
+  });
+}
+
+export function setChannelField(
+  state: EditorState,
+  selector: ChannelSelector,
+  field: "gain" | "pan",
+  value: number,
+): EditorState {
+  if (!Number.isFinite(value)) return state;
+  const bounded = field === "gain" ? Math.min(2, Math.max(0, value)) : Math.min(1, Math.max(-1, value));
+  return execute(state, field === "gain" ? "Modifier le gain" : "Modifier le pan", (draft) => {
+    const channel = resolveChannel(draft, selector);
+    if (!channel) return;
+    channel[field] = bounded;
+  });
+}
+
+function mixerRoutingChannels(composition: EditableComposition): RoutingChannel[] {
+  return (composition.mixer_channels ?? []).map((channel) => ({
+    id: channel.id,
+    output: channel.output,
+    sends: channel.sends,
+  }));
+}
+
+export function setChannelOutput(
+  state: EditorState,
+  selector: Exclude<ChannelSelector, { kind: "master" }>,
+  output: string,
+): EditorState {
+  const channelId = selector.kind === "bus" ? selector.channelId : findTrackChannelId(state.composition, selector.trackId);
+  if (channelId && output !== "master") {
+    const channels = mixerRoutingChannels(state.composition);
+    if (wouldOutputCreateCycle(channels, channelId, output)) return state;
+  }
+  return execute(state, "Modifier le routage", (draft) => {
+    const channel = resolveChannel(draft, selector);
+    if (!channel) return;
+    channel.output = output;
+  });
+}
+
+function findTrackChannelId(composition: EditableComposition, trackId: string): string | undefined {
+  return (composition.mixer_channels ?? []).find((item) => item.track_id === trackId)?.id;
+}
+
+export function channelForTrack(composition: EditableComposition, trackId: string): MixerChannel | undefined {
+  return (composition.mixer_channels ?? []).find((item) => item.track_id === trackId);
+}
+
+export function busChannels(composition: EditableComposition): MixerChannel[] {
+  return (composition.mixer_channels ?? []).filter((item) => item.track_id === null);
+}
+
+export function setChannelSend(
+  state: EditorState,
+  selector: Exclude<ChannelSelector, { kind: "master" }>,
+  targetId: string,
+  amount: number,
+): EditorState {
+  if (!Number.isFinite(amount)) return state;
+  const bounded = Math.min(1, Math.max(0, amount));
+  if (bounded > 0) {
+    const channelId = selector.kind === "bus" ? selector.channelId : findTrackChannelId(state.composition, selector.trackId);
+    if (channelId) {
+      const channels = mixerRoutingChannels(state.composition);
+      if (wouldSendCreateCycle(channels, channelId, targetId)) return state;
+    }
+  }
+  return execute(state, "Modifier le send", (draft) => {
+    const channel = resolveChannel(draft, selector);
+    if (!channel) return;
+    if (bounded === 0) {
+      delete channel.sends[targetId];
+    } else {
+      channel.sends[targetId] = bounded;
+    }
+  });
+}
+
+export function addBusChannel(state: EditorState, name: string): EditorState {
+  const normalized = name.trim();
+  return execute(state, "Ajouter un bus", (draft) => {
     const channels = draft.mixer_channels ?? [];
     if (!draft.mixer_channels) draft.mixer_channels = channels;
-    let channel = channels.find((item) => item.track_id === trackId);
-    if (!channel) {
-      channel = {
-        id: newId(),
-        track_id: trackId,
-        gain: 1,
-        pan: 0,
-        mute: false,
-        solo: false,
-        output: "master",
-        sends: {},
-        effects: [],
-      };
-      channels.push(channel);
+    channels.push({ ...defaultMixerChannel(null), name: normalized || null });
+  });
+}
+
+export function removeBusChannel(state: EditorState, channelId: string): EditorState {
+  return execute(state, "Supprimer un bus", (draft) => {
+    const channels = draft.mixer_channels ?? [];
+    if (!channels.some((item) => item.id === channelId)) return;
+    for (const channel of channels) {
+      if (channel.output === channelId) channel.output = "master";
+      delete channel.sends[channelId];
     }
-    channel[flag] = value;
+    draft.mixer_channels = channels.filter((item) => item.id !== channelId);
+  });
+}
+
+export function addChannelEffect(state: EditorState, selector: ChannelSelector, kind: string): EditorState {
+  return execute(state, "Ajouter un effet", (draft) => {
+    const channel = resolveChannel(draft, selector);
+    if (!channel) return;
+    channel.effects.push({ id: newId(), kind, bypass: false, parameters: {} });
+  });
+}
+
+export function removeChannelEffect(state: EditorState, selector: ChannelSelector, effectId: string): EditorState {
+  return execute(state, "Supprimer un effet", (draft) => {
+    const channel = resolveChannel(draft, selector);
+    if (!channel) return;
+    channel.effects = channel.effects.filter((effect) => effect.id !== effectId);
+  });
+}
+
+export function moveChannelEffect(
+  state: EditorState,
+  selector: ChannelSelector,
+  effectId: string,
+  direction: "up" | "down",
+): EditorState {
+  return execute(state, "Réordonner les effets", (draft) => {
+    const channel = resolveChannel(draft, selector);
+    if (!channel) return;
+    const index = channel.effects.findIndex((effect) => effect.id === effectId);
+    const target = direction === "up" ? index - 1 : index + 1;
+    if (index === -1 || target < 0 || target >= channel.effects.length) return;
+    const [effect] = channel.effects.splice(index, 1);
+    channel.effects.splice(target, 0, effect);
+  });
+}
+
+export function setChannelEffectBypass(
+  state: EditorState,
+  selector: ChannelSelector,
+  effectId: string,
+  value: boolean,
+): EditorState {
+  return execute(state, "Basculer le bypass", (draft) => {
+    const channel = resolveChannel(draft, selector);
+    const effect = channel?.effects.find((item) => item.id === effectId);
+    if (!effect) return;
+    effect.bypass = value;
+  });
+}
+
+export function setChannelEffectParameter(
+  state: EditorState,
+  selector: ChannelSelector,
+  effectId: string,
+  key: string,
+  value: number,
+  bounds?: ParameterBounds,
+): EditorState {
+  if (!Number.isFinite(value)) return state;
+  const bounded = bounds ? Math.min(bounds.maximum, Math.max(bounds.minimum, value)) : value;
+  return execute(state, "Modifier le paramètre d’effet", (draft) => {
+    const channel = resolveChannel(draft, selector);
+    const effect = channel?.effects.find((item) => item.id === effectId);
+    if (!effect) return;
+    effect.parameters[key] = bounded;
+  });
+}
+
+export function setStemFaderMode(state: EditorState, mode: "pre" | "post"): EditorState {
+  return execute(state, "Modifier le mode d’export des stems", (draft) => {
+    const settings = draft.render_settings ?? {};
+    if (!draft.render_settings) draft.render_settings = settings;
+    settings.stem_fader = mode;
   });
 }
 

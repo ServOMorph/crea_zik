@@ -1,21 +1,33 @@
 import { assert, array, constant, double, integer, oneof, property, string, tuple } from "fast-check";
 import { describe, expect, it } from "vitest";
 
-import type { EditorState } from "./editorStore";
+import type { ChannelSelector, EditorState } from "./editorStore";
 import {
   addAutomationLane,
   addAutomationPoint,
+  addBusChannel,
+  addChannelEffect,
   automationTarget,
+  busChannels,
   copyAutomationLanes,
   createEditorState,
   duplicateAutomationLane,
   execute,
   invertAutomationValues,
   moveAutomationPoint,
+  moveChannelEffect,
   redo,
   removeAutomationLane,
   removeAutomationPoint,
+  removeBusChannel,
+  removeChannelEffect,
   scaleAutomationValues,
+  setChannelEffectBypass,
+  setChannelEffectParameter,
+  setChannelField,
+  setChannelFlag,
+  setChannelOutput,
+  setChannelSend,
   undo,
   updateAutomationPoint,
 } from "./editorStore";
@@ -263,6 +275,152 @@ const removeAutomationLaneAction = integer({ min: 0, max: 11 }).map<Action>((off
   },
 }));
 
+function trackSelectorAt(state: EditorState, offset: number): ChannelSelector | undefined {
+  const tracks = state.composition.tracks;
+  if (tracks.length === 0) return undefined;
+  return { kind: "track", trackId: tracks[offset % tracks.length].id };
+}
+
+function busSelectorAt(state: EditorState, offset: number): ChannelSelector | undefined {
+  const buses = busChannels(state.composition);
+  if (buses.length === 0) return undefined;
+  return { kind: "bus", channelId: buses[offset % buses.length].id };
+}
+
+function anyChannelSelectorAt(state: EditorState, offset: number): ChannelSelector {
+  const buses = busChannels(state.composition);
+  const pool = ["master" as const, ...state.composition.tracks.map((track) => track.id), ...buses.map((bus) => bus.id)];
+  const pick = pool[offset % pool.length];
+  if (pick === "master") return { kind: "master" };
+  if (buses.some((bus) => bus.id === pick)) return { kind: "bus", channelId: pick };
+  return { kind: "track", trackId: pick };
+}
+
+function channelOf(state: EditorState, selector: ChannelSelector) {
+  if (selector.kind === "master") return state.composition.master_channel;
+  if (selector.kind === "track") return (state.composition.mixer_channels ?? []).find((item) => item.track_id === selector.trackId);
+  return (state.composition.mixer_channels ?? []).find((item) => item.id === selector.channelId);
+}
+
+const addBus = string({ maxLength: 8 }).map<Action>((name) => ({
+  label: "ajouter un bus",
+  run: (state) => addBusChannel(state, name || "bus"),
+}));
+
+const removeBus = integer({ min: 0, max: 11 }).map<Action>((offset) => ({
+  label: "supprimer un bus",
+  run: (state) => {
+    const buses = busChannels(state.composition);
+    if (buses.length === 0) return state;
+    return removeBusChannel(state, buses[offset % buses.length].id);
+  },
+}));
+
+const setFlag = tuple(integer({ min: 0, max: 11 }), oneof(constant("mute" as const), constant("solo" as const)), constant(true)).map<Action>(
+  ([offset, flag, value]) => ({
+    label: "modifier mute/solo",
+    run: (state) => {
+      const selector = trackSelectorAt(state, offset);
+      if (!selector) return state;
+      return setChannelFlag(state, selector, flag, value);
+    },
+  }),
+);
+
+const setField = tuple(
+  integer({ min: 0, max: 11 }),
+  oneof(constant("gain" as const), constant("pan" as const)),
+  finiteValue,
+).map<Action>(([offset, field, value]) => ({
+  label: "modifier gain/pan",
+  run: (state) => {
+    const selector = anyChannelSelectorAt(state, offset);
+    return setChannelField(state, selector, field, value);
+  },
+}));
+
+const setOutput = tuple(integer({ min: 0, max: 11 }), integer({ min: 0, max: 11 })).map<Action>(
+  ([selectorOffset, targetOffset]) => ({
+    label: "modifier le routage",
+    run: (state) => {
+      const selector = trackSelectorAt(state, selectorOffset) ?? busSelectorAt(state, selectorOffset);
+      if (!selector || selector.kind === "master") return state;
+      const buses = busChannels(state.composition);
+      const output = buses.length === 0 ? "master" : buses[targetOffset % buses.length].id;
+      return setChannelOutput(state, selector, output);
+    },
+  }),
+);
+
+const setSend = tuple(integer({ min: 0, max: 11 }), integer({ min: 0, max: 11 }), double({ min: 0, max: 1, noNaN: true })).map<Action>(
+  ([selectorOffset, busOffset, amount]) => ({
+    label: "modifier un send",
+    run: (state) => {
+      const selector = trackSelectorAt(state, selectorOffset) ?? busSelectorAt(state, selectorOffset);
+      const buses = busChannels(state.composition);
+      if (!selector || selector.kind === "master" || buses.length === 0) return state;
+      return setChannelSend(state, selector, buses[busOffset % buses.length].id, amount);
+    },
+  }),
+);
+
+const effectKinds = oneof(constant("eq"), constant("saturation"), constant("compressor"), constant("delay"));
+
+const addEffect = tuple(integer({ min: 0, max: 11 }), effectKinds).map<Action>(([offset, kind]) => ({
+  label: "ajouter un effet",
+  run: (state) => addChannelEffect(state, anyChannelSelectorAt(state, offset), kind),
+}));
+
+const removeEffect = tuple(integer({ min: 0, max: 11 }), integer({ min: 0, max: 11 })).map<Action>(
+  ([selectorOffset, effectOffset]) => ({
+    label: "supprimer un effet",
+    run: (state) => {
+      const selector = anyChannelSelectorAt(state, selectorOffset);
+      const channel = channelOf(state, selector);
+      if (!channel || channel.effects.length === 0) return state;
+      return removeChannelEffect(state, selector, channel.effects[effectOffset % channel.effects.length].id);
+    },
+  }),
+);
+
+const moveEffect = tuple(integer({ min: 0, max: 11 }), integer({ min: 0, max: 11 }), oneof(constant("up" as const), constant("down" as const))).map<Action>(
+  ([selectorOffset, effectOffset, direction]) => ({
+    label: "réordonner un effet",
+    run: (state) => {
+      const selector = anyChannelSelectorAt(state, selectorOffset);
+      const channel = channelOf(state, selector);
+      if (!channel || channel.effects.length === 0) return state;
+      return moveChannelEffect(state, selector, channel.effects[effectOffset % channel.effects.length].id, direction);
+    },
+  }),
+);
+
+const setEffectBypass = tuple(integer({ min: 0, max: 11 }), integer({ min: 0, max: 11 })).map<Action>(
+  ([selectorOffset, effectOffset]) => ({
+    label: "basculer le bypass",
+    run: (state) => {
+      const selector = anyChannelSelectorAt(state, selectorOffset);
+      const channel = channelOf(state, selector);
+      if (!channel || channel.effects.length === 0) return state;
+      const effect = channel.effects[effectOffset % channel.effects.length];
+      return setChannelEffectBypass(state, selector, effect.id, !effect.bypass);
+    },
+  }),
+);
+
+const setEffectParameter = tuple(integer({ min: 0, max: 11 }), integer({ min: 0, max: 11 }), finiteValue).map<Action>(
+  ([selectorOffset, effectOffset, value]) => ({
+    label: "modifier un paramètre d’effet",
+    run: (state) => {
+      const selector = anyChannelSelectorAt(state, selectorOffset);
+      const channel = channelOf(state, selector);
+      if (!channel || channel.effects.length === 0) return state;
+      const effect = channel.effects[effectOffset % channel.effects.length];
+      return setChannelEffectParameter(state, selector, effect.id, "freq_hz", value);
+    },
+  }),
+);
+
 const actionArbitrary = oneof(
   tempos,
   titles,
@@ -283,6 +441,17 @@ const actionArbitrary = oneof(
   duplicateAutomation,
   copyAutomation,
   removeAutomationLaneAction,
+  addBus,
+  removeBus,
+  setFlag,
+  setField,
+  setOutput,
+  setSend,
+  addEffect,
+  removeEffect,
+  moveEffect,
+  setEffectBypass,
+  setEffectParameter,
 );
 
 const sequenceArbitrary = array(actionArbitrary, { minLength: 1, maxLength: 15 });

@@ -44,6 +44,18 @@ import {
   updateAutomationPoint,
   varyPattern,
   duplicatePattern,
+  addBusChannel,
+  removeBusChannel,
+  setChannelFlag,
+  setChannelField,
+  setChannelOutput,
+  setChannelSend,
+  addChannelEffect,
+  removeChannelEffect,
+  moveChannelEffect,
+  setChannelEffectBypass,
+  setChannelEffectParameter,
+  setStemFaderMode,
 } from "./editorStore";
 import { ChannelRackRow } from "./ChannelRack";
 import {
@@ -84,12 +96,14 @@ import {
   uniformDuration,
 } from "./noteCommands";
 import { Automations } from "./Automations";
+import { Mixer } from "./Mixer";
 import { PatternEditor } from "./PatternEditor";
 import { Playlist } from "./Playlist";
 import { TransportBar } from "./TransportBar";
 import { VirtualList } from "./VirtualList";
 import { InstrumentInspector } from "./InstrumentInspector";
 import { fetchInstrumentRegistry, type InstrumentRegistryPayload } from "./instrumentRegistry";
+import { fetchEffectRegistry, type EffectRegistryPayload } from "./effectRegistry";
 
 type ProjectSummary = { id: string; name: string; compositions: { id: string; title: string }[] };
 type GalleryComposition = { id: string; title: string; tempo_bpm: number; time_signature: [number, number] };
@@ -121,6 +135,7 @@ export function EditorLanding({ search, onNavigate, onDirtyChange }: EditorLandi
   const [patternRequest, setPatternRequest] = useState<{ patternId: string; requestId: number } | null>(null);
   const [trackRequest, setTrackRequest] = useState<{ trackId: string; requestId: number } | null>(null);
   const [registry, setRegistry] = useState<InstrumentRegistryPayload | null>(null);
+  const [effectRegistry, setEffectRegistry] = useState<EffectRegistryPayload | null>(null);
   const [playheadBeat, setPlayheadBeat] = useState(0);
   const varySeedRef = useRef(1);
 
@@ -142,6 +157,20 @@ export function EditorLanding({ search, onNavigate, onDirtyChange }: EditorLandi
       })
       .catch(() => {
         if (!cancelled) setRegistry(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchEffectRegistry()
+      .then((loaded) => {
+        if (!cancelled) setEffectRegistry(loaded);
+      })
+      .catch(() => {
+        if (!cancelled) setEffectRegistry(null);
       });
     return () => {
       cancelled = true;
@@ -709,6 +738,49 @@ export function EditorLanding({ search, onNavigate, onDirtyChange }: EditorLandi
             onRemovePoint={(laneId, beat) =>
               setEditor((current) => (current ? removeAutomationPoint(current, laneId, beat) : current))
             }
+          />
+          <Mixer
+            editor={editor}
+            registry={effectRegistry}
+            projectId={projectId ?? ""}
+            compositionId={compositionId ?? ""}
+            ensureSaved={save}
+            onSetFlag={(selector, flag, value) =>
+              setEditor((current) => (current ? setChannelFlag(current, selector, flag, value) : current))
+            }
+            onSetField={(selector, field, value) =>
+              setEditor((current) => (current ? setChannelField(current, selector, field, value) : current))
+            }
+            onSetOutput={(selector, output) =>
+              setEditor((current) => (current ? setChannelOutput(current, selector, output) : current))
+            }
+            onSetSend={(selector, targetId, amount) =>
+              setEditor((current) => (current ? setChannelSend(current, selector, targetId, amount) : current))
+            }
+            onAddBus={(name) => setEditor((current) => (current ? addBusChannel(current, name) : current))}
+            onRemoveBus={(channelId) =>
+              setEditor((current) => (current ? removeBusChannel(current, channelId) : current))
+            }
+            onAddEffect={(selector, kind) =>
+              setEditor((current) => (current ? addChannelEffect(current, selector, kind) : current))
+            }
+            onRemoveEffect={(selector, effectId) =>
+              setEditor((current) => (current ? removeChannelEffect(current, selector, effectId) : current))
+            }
+            onMoveEffect={(selector, effectId, direction) =>
+              setEditor((current) => (current ? moveChannelEffect(current, selector, effectId, direction) : current))
+            }
+            onSetEffectBypass={(selector, effectId, value) =>
+              setEditor((current) =>
+                current ? setChannelEffectBypass(current, selector, effectId, value) : current,
+              )
+            }
+            onSetEffectParameter={(selector, effectId, key, value, bounds) =>
+              setEditor((current) =>
+                current ? setChannelEffectParameter(current, selector, effectId, key, value, bounds) : current,
+              )
+            }
+            onSetStemFaderMode={(mode) => setEditor((current) => (current ? setStemFaderMode(current, mode) : current))}
           />
           <PatternEditor
             editor={editor}

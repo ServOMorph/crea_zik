@@ -47,3 +47,7 @@ Décisions archivées depuis `_contexte/contexte.md` (append only).
   avec surbrillance non bloquante, fix accélération des drags, preuve backend note→rendu par
   hash ; runner canonique vert (`v1-20260805-191709.json`). Réserves : comparaison audio
   post-édition hors Chromium, snapshot visuel shell seul. Phase 8 (Playlist) ouverte.
+- 2026-08-05 : fix de la course sauvegarde/préécoute acté — `save()` partage sa promesse PUT en
+  vol (`saveInFlightRef`) et `requestPreview` affiche « Sauvegarde impossible, préécoute
+  annulée. » en cas d'échec : un clic « Lire la sélection » pendant une sauvegarde attend la fin
+  du PUT (e2e route directe verrouillé).

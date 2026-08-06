@@ -287,6 +287,106 @@ def reverb(audio: Audio, sample_rate: int, taps: list[list[float]]) -> Audio:
     return wet
 
 
+def eq_band(
+    audio: Audio, sample_rate: int, freq_hz: float, gain_db: float, q: float
+) -> Audio:
+    if abs(gain_db) < 1e-9:
+        return audio
+    nyquist = sample_rate / 2
+    freq = min(max(float(freq_hz), 20), nyquist * 0.99)
+    q = max(float(q), 0.1)
+    a = 10 ** (float(gain_db) / 40)
+    omega = 2 * pi * freq / sample_rate
+    alpha = sin(omega) / (2 * q)
+    cos_omega = cos(omega)
+    b0 = 1 + alpha * a
+    b1 = -2 * cos_omega
+    b2 = 1 - alpha * a
+    a0 = 1 + alpha / a
+    a1 = -2 * cos_omega
+    a2 = 1 - alpha / a
+    sos = np.array(
+        [[b0 / a0, b1 / a0, b2 / a0, 1.0, a1 / a0, a2 / a0]], dtype=np.float64
+    )
+    return signal.sosfilt(sos, audio, axis=0)
+
+
+def saturate(audio: Audio, drive: float, mix: float) -> Audio:
+    drive = max(float(drive), 0.0)
+    mix = min(max(float(mix), 0.0), 1.0)
+    shaped = np.tanh(audio * (1 + drive * 9))
+    return audio * (1 - mix) + shaped * mix
+
+
+def compress(
+    audio: Audio,
+    sample_rate: int,
+    threshold_db: float,
+    ratio: float,
+    attack_ms: float,
+    release_ms: float,
+) -> Audio:
+    ratio = max(float(ratio), 1.0)
+    threshold = 10 ** (float(threshold_db) / 20)
+    attack_coeff = _envelope_coefficient(attack_ms, sample_rate)
+    release_coeff = _envelope_coefficient(release_ms, sample_rate)
+    level = np.sqrt(np.mean(audio * audio, axis=1))
+    envelope_level = np.zeros_like(level)
+    current = 0.0
+    for index, sample_level in enumerate(level):
+        coeff = attack_coeff if sample_level > current else release_coeff
+        current = coeff * current + (1 - coeff) * sample_level
+        envelope_level[index] = current
+    with np.errstate(divide="ignore", invalid="ignore"):
+        excess_db = 20 * np.log10(np.maximum(envelope_level, 1e-9) / threshold)
+    excess_db = np.maximum(excess_db, 0.0)
+    reduction_db = excess_db * (1 - 1 / ratio)
+    gain = 10 ** (-reduction_db / 20)
+    return audio * gain[:, None]
+
+
+def _envelope_coefficient(time_ms: float, sample_rate: int) -> float:
+    seconds = max(float(time_ms), 0.0) / 1000
+    if seconds <= 0:
+        return 0.0
+    return float(np.exp(-1 / (seconds * sample_rate)))
+
+
+def delay_line(
+    audio: Audio,
+    sample_rate: int,
+    time_seconds: float,
+    feedback: float,
+    mix: float,
+) -> Audio:
+    delay_samples = round(max(float(time_seconds), 0.0) * sample_rate)
+    mix = min(max(float(mix), 0.0), 1.0)
+    feedback = min(max(float(feedback), 0.0), 0.95)
+    length = len(audio)
+    if delay_samples <= 0 or delay_samples >= length:
+        return audio
+    wet = np.zeros_like(audio)
+    for start in range(0, length, delay_samples):
+        end = min(start + delay_samples, length)
+        block = audio[start:end]
+        if start == 0:
+            wet[start:end] = block
+        else:
+            previous = wet[start - delay_samples : start - delay_samples + (end - start)]
+            wet[start:end] = block + feedback * previous
+    return audio * (1 - mix) + wet * mix
+
+
+def apply_balance_pan(audio: Audio, pan: float) -> Audio:
+    pan = min(max(float(pan), -1.0), 1.0)
+    gain_left = min(1.0, 1.0 - pan)
+    gain_right = min(1.0, 1.0 + pan)
+    result = audio.copy()
+    result[:, 0] *= gain_left
+    result[:, 1] *= gain_right
+    return result
+
+
 def write_wav(
     path: Path,
     audio: Audio,

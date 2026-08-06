@@ -14,12 +14,18 @@ from numpy.typing import NDArray
 from .composition_dsp import (
     Audio,
     add,
+    apply_balance_pan,
+    compress,
+    delay_line,
+    eq_band,
     reverb,
+    saturate,
     stereo,
     stereo_envelope,
     synthesize,
     write_wav,
 )
+from .effect_registry import sanitize_effect_parameters
 from .engine import RenderCancelled
 from .instrument_registry import set_parameter_path
 from .models import (
@@ -33,6 +39,72 @@ from .models import (
     Pattern,
     Track,
 )
+
+_BUS_ONLY_EFFECT_KINDS = frozenset({"reverb", "limiter"})
+
+
+def _apply_effect_chain(
+    buffer: Audio,
+    effects: list[EffectInstance],
+    sample_rate: int,
+    *,
+    skip_kinds: frozenset[str] = _BUS_ONLY_EFFECT_KINDS,
+) -> Audio:
+    result = buffer
+    for effect in effects:
+        if effect.bypass or effect.kind in skip_kinds:
+            continue
+        parameters = sanitize_effect_parameters(effect.kind, effect.parameters)
+        if effect.kind == "eq":
+            result = eq_band(
+                result,
+                sample_rate,
+                parameters["freq_hz"],
+                parameters["gain_db"],
+                parameters["q"],
+            )
+        elif effect.kind == "saturation":
+            result = saturate(result, parameters["drive"], parameters["mix"])
+        elif effect.kind == "compressor":
+            result = compress(
+                result,
+                sample_rate,
+                parameters["threshold_db"],
+                parameters["ratio"],
+                parameters["attack_ms"],
+                parameters["release_ms"],
+            )
+        elif effect.kind == "delay":
+            result = delay_line(
+                result,
+                sample_rate,
+                parameters["time_seconds"],
+                parameters["feedback"],
+                parameters["mix"],
+            )
+    return result
+
+
+def _topological_channel_order(channels: dict[UUID, MixerChannel]) -> list[UUID]:
+    in_degree: dict[UUID, int] = dict.fromkeys(channels, 0)
+    edges: dict[UUID, list[UUID]] = {channel_id: [] for channel_id in channels}
+    for channel_id, channel in channels.items():
+        targets = [target for target in channel.sends if target in channels]
+        if isinstance(channel.output, UUID) and channel.output in channels:
+            targets.append(channel.output)
+        for target in targets:
+            edges[channel_id].append(target)
+            in_degree[target] += 1
+    queue = [channel_id for channel_id, degree in in_degree.items() if degree == 0]
+    order: list[UUID] = []
+    while queue:
+        current = queue.pop()
+        order.append(current)
+        for target in edges[current]:
+            in_degree[target] -= 1
+            if in_degree[target] == 0:
+                queue.append(target)
+    return order
 
 
 @dataclass(frozen=True)
@@ -212,15 +284,16 @@ def render_composition(
         raise RenderCancelled("render cancelled")
     if progress:
         progress(15)
+    active_events: list[ScheduledCompositionEvent] = []
     for index, event in enumerate(events, start=1):
         if cancelled and cancelled():
             raise RenderCancelled("render cancelled")
-        track = tracks[event.track_id]
-        channel = channels.get(track.id)
+        channel = channels.get(event.track_id)
         if channel and channel.mute:
             continue
         if soloed and not (channel and channel.solo):
             continue
+        active_events.append(event)
         channel_gain = channel.gain if channel else 1
         channel_pan = channel.pan if channel else 0
         _render_event(
@@ -235,8 +308,38 @@ def render_composition(
         )
         if progress:
             progress(15 + round(index * 60 / max(len(events), 1)))
+    channels_by_id = {channel.id: channel for channel in composition.mixer_channels}
+    processed_stems = {
+        track_id: _apply_effect_chain(
+            buffer, channels[track_id].effects, composition.sample_rate
+        )
+        if track_id in channels
+        else buffer
+        for track_id, buffer in stems.items()
+    }
+    if composition.render_settings.stem_fader == "pre":
+        dry_stems = {
+            track_id: np.zeros((frame_count, 2), dtype=np.float64)
+            for track_id in tracks
+        }
+        for event in active_events:
+            if cancelled and cancelled():
+                raise RenderCancelled("render cancelled")
+            _render_event(
+                dry_stems[event.track_id],
+                replace(event, start_beat=event.start_beat - start_beat),
+                composition,
+                1,
+                0,
+                lanes,
+                event.start_beat,
+                cancelled,
+            )
+        export_stems = dry_stems
+    else:
+        export_stems = processed_stems
     stem_paths: dict[str, Path] = {}
-    for track_id, stem_channels in stems.items():
+    for track_id, stem_channels in export_stems.items():
         if cancelled and cancelled():
             raise RenderCancelled("render cancelled")
         path = destination / f"stem-{track_id}.wav"
@@ -249,18 +352,53 @@ def render_composition(
         stem_paths[str(track_id)] = path
     if progress:
         progress(85)
-    mix = np.zeros((frame_count, 2), dtype=np.float64)
+    channel_input = {
+        channel_id: np.zeros((frame_count, 2), dtype=np.float64)
+        for channel_id in channels_by_id
+    }
+    for channel in channels_by_id.values():
+        if channel.track_id is not None and channel.track_id in processed_stems:
+            channel_input[channel.id] = channel_input[channel.id] + processed_stems[channel.track_id]
+    resolved_channel_output: dict[UUID, Audio] = {}
+    for channel_id in _topological_channel_order(channels_by_id):
+        channel = channels_by_id[channel_id]
+        buffer = channel_input[channel_id]
+        for target_id, amount in channel.sends.items():
+            if target_id in channel_input:
+                channel_input[target_id] = channel_input[target_id] + buffer * amount
+        if channel.track_id is None:
+            buffer = _apply_effect_chain(buffer, channel.effects, composition.sample_rate)
+            buffer = buffer * channel.gain
+            buffer = apply_balance_pan(buffer, channel.pan)
+        if isinstance(channel.output, UUID) and channel.output in channel_input:
+            channel_input[channel.output] = channel_input[channel.output] + buffer
+        else:
+            resolved_channel_output[channel_id] = buffer
+    # Sommation en ordre de déclaration (pistes puis bus), pas en ordre de traitement
+    # topologique, pour préserver l'ordre de sommation flottante des rendus existants
+    # quand aucun routage n'est en jeu (bit-exactitude des golden non affectée).
+    master_bus_input = np.zeros((frame_count, 2), dtype=np.float64)
+    for track in composition.tracks:
+        if track.id not in processed_stems:
+            continue
+        channel = channels.get(track.id)
+        if channel is None:
+            master_bus_input += processed_stems[track.id]
+        elif channel.id in resolved_channel_output:
+            master_bus_input += resolved_channel_output[channel.id]
+    for mixer_channel in composition.mixer_channels:
+        if mixer_channel.track_id is None and mixer_channel.id in resolved_channel_output:
+            master_bus_input += resolved_channel_output[mixer_channel.id]
+    mix = master_bus_input
     master = composition.master_channel
     master_gain = master.gain
-    for stem in stems.values():
-        mix += stem
     for effect in master.effects:
         if effect.bypass or effect.kind != "reverb":
             continue
         send_ids = _effect_track_ids(effect.parameters, tracks)
         bus = np.zeros_like(mix)
         for track_id in send_ids:
-            bus += stems[track_id]
+            bus += processed_stems[track_id]
         taps = effect.parameters.get("taps", [])
         if taps:
             mix += reverb(bus, composition.sample_rate, taps)

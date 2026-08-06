@@ -1287,6 +1287,179 @@ audio {
   color: #8ba5cf;
 }
 
+.mixer {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #3a4a65;
+  border-radius: 12px;
+  background: #182233;
+}
+
+.mixer__header {
+  display: grid;
+  gap: 8px;
+}
+
+.mixer__header h2 {
+  margin: 0;
+}
+
+.mixer__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 8px;
+}
+
+.mixer__toolbar label {
+  display: grid;
+  gap: 4px;
+  min-width: 140px;
+}
+
+.mixer__compare {
+  margin: 0;
+  color: #8ba5cf;
+}
+
+.mixer__strips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  overflow: auto;
+}
+
+.mixer__strip {
+  display: grid;
+  gap: 8px;
+  min-width: 220px;
+  border: 1px solid #2a3a55;
+  border-radius: 8px;
+  background: #101827;
+  padding: 10px;
+}
+
+.mixer__strip--bus {
+  border-color: #4a3a65;
+}
+
+.mixer__strip--master {
+  border-color: #653a3a;
+}
+
+.mixer__strip h3 {
+  margin: 0;
+  font-size: 0.95em;
+}
+
+.mixer__strip label {
+  display: grid;
+  gap: 2px;
+  font-size: 0.85em;
+}
+
+.mixer__flags {
+  display: flex;
+  gap: 6px;
+}
+
+.mixer__flag {
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid #3a4a65;
+  background: #182233;
+  color: #c8d6ef;
+  cursor: pointer;
+}
+
+.mixer__flag[aria-pressed="true"] {
+  background: #9ee5bd;
+  color: #0b1220;
+}
+
+.mixer__sends {
+  display: grid;
+  gap: 4px;
+}
+
+.mixer__effects {
+  display: grid;
+  gap: 6px;
+}
+
+.mixer__effect-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.mixer__effect {
+  border: 1px solid #2a3a55;
+  border-radius: 6px;
+  padding: 6px;
+  display: grid;
+  gap: 4px;
+}
+
+.mixer__effect-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85em;
+}
+
+.mixer__effect-parameter {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 0.8em;
+}
+
+.mixer__meter {
+  position: relative;
+  height: 18px;
+  border-radius: 4px;
+  background: #0b1220;
+  overflow: hidden;
+}
+
+.mixer__meter--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8ba5cf;
+  font-size: 0.8em;
+}
+
+.mixer__meter-bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: #6fa8ff;
+}
+
+.mixer__meter-bar.is-clipping {
+  background: #ff6f6f;
+}
+
+.mixer__meter-value {
+  position: relative;
+  z-index: 1;
+  display: block;
+  text-align: center;
+  font-size: 0.75em;
+  color: #eafff2;
+  line-height: 18px;
+}
+
+.mixer__hint {
+  margin: 0;
+  color: #8ba5cf;
+}
+
 .instrument-inspector {
   display: grid;
   gap: 12px;

@@ -480,3 +480,49 @@ test("automations create, move and delete a point with working undo/redo", async
   await page.getByRole("button", { name: "Sauvegarder" }).click();
   await expect(page.getByText("Enregistré")).toBeVisible();
 });
+
+test("the mixer routes a track through a bus, chains an effect and keeps changes after undo/redo", async ({ page }) => {
+  const projectName = `E2E mixer ${Date.now()}`;
+  await page.goto("/");
+  await page.getByRole("textbox", { name: "Name", exact: true }).fill(projectName);
+  await page.getByRole("button", { name: "Create", exact: true }).click();
+  await page.getByRole("link", { name: "Éditeur musical" }).click();
+  await page.getByRole("button", { name: "Créer une copie éditable" }).click();
+  await expect(page).toHaveURL(/\/editor\?project=.*&composition=.*/);
+  await expect(page.getByRole("heading", { name: "Lignes de nuit" })).toBeVisible();
+
+  const mixerHeading = page.getByRole("heading", { name: "Mixer" });
+  await mixerHeading.scrollIntoViewIfNeeded();
+
+  const bassStrip = page.locator(".mixer__strip", { has: page.getByRole("heading", { name: "bass", exact: true }) });
+  const muteButton = bassStrip.getByRole("button", { name: "Son activé" });
+  await muteButton.click();
+  await expect(bassStrip.getByRole("button", { name: "Muet" })).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "Annuler", exact: true }).click();
+  await expect(bassStrip.getByRole("button", { name: "Son activé" })).toHaveAttribute("aria-pressed", "false");
+  await page.getByRole("button", { name: "Rétablir", exact: true }).click();
+  await expect(bassStrip.getByRole("button", { name: "Muet" })).toHaveAttribute("aria-pressed", "true");
+  await bassStrip.getByRole("button", { name: "Muet" }).click();
+
+  await page.getByLabel("Nom du nouveau bus").fill("Send FX");
+  await page.getByRole("button", { name: "Ajouter un bus" }).click();
+  await expect(page.getByRole("heading", { name: "Send FX" })).toBeVisible();
+
+  const outputSelect = bassStrip.getByLabel("Sortie de bass");
+  await outputSelect.selectOption({ label: "Send FX" });
+  await expect(outputSelect.locator("option:checked")).toHaveText("Send FX");
+
+  await bassStrip.getByLabel("Ajouter un effet").selectOption("eq");
+  const effectItem = bassStrip.locator(".mixer__effect");
+  await expect(effectItem).toHaveCount(1);
+  const bypassCheckbox = effectItem.getByRole("checkbox", { name: "Bypass" });
+  await bypassCheckbox.click();
+  await expect(bypassCheckbox).toBeChecked();
+  await page.getByRole("button", { name: "Annuler", exact: true }).click();
+  await expect(bypassCheckbox).not.toBeChecked();
+  await page.getByRole("button", { name: "Rétablir", exact: true }).click();
+  await expect(bypassCheckbox).toBeChecked();
+
+  await page.getByRole("button", { name: "Sauvegarder" }).click();
+  await expect(page.getByText("Enregistré")).toBeVisible();
+});

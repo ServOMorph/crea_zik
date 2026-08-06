@@ -97,9 +97,13 @@ def _has_mixer_cycle(channels: dict[UUID, MixerChannel]) -> bool:
         if channel_id in visited:
             return False
         visiting.add(channel_id)
-        output = channels[channel_id].output
-        if isinstance(output, UUID) and visit(output):
-            return True
+        channel = channels[channel_id]
+        targets: list[UUID] = list(channel.sends)
+        if isinstance(channel.output, UUID):
+            targets.append(channel.output)
+        for target in targets:
+            if visit(target):
+                return True
         visiting.remove(channel_id)
         visited.add(channel_id)
         return False
@@ -292,6 +296,7 @@ class AutomationLane(IdentifiedModel):
 
 class MixerChannel(IdentifiedModel):
     track_id: UUID | None = None
+    name: str | None = Field(default=None, min_length=1, max_length=80)
     gain: float = Field(default=1, ge=0, le=2)
     pan: float = Field(default=0, ge=-1, le=1)
     mute: bool = False
@@ -313,6 +318,7 @@ class RenderSettings(DomainModel):
     format: Literal["wav_pcm24", "wav_pcm16", "wav_float32"] = "wav_pcm24"
     channels: Literal[2] = 2
     stems: bool = True
+    stem_fader: Literal["pre", "post"] = "post"
 
 
 class Composition(SeededModel):

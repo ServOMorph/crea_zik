@@ -349,6 +349,12 @@
       "null"
      ]
     },
+    "name": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
     "gain": {
      "type": "number",
      "minimum": 0,
@@ -403,6 +409,12 @@
      },
      "stems": {
       "type": "boolean"
+     },
+     "stem_fader": {
+      "enum": [
+       "pre",
+       "post"
+      ]
      }
     }
    },

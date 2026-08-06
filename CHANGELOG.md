@@ -1,5 +1,36 @@
 # Changelog
 
+## v0.33 — 2026-08-06
+
+### Ajouté
+
+- Backend : `effect_registry.py` (registre typé d'effets — bornes, sanitize, defaults par kind) ;
+  `composition_dsp.py` étendu (`eq_band`, `saturate`, `compress`, `delay_line`,
+  `apply_balance_pan`) ; `GET /api/effect-registry` ; `POST .../mixer-preview` (préécoute mixer
+  sans persistance, pour la comparaison A/B).
+- Backend : `compositions.py` — routage topologique piste→bus→master avec sends,
+  `_apply_effect_chain` (chaîne d'effets ordonnée, bypass respecté), stems pré/post-fader
+  (`RenderSettings.stem_fader`).
+- Backend : `models.py` — `MixerChannel.name`, `RenderSettings.stem_fader` ; détection de cycle du
+  mixer (`_has_mixer_cycle`) étendue aux arêtes `sends` en plus de `output`.
+- Frontend : `Mixer.tsx` (tranches piste/bus/master, fader, pan, mute/solo, routage, sends, chaîne
+  d'effets, vu-mètres peak/RMS, comparaison A/B) ; `mixerRouting.ts` (portage de la détection de
+  cycle) ; `effectRegistry.ts` (fetch du registre d'effets).
+- Frontend : `editorStore.ts` — type `ChannelSelector` (piste/bus/master) et commandes mixer
+  génériques (`setChannelFlag`/`setChannelField`/`setChannelOutput`/`setChannelSend`/
+  `addChannelEffect`/etc.) ; `transport.ts` — `peakOf`/`rmsOf`/`meterStatsFromBuffer`.
+- Tests : `tests/test_editor_mixer.py`, `tests/test_effect_registry.py`, `Mixer.test.tsx`,
+  `mixerRouting.test.ts`, extensions `editorStore.property.test.ts`/`transport.test.ts`/
+  `studio.spec.ts` (parcours mixer Playwright).
+
+### Notes
+
+- Phase 11 (Mixer, routage et effets) et qualification V11 closes [FAIT] : runner canonique complet
+  vert (`EDITEUR/test-results/v1-20260806-144211.json`, success true, 20 checks, mutation Stryker
+  63,69 % ≥ 60 %, 283 tests unitaires frontend, 17 e2e, visuel, markdownlint). Trois décisions de
+  portée validées avec l'utilisateur : DSP réel mais minimal, vu-mètres post-rendu, A/B via préécoute
+  non persistante. Phase 12 (Rendu final, QA et export) ouverte.
+
 ## v0.32 — 2026-08-06
 
 ### Ajouté

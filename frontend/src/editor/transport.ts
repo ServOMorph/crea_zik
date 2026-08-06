@@ -125,6 +125,40 @@ export class PreviewCache<T> {
   }
 }
 
+export type MeterStats = { peak: number; rms: number; clipping: boolean };
+
+export function peakOf(channels: Float32Array[]): number {
+  let peak = 0;
+  for (const channel of channels) {
+    for (let index = 0; index < channel.length; index += 1) {
+      const value = Math.abs(channel[index]);
+      if (value > peak) peak = value;
+    }
+  }
+  return peak;
+}
+
+export function rmsOf(channels: Float32Array[]): number {
+  let sumSquares = 0;
+  let count = 0;
+  for (const channel of channels) {
+    for (let index = 0; index < channel.length; index += 1) {
+      sumSquares += channel[index] * channel[index];
+      count += 1;
+    }
+  }
+  return count > 0 ? Math.sqrt(sumSquares / count) : 0;
+}
+
+export function meterStatsFromBuffer(buffer: AudioBuffer): MeterStats {
+  const channels: Float32Array[] = [];
+  for (let channel = 0; channel < buffer.numberOfChannels; channel += 1) {
+    channels.push(buffer.getChannelData(channel));
+  }
+  const peak = peakOf(channels);
+  return { peak, rms: rmsOf(channels), clipping: peak >= 0.999 };
+}
+
 export class PreviewRequestGate {
   private activeRequest = 0;
 
