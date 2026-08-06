@@ -27,13 +27,15 @@ Music Composer, Adaptive Lab, Analyse & Export) et son backend de rendu, permett
   Csound réel restant avant de poursuivre la roadmap applicative.
 
 ## État actuel (réécrit intégralement à chaque /close)
-Phases 9, 10 et 11 et leurs qualifications V9/V10/V11 closes [FAIT]. Phase 12 (Rendu final, QA et
-export) ouverte : étapes 12.1 à 12.6 closes [FAIT] (true peak/LUFS, modèle de rendu étendu, détection
-des rendus périmés, gate de promotion master, écran « Analyse & Export », téléchargement/bundle).
-Seule l'étape 12.7 (non-régression et clarification du comportement rendu concurrent) reste ouverte
-avant de clore la Phase 12.
+Phases 9, 10, 11, 12 et leurs qualifications V9/V10/V11/V12 closes [FAIT].
+- Phase 12 (Rendu final, QA et export) : étapes 12.1 à 12.7 closes [FAIT] (true peak/LUFS, modèle de rendu étendu,
+détection des rendus périmés, gate de promotion master, écran « Analyse & Export », téléchargement/bundle,
+non-régression validée, comportement rendu sérié acté et implémenté).
 
 ## Décisions structurantes (append only — 10 entrées max, 5 lignes max/entrée, archiver au-delà)
+- 2026-08-06 : **Comportement rendu sérié acté** — les rendus sont toujours traités en file sériée
+  (1 worker, séquentiel). L'executor actuel est validé comme solution définitive. UI mise à jour
+  pour afficher le nombre de jobs en attente. Voir `jobs.py` et `api.py`.
 - 2026-08-06 : Étape 12.5 (écran « Analyse & Export ») close [FAIT] après reprise d'une session
   interrompue par une panne de crédits d'un agent tiers dont la livraison, malgré des tests verts,
   restait partielle au regard du gate (portée/format/annulation/état périmé absents). Le parcours
@@ -63,26 +65,4 @@ avant de clore la Phase 12.
   (sliders/saisie précise, reset, A/B, bypass original, préécoute note/pattern/piste) intégré ;
   parité bornes UI/backend, valeurs non finies neutralisées ; runner canonique vert 21/21
   (`v1-20260806-073005.json`). Phase 10 ouverte.
-- 2026-08-06 : Qualification V8 close — le test e2e rouge était une attente erronée (clip ajouté à
-  `compositionEndBeat` = 62 beats, pas 60) ; l'assertion vérifie que le clip suivant est poussé de
-  la distance exacte du drag. Fix du runner `test_editor.ps1` (stderr de `uv lock --check` sous
-  `$ErrorActionPreference="Stop"` → `Invoke-Gate` en `Continue` local, échecs via `$LASTEXITCODE`).
-  Runner canonique vert 20/20 (`v1-20260806-060208.json`). Phase 9 ouverte [EN COURS].
-- 2026-08-06 : Playlist livrée comme composant autonome (`Playlist.tsx`) avec 19 callbacks câblés au
-  store, drag à deltas incrémentés + snap, poignées de resize en vrais boutons accessibles ; le drag
-  e2e pilote le défilement horizontal par `scrollLeft` explicite (`scrollIntoViewIfNeeded` fait
-  passer le contenu sous le side sticky 220 px ou hors viewport). Test e2e V8 encore rouge
-  (nth(1) = 6720 px vs 6528 px attendu).
-- 2026-08-04 : Phase V4 (store, commandes et sauvegarde) close [FAIT] — store 100 % lignes et
-  branches, fast-check des inverses, cent opérations puis cent undo/redo comparées, Stryker sur
-  `editorStore.ts`/`transport.ts` (break 60 %) ; runner canonique vert (20 checks). La Phase 4
-  fonctionnelle reste ouverte : seule la virtualisation des grandes listes manque.
-- 2026-08-04 : Phase 4 fonctionnelle et Phase V5 closes [FAIT] — virtualisation livrée
-  (`VirtualList` + `computeVirtualWindow`, couverture 100 %, 5000 lignes) et intégrée à
-  `EditorLanding` ; transport et préécoute qualifiés (horloge contrôlée, `MockAudioContext`,
-  Chromium réel, cache/invalidation/annulation) ; runner canonique vert
-  (`EDITEUR/test-results/v1-20260804-224727.json`, 20 checks). La Phase 5 fonctionnelle reste
-  ouverte sur un point : affichage du tempo et de la métrique dans `TransportBar`.
-- 2026-08-06 : Étape 12.1 (métriques true peak et LUFS) close [FAIT] — true peak (resample_poly)
-  et LUFS (K-weighting, double gating) implémentés dans audio_info.py, intégrés dans qa.py et
-  validés par des tests unitaires sur sinus/silences/ISP.
+

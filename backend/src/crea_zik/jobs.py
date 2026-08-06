@@ -37,6 +37,9 @@ class RenderJob:
 
 class JobManager:
     def __init__(self, project_root: Path = Path("projects"), engine_factory: type[RenderEngine] = CsoundEngine) -> None:
+        # NOTE: max_workers=1 est intentionnel. Les rendus sont toujours traités en file sériée
+        # (1 à la fois, les autres en attente). Cela évite les conflits de ressources (DSP, fichiers)
+        # et simplifie la gestion des états. Voir EDITEUR/_contexte/signals.md pour la décision utilisateur.
         self._executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="crea-zik-render")
         self._jobs: dict[UUID, RenderJob] = {}
         self._project_root = project_root
@@ -277,6 +280,11 @@ class JobManager:
     def get(self, job_id: UUID) -> RenderJob | None:
         with self._condition:
             return self._jobs.get(job_id)
+
+    def list_jobs(self) -> list[RenderJob]:
+        """Retourne une copie de la liste de tous les jobs (pour l'API)."""
+        with self._condition:
+            return list(self._jobs.values())
 
     def cancel(self, job_id: UUID) -> RenderJob | None:
         with self._condition:

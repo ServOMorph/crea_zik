@@ -61,6 +61,7 @@ export function RenderAnalysis({
   const [exportInfo, setExportInfo] = useState<ExportResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<"render" | "promote" | "export" | null>(null);
+  const [queuedJobsCount, setQueuedJobsCount] = useState<number>(0);
   const [scope, setScope] = useState<RenderScope>("full");
   const [selectedTrackIds, setSelectedTrackIds] = useState<string[]>([]);
   const [loopStartBeat, setLoopStartBeat] = useState(0);
@@ -133,9 +134,30 @@ export function RenderAnalysis({
     });
   }, [waveform]);
 
+  // Rafraîchir le nombre de jobs en attente périodiquement
+  useEffect(() => {
+    const interval = window.setInterval(refreshQueuedJobs, 2000);
+    return () => window.clearInterval(interval);
+  }, [refreshQueuedJobs]);
+
+  // Rafraîchir aussi quand le job courant change (pour réinitialiser le compte)
+  useEffect(() => {
+    void refreshQueuedJobs();
+  }, [job, refreshQueuedJobs]);
+
   const refreshRenders = useCallback(async (): Promise<RenderInfo[]> => {
     return apiRequest<RenderInfo[]>(`/api/projects/${projectId}/compositions/${compositionId}/renders`);
   }, [compositionId, projectId]);
+
+  const refreshQueuedJobs = useCallback(async () => {
+    try {
+      const allJobs = await apiRequest<JobState[]>(`/api/jobs`);
+      const queuedCount = allJobs.filter((j) => j.state === "queued").length;
+      setQueuedJobsCount(queuedCount);
+    } catch {
+      // Si l'endpoint n'est pas disponible, on ignore (comportement dégradé)
+    }
+  }, []);
 
   const render = useCallback(async () => {
     if (disabled) return;
@@ -368,6 +390,12 @@ export function RenderAnalysis({
       {job && (
         <p>
           Rendu #<strong>{job.id}</strong> : <em>{job.state}</em> ({job.progress}%)
+          {queuedJobsCount > 0 && job.state !== "queued" && (
+            <>, <strong>{queuedJobsCount} rendu{queuedJobsCount > 1 ? "s" : ""} en attente</strong>
+          )}
+          {job.state === "queued" && queuedJobsCount > 1 && (
+            <>, <strong>position {queuedJobsCount} dans la file</strong>
+          )}
         </p>
       )}
       {error && (

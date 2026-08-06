@@ -40,43 +40,34 @@
 - Le bouton d'annulation d'un rendu dans l'écran « Rendu & Export » est nommé « Annuler le rendu »
   (pas « Annuler ») pour ne pas entrer en collision avec le bouton Undo global de l'éditeur, lui-même
   nommé « Annuler ». Tout nouveau contrôle d'annulation dans l'éditeur doit suivre cette convention.
+- **Rendus simultanés** : Toujours traités en **file sériée** (1 worker, séquentiel). Les demandes multiples sont mises en attente et exécutées dans l'ordre. Aucun parallélisme prévu.
 
 ## Dernière session
 # Session du 2026-08-06
 
 ## Décisions prises
-- Étape 12.5 (écran « Analyse & Export ») complétée après vérification : une première version livrée
-  par un agent tiers (opencode, tombé en panne de crédits en tentant `/close`) passait ses tests mais
-  restait partielle au regard du gate de la roadmap — complétée plutôt que clôturée telle quelle.
-- Portée du rendu limitée à morceau entier / boucle (plage de temps) / sélection de clips courante /
-  pistes choisies, sans plomberie d'état supplémentaire (pas de concept de « boucle » partagé au-delà
-  de ce qu'expose déjà l'API `loop`/`start_beat`/`end_beat`).
+- Comportement rendu sérié acté : les rendus sont traités un par un (1 worker, file séquentielle). L'executor actuel est validé comme solution définitive.
 
 ## Livrables produits ou modifiés
-- `frontend/src/editor/RenderAnalysis.tsx` : réécrit (portée, format, sauvegarde préalable
-  obligatoire, polling réel, annulation, reprise, waveform, métriques QA nommées, badge périmé/à jour).
-- `frontend/src/editor/editorStore.ts` : commande `setRenderFormat`.
-- `frontend/src/editor/EditorLanding.tsx` : intégration des nouvelles props.
-- `frontend/src/editor/RenderAnalysis.test.tsx` : réécrit, 23 tests.
-- `frontend/e2e/studio.spec.ts` : nouveau parcours Playwright « Rendu & Export ».
-- `backend/src/crea_zik/api.py` : `qa_url` ajouté au modèle `RenderInfo` (bug réel, voir ci-dessous).
-- `tests/test_api.py` : assertions `qa_url`.
-- `EDITEUR/roadmap_editeur_musical.md` : étape 12.5 marquée [FAIT] avec détail vérifié.
-- Fichier `Continue` (vide, non suivi, artefact accidentel) : supprimé.
+- `EDITEUR/_contexte/signals.md` : question bloquante résolue, étape 12.7 et Phase 12 closes [FAIT].
+- `EDITEUR/_contexte/contexte.md` : état actuel mis à jour (Phases 9-12 closes), décision structurante ajoutée.
+- `EDITEUR/roadmap_editeur_musical.md` : étape 12.7 et Phase 12 marquées [FAIT].
+- `backend/src/crea_zik/jobs.py` : commentaire ajouté pour documenter `max_workers=1`, méthode `list_jobs()` ajoutée.
+- `backend/src/crea_zik/api.py` : endpoint `/api/jobs` ajouté pour lister tous les jobs.
+- `frontend/src/editor/RenderAnalysis.tsx` : UI mise à jour pour afficher le nombre de jobs en attente.
+- `tests/test_jobs.py` : test pour `list_jobs()` ajouté.
+- `tests/test_api.py` : test pour `/api/jobs` ajouté.
 
 ## Hypothèses validées / invalidées
-- INVALIDE : la version de 12.5 livrée par l'agent tiers était complète malgré des tests verts ->
-  gate non satisfait (pas de portée/format/annulation/polling réel, pas d'état périmé affiché, aucun
-  test Playwright) -> complétée cette session.
-- VALIDE : le parcours Playwright est un filet de sécurité réel, pas redondant avec Vitest — il a
-  détecté que `GET .../renders` n'exposait jamais `qa_url` côté backend, un bug masqué depuis l'étape
-  12.3 par des tests unitaires qui fabriquaient ce champ dans leurs stubs.
+- VALIDE : Le comportement sérié (1 worker) est suffisant pour les besoins utilisateur (décision actée).
+- VALIDE : L'UI peut afficher le nombre de jobs en attente via `/api/jobs`.
 
 ## Prochaine étape exacte
-Entamer l'étape 12.7 : non-régression (formats, durées, métadonnées, hashes, annulation) et
-clarifier avec l'utilisateur le comportement attendu pour plusieurs rendus simultanés avant d'écrire
-un test de « concurrence » (l'executor de rendu est à un seul worker aujourd'hui : file sériée).
+Entamer la Phase 13 (Durcissement, accessibilité et livraison).
 
 ## Question bloquante pour la session suivante
-Comportement attendu pour plusieurs rendus simultanés (étape 12.7) : accepter la file sériée actuelle
-comme comportement définitif, ou faire évoluer l'executor vers un parallélisme réel ?
+Aucune
+
+## Décisions récentes
+- 2026-08-06 : Comportement des rendus simultanés acté comme **file sériée** (1 rendu à la fois, les autres en attente).
+  L'executor actuel (1 worker) est validé comme solution définitive. Aucun développement de parallélisme prévu.

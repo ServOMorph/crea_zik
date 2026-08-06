@@ -85,16 +85,12 @@ audio complet (pistes, bus, sends, master), chaînes d'effets ordonnées (égali
 compresseur, délai, réverbération), routage validé sans cycle, stems pré/post-fader, comparaison A/B
 via un rendu de préécoute qui ne persiste jamais la composition ; runner canonique vert
 (`EDITEUR/test-results/v1-20260806-144211.json`, success true, 20 checks, mutation Stryker 63,69 %).
-La Phase 12 (Rendu final, QA et export) est ouverte : découpée en sept étapes séquentielles (12.1
-métriques true peak/LUFS manquantes, 12.2 modèle de rendu et manifeste étendus, 12.3 comparaison
-rendu périmé, 12.4 gate de promotion master, 12.5 écran Analyse & Export, 12.6 téléchargement et
-bundle, 12.7 non-régression) documentées dans `EDITEUR/roadmap_editeur_musical.md`. Les étapes 12.1
-à 12.6 sont closes [FAIT] : true peak/LUFS, modèle de rendu étendu (boucle, sélection de clips) et
-manifeste enrichi, détection des rendus périmés, gate de promotion master avec dérogation tracée,
-écran « Analyse & Export » (portée du rendu, format, annulation, waveform, métriques QA nommées,
-état périmé/à jour, testé en Playwright), téléchargement et bundle d'export groupant master, stems,
-manifeste et rapport QA. Seule l'étape 12.7 (non-régression et clarification du comportement rendu
-concurrent) reste ouverte.
+La Phase 12 (Rendu final, QA et export) est close [FAIT] : les sept étapes (12.1 à 12.7) sont
+livrées — true peak/LUFS, modèle de rendu étendu (boucle, sélection de clips) et manifeste enrichi,
+détection des rendus périmés, gate de promotion master avec dérogation tracée, écran « Analyse & Export »
+(portée du rendu, format, annulation, waveform, métriques QA nommées, état périmé/à jour, testé en Playwright),
+téléchargement et bundle d'export groupant master, stems, manifeste et rapport QA, non-régression validée
+et comportement rendu sérié acté (1 worker, file séquentielle).
 Le gate de déterminisme Csound réel de la phase 1 (roadmap studio audio procédural) est validee (trois rendus indépendants, même SHA-256 du WAV).
 La phase 2 de `roadmap_studio_audio_procedural.md` a été réauditée et close [FAIT] : le code réel
 dépasse largement sa description initiale. Les phases 3 (bibliothèque DSP/Sound Designer) et 4

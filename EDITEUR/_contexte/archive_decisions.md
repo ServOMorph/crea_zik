@@ -65,4 +65,28 @@ Décisions archivées depuis `_contexte/contexte.md` (append only).
   13 e2e). V6 [EN COURS] : reste longueur/duplication/renommage/suppression de patterns,
   sélection multiple, remplissages, couleur (migration schéma), drag-and-drop Playwright.
 
+---
+
+Archivé le : 2026-08-06 (dépassement du seuil de 10 entrées)
+
+- 2026-08-04 : Phase V4 (store, commandes et sauvegarde) close [FAIT] — store 100 % lignes et
+  branches, fast-check des inverses, cent opérations puis cent undo/redo comparées, Stryker sur
+  `editorStore.ts`/`transport.ts` (break 60 %) ; runner canonique vert (20 checks). La Phase 4
+  fonctionnelle reste ouverte : seule la virtualisation des grandes listes manque.
+- 2026-08-04 : Phase 4 fonctionnelle et Phase V5 closes [FAIT] — virtualisation livrée
+  (`VirtualList` + `computeVirtualWindow`, couverture 100 %, 5000 lignes) et intégrée à
+  `EditorLanding` ; transport et préécoute qualifiés (horloge contrôlée, `MockAudioContext`,
+  Chromium réel, cache/invalidation/annulation) ; runner canonique vert
+  (`EDITEUR/test-results/v1-20260804-224727.json`, 20 checks). La Phase 5 fonctionnelle reste
+  ouverte sur un point : affichage du tempo et de la métrique dans `TransportBar`.
+- 2026-08-06 : Playlist livrée comme composant autonome (`Playlist.tsx`) avec 19 callbacks câblés au
+  store, drag à deltas incrémentés + snap, poignées de resize en vrais boutons accessibles ; le drag
+  e2e pilote le défilement horizontal par `scrollLeft` explicite (`scrollIntoViewIfNeeded` fait
+  passer le contenu sous le side sticky 220 px ou hors viewport). Test e2e V8 encore rouge
+  (nth(1) = 6720 px vs 6528 px attendu).
+- 2026-08-06 : Qualification V8 close — le test e2e rouge était une attente erronée (clip ajouté à
+  `compositionEndBeat` = 62 beats, pas 60) ; l'assertion vérifie que le clip suivant est poussé de
+  la distance exacte du drag. Fix du runner `test_editor.ps1` (stderr de `uv lock --check` sous
+  `$ErrorActionPreference="Stop"` → `Invoke-Gate` en `Continue` local, échecs via `$LASTEXITCODE`).
+  Runner canonique vert 20/20 (`v1-20260806-060208.json`). Phase 9 ouverte [EN COURS].
 

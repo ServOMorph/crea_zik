@@ -152,3 +152,23 @@ def test_timed_out_job_exposes_a_typed_error_and_structured_log(tmp_path: Path, 
     assert completed.error.code == "render_timeout"
     assert any('"event": "render_failed"' in record.message for record in caplog.records)
     manager.shutdown()
+
+
+def test_list_jobs_returns_all_submitted_jobs(tmp_path: Path) -> None:
+    manager = JobManager(tmp_path, InstantEngine)
+    job1 = manager.submit(uuid4(), patch())
+    job2 = manager.submit(uuid4(), patch())
+    job3 = manager.submit(uuid4(), patch())
+
+    # Attendre que les jobs soient terminés (InstantEngine est rapide)
+    job1.future.result(timeout=2)
+    job2.future.result(timeout=2)
+    job3.future.result(timeout=2)
+
+    all_jobs = manager.list_jobs()
+    assert len(all_jobs) == 3
+    job_ids = {job.id for job in all_jobs}
+    assert job1.id in job_ids
+    assert job2.id in job_ids
+    assert job3.id in job_ids
+    manager.shutdown()

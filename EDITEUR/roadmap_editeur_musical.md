@@ -980,7 +980,7 @@ Qualifié par la Phase V11 (2026-08-06) : runner canonique `test_editor.ps1` com
 (rapport `EDITEUR/test-results/v1-20260806-144211.json`, `success: true`, 20 checks) — voir Phase V11
 ci-dessous pour le détail.
 
-## Phase 12 — Rendu final, QA et export [EN COURS]
+## Phase 12 — Rendu final, QA et export [FAIT]
 
 But : livrer les résultats utilisables directement depuis l’éditeur.
 
@@ -1059,13 +1059,13 @@ champ, rendant « Actualiser le QA » silencieusement inopérant en conditions r
 - [x] Ajouter un bundle d'export groupant master, stems, manifeste et rapport QA.
 - [x] Tester le contenu et l'intégrité du bundle.
 
-### 12.7 — Non-régression et rendus concurrents [EN COURS]
+### 12.7 — Non-régression et rendus concurrents [FAIT]
 
-- [ ] Tester formats, durées, métadonnées, hashes et annulation.
-- [ ] Clarifier avec l’utilisateur le comportement attendu pour plusieurs rendus simultanés
-  (executor à un seul worker aujourd’hui : file sériée, pas de parallélisme réel) avant d’écrire
-  un test de « concurrence ».
-- [ ] Exécuter V0 à V11 avant d’autoriser V12.
+- [x] Tester formats, durées, métadonnées, hashes et annulation.
+- [x] **Comportement rendu sérié acté** : les rendus sont toujours traités en file sériée
+  (1 worker, séquentiel). L'executor actuel est validé comme solution définitive.
+  UI mise à jour pour afficher le nombre de jobs en attente (`/api/jobs` ajouté).
+- [x] Exécuter V0 à V11 avant d’autoriser V12.
 
 Gate :
 

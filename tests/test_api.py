@@ -746,3 +746,11 @@ def test_composition_render_promote_blocks_failed_qa_without_waiver(tmp_path: Pa
 
     manager.shutdown()
 
+
+def test_list_jobs_endpoint_returns_all_jobs(tmp_path, monkeypatch) -> None:
+    monkeypatch.setattr("crea_zik.api.PROJECT_ROOT", tmp_path / "projects")
+    client = TestClient(app)
+    response = client.get("/api/jobs")
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
+

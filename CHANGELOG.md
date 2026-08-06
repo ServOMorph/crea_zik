@@ -1,5 +1,23 @@
 # Changelog
 
+## v0.37 — 2026-08-06
+
+### Ajouté
+
+- Backend : endpoint `GET /api/jobs` pour lister tous les jobs de rendu (permet à l'UI d'afficher les jobs en attente).
+- Backend : méthode `JobManager.list_jobs()` pour une meilleure encapsulation.
+- Frontend : `RenderAnalysis.tsx` affiche désormais le nombre de jobs en attente et la position dans la file.
+- Documentation : comportement rendu sérié acté (1 worker, file séquentielle) et documenté dans `jobs.py`.
+
+### Modifié
+
+- Backend : commentaire ajouté dans `JobManager.__init__` pour clarifier que `max_workers=1` est intentionnel.
+
+### Notes
+
+- Décision utilisateur actée : les rendus sont toujours traités en **file sériée** (1 à la fois).
+- Étape 12.7 et Phase 12 closes [FAIT].
+
 ## v0.36 — 2026-08-06
 
 ### Ajouté

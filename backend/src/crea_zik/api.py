@@ -1185,6 +1185,13 @@ def render_plugin_endpoint(
     return ArtifactResponse.model_validate(payload)
 
 
+@app.get("/api/jobs", response_model=list[JobResponse])
+def list_jobs() -> list[JobResponse]:
+    """Liste tous les jobs de rendu (pour afficher les jobs en attente dans l'UI)."""
+    all_jobs = jobs.list_jobs()
+    return [job_response(job) for job in all_jobs]
+
+
 @app.get("/api/jobs/{job_id}", response_model=JobResponse)
 def get_job(job_id: UUID) -> JobResponse:
     job = jobs.get(job_id)
