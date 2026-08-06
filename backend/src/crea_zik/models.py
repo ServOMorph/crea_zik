@@ -282,7 +282,7 @@ class AutomationPoint(DomainModel):
 
 class AutomationLane(IdentifiedModel):
     target: str = Field(
-        pattern=r"^(track|master)\.[0-9a-f-]+\.(gain|pan|parameter\.[a-z][a-z0-9_]*(?:\.[a-z0-9_]+|\[\d+\])*)$"
+        pattern=r"^track\.[0-9a-f-]+\.(gain|pan|parameter\.[a-z][a-z0-9_]*(?:\.[a-z0-9_]+|\[\d+\])*)$"
     )
     points: list[AutomationPoint] = Field(min_length=1, max_length=20_000)
 
@@ -374,6 +374,8 @@ class Composition(SeededModel):
             raise ValueError("mixer routing must not contain a cycle")
         for lane in self.automation_lanes:
             scope, identifier, _ = lane.target.split(".", 2)
+            if scope == "master":
+                raise ValueError("automation target scope 'master' is not supported")
             if scope == "track" and UUID(identifier) not in track_ids:
                 raise ValueError("automation target must reference a track")
         return self

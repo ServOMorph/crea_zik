@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.38 — 2026-08-06
+
+### Modifié
+
+- Backend : scope `master` retiré du schéma `AutomationLane.target` (regex modifié de `^(track|master)` à `^track`) avec validation explicite pour rejeter les cibles `master.*`.
+- Documentation : décision structurante actée d'assumer définitivement le panneau `Automations.tsx` dédié plutôt que des lanes dans `Playlist.tsx`.
+
 ## v0.37 — 2026-08-06
 
 ### Ajouté

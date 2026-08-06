@@ -33,6 +33,10 @@ détection des rendus périmés, gate de promotion master, écran « Analyse & E
 non-régression validée, comportement rendu sérié acté et implémenté).
 
 ## Décisions structurantes (append only — 10 entrées max, 5 lignes max/entrée, archiver au-delà)
+- 2026-08-06 : **Panneau Automations dédié acté** — Décision d'assumer définitivement le panneau
+  `Automations.tsx` comme solution d'intégration visuelle, plutôt que des lanes dans `Playlist.tsx`.
+- 2026-08-06 : **Scope master des automations retiré** — Le scope `master` a été retiré du schéma
+  `AutomationLane.target` avec validation explicite pour rejeter les cibles `master.*`.
 - 2026-08-06 : **Comportement rendu sérié acté** — les rendus sont toujours traités en file sériée
   (1 worker, séquentiel). L'executor actuel est validé comme solution définitive. UI mise à jour
   pour afficher le nombre de jobs en attente. Voir `jobs.py` et `api.py`.
