@@ -57,3 +57,12 @@ Décisions archivées depuis `_contexte/contexte.md` (append only).
   vert final (`v1-20260805-110735.json`, success true). Réserves assumées : glisser et
   multi-sélection couverts en unitaire, preuve rendu/hash frontend non formalisée (backend) ;
   couleur de piste et accès instrument reportés à la Phase 9. Phase 7 (Piano Roll) ouverte.
+- 2026-08-05 : Phase 5 close [FAIT] — tempo (`120 BPM`) et métrique (`4/4`) affichés et testés.
+  Phase 6 ouverte [EN COURS] : Channel Rack + séquenceur pas à pas (mute/solo, résolution,
+  vélocité/probabilité/accent/micro-décalage, paint/erase, clavier, préécoute pattern) ;
+  `probability`/`micro_timing_beats` propagés au rendu avec gate seedé déterministe et fix du solo ;
+  runner canonique vert 20 checks (`v1-20260805-102645.json`, backend 116, frontend 96 unitaires,
+  13 e2e). V6 [EN COURS] : reste longueur/duplication/renommage/suppression de patterns,
+  sélection multiple, remplissages, couleur (migration schéma), drag-and-drop Playwright.
+
+

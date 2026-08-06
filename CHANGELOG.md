@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.35 — 2026-08-06
+
+### Ajouté
+
+- Backend : Implémentation de la Phase 12.1 (true peak et LUFS). Prise en charge des calculs de `true_peak` (via suréchantillonnage 4x/2x `resample_poly`) et de `lufs` (filtre K-weighting IIR avec double gating) dans `audio_info.py`.
+- Backend : Intégration des métriques True Peak et LUFS dans l'évaluation QA (`qa.py`) avec détection d'issues (`true_peak_clipping`, `excessive_loudness`, `insufficient_loudness`) selon le profil (musique vs SFX).
+- Tests : Nouveaux tests unitaires complets dans `tests/test_audio_info.py` (silence, sinus pur, inter-sample peaks) et validation de non-régression.
+
 ## v0.34 — 2026-08-06
 
 ### Modifié

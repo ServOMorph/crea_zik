@@ -980,7 +980,7 @@ Qualifié par la Phase V11 (2026-08-06) : runner canonique `test_editor.ps1` com
 (rapport `EDITEUR/test-results/v1-20260806-144211.json`, `success: true`, 20 checks) — voir Phase V11
 ci-dessous pour le détail.
 
-## Phase 12 — Rendu final, QA et export [TODO]
+## Phase 12 — Rendu final, QA et export [EN COURS]
 
 But : livrer les résultats utilisables directement depuis l’éditeur.
 
@@ -998,14 +998,14 @@ donc les rendus sont aujourd’hui sériés, pas parallèles — point à confir
 
 Tâches (ordre d’exécution) :
 
-### 12.1 — Métriques audio manquantes (true peak, LUFS)
+### 12.1 — Métriques audio manquantes (true peak, LUFS) [FAIT]
 
-- [ ] Implémenter le true peak (suréchantillonnage) dans `audio_info.py`.
-- [ ] Implémenter le LUFS (norme BS.1770) dans `audio_info.py`.
-- [ ] Étendre `evaluate_wav`/`qa.py` avec ces métriques et leurs seuils.
-- [ ] Tester sur signaux verrouillés (sinus, silence, plein niveau, inter-sample peak connu).
+- [x] Implémenter le true peak (suréchantillonnage) dans `audio_info.py`.
+- [x] Implémenter le LUFS (norme BS.1770) dans `audio_info.py`.
+- [x] Étendre `evaluate_wav`/`qa.py` avec ces métriques et leurs seuils.
+- [x] Tester sur signaux verrouillés (sinus, silence, plein niveau, inter-sample peak connu).
 
-### 12.2 — Modèle de rendu étendu et manifeste enrichi
+### 12.2 — Modèle de rendu étendu et manifeste enrichi [EN COURS]
 
 - [ ] Étendre la requête de rendu : boucle et sélection de clips, au-delà de la plage temps et des
   pistes choisies déjà supportées.
@@ -1013,7 +1013,7 @@ Tâches (ordre d’exécution) :
 - [ ] Mettre à jour `EDITEUR/contracts/composition.schema.json` en conséquence.
 - [ ] Tester round-trip et rendu par boucle et par sélection.
 
-### 12.3 — Comparaison rendu périmé
+
 
 - [ ] Comparer la révision du dernier rendu à la révision courante de la composition.
 - [ ] Signaler explicitement un rendu périmé (API et UI).

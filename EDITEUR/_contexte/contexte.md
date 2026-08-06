@@ -27,15 +27,7 @@ Music Composer, Adaptive Lab, Analyse & Export) et son backend de rendu, permett
   Csound réel restant avant de poursuivre la roadmap applicative.
 
 ## État actuel (réécrit intégralement à chaque /close)
-Phases 9, 10 et 11 (instruments, Automations, Mixer/routage/effets) et leurs qualifications V9/V10/
-V11 closes [FAIT]. Phase 12 (Rendu final, QA et export) ouverte : découpée en sept étapes
-séquentielles (12.1 métriques true peak/LUFS manquantes, 12.2 modèle/manifeste étendu, 12.3 rendu
-périmé, 12.4 gate promotion master, 12.5 écran Analyse & Export, 12.6 téléchargement/bundle, 12.7
-non-régression) documentées dans `EDITEUR/roadmap_editeur_musical.md`. Le moteur de rendu, l'écriture
-WAV et les métriques de base existent déjà ; à construire en premier : true peak et LUFS. Deux écarts
-restent à trancher (voir `_contexte/signals.md`) : panneau Automations dédié plutôt que lanes dans
-`Playlist.tsx`, et scope `master` d'automation validé par le schéma mais non appliqué par le moteur
-de rendu.
+Phases 9, 10 et 11 (instruments, Automations, Mixer/routage/effets) et leurs qualifications V9/V10/V11 closes [FAIT]. Phase 12 (Rendu final, QA et export) ouverte : étape 12.1 (true peak et LUFS) complétée et validée avec succès ; étape 12.2 (modèle de rendu étendu et manifeste enrichi) à démarrer.
 
 ## Décisions structurantes (append only — 10 entrées max, 5 lignes max/entrée, archiver au-delà)
 - 2026-08-06 : Phase 12 (Rendu final, QA et export) ouverte — découpée en 7 étapes séquentielles
@@ -82,10 +74,6 @@ de rendu.
   Chromium réel, cache/invalidation/annulation) ; runner canonique vert
   (`EDITEUR/test-results/v1-20260804-224727.json`, 20 checks). La Phase 5 fonctionnelle reste
   ouverte sur un point : affichage du tempo et de la métrique dans `TransportBar`.
-- 2026-08-05 : Phase 5 close [FAIT] — tempo (`120 BPM`) et métrique (`4/4`) affichés et testés.
-  Phase 6 ouverte [EN COURS] : Channel Rack + séquenceur pas à pas (mute/solo, résolution,
-  vélocité/probabilité/accent/micro-décalage, paint/erase, clavier, préécoute pattern) ;
-  `probability`/`micro_timing_beats` propagés au rendu avec gate seedé déterministe et fix du solo ;
-  runner canonique vert 20 checks (`v1-20260805-102645.json`, backend 116, frontend 96 unitaires,
-  13 e2e). V6 [EN COURS] : reste longueur/duplication/renommage/suppression de patterns,
-  sélection multiple, remplissages, couleur (migration schéma), drag-and-drop Playwright.
+- 2026-08-06 : Étape 12.1 (métriques true peak et LUFS) close [FAIT] — true peak (resample_poly)
+  et LUFS (K-weighting, double gating) implémentés dans audio_info.py, intégrés dans qa.py et
+  validés par des tests unitaires sur sinus/silences/ISP.

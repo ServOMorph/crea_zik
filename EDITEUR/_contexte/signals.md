@@ -12,18 +12,11 @@
   que le scope `track`). Décider si c'est un gap backend à combler ou un scope à retirer du schéma.
   - fait quand: le scope `master` est soit appliqué au rendu, soit retiré du pattern de validation
   - réf: `backend/src/crea_zik/models.py` (AutomationLane.target), `backend/src/crea_zik/compositions.py`
-- [P1|ouvert] Implémenter l'étape 12.1 (true peak + LUFS) de la Phase 12 : ces deux métriques sont
-  absentes du dépôt (backend et frontend), à ajouter dans `audio_info.py` puis brancher sur
-  `evaluate_wav`/`qa.py`.
-  - fait quand: true peak et LUFS calculés et testés sur signaux verrouillés (sinus, silence, plein
-    niveau, inter-sample peak connu)
-  - réf: `EDITEUR/roadmap_editeur_musical.md` (Phase 12, étape 12.1), `backend/src/crea_zik/audio_info.py`
 - [P1|ouvert] Poursuivre les étapes 12.2 à 12.7 de la Phase 12 (modèle de rendu étendu/manifeste
   enrichi, comparaison rendu périmé, gate de promotion master, écran « Analyse & Export »,
-  téléchargement/bundle, non-régression et clarification du comportement rendu concurrent) une fois
-  12.1 close.
-  - fait quand: Phase 12 fonctionnelle livrée et qualification V12 close (runner canonique vert)
-  - réf: `EDITEUR/roadmap_editeur_musical.md` (Phase 12, Phase V12)
+  téléchargement/bundle, non-régression et clarification du comportement rendu concurrent) en commençant par 12.2.
+  - fait quand: Étape 12.2 close (modèle de rendu étendu et manifeste enrichi fonctionnels et testés).
+  - réf: `EDITEUR/roadmap_editeur_musical.md` (Phase 12, étape 12.2), `backend/src/crea_zik/jobs.py`
 
 ## Contexte chaud
 - `mixer_channels` reste vide par défaut pour `Lignes de nuit` (aucun canal par piste tant qu'aucune
@@ -43,29 +36,20 @@
 # Session du 2026-08-06
 
 ## Décisions prises
-- Phase 12 (Rendu final, QA et export) ouverte. Après audit de l'existant, découpage en sept étapes
-  séquentielles (12.1 à 12.7 : métriques manquantes, modèle/manifeste étendu, rendu périmé, gate
-  promotion master, écran Analyse & Export, téléchargement/bundle, non-régression) documentées
-  directement dans la roadmap.
+- Choix pragmatiques d'analyse : suréchantillonnage 4x (ou 2x pour fs >= 96 kHz) avec resample_poly pour le True Peak, et K-weighting IIR précis dynamique (filtre haute-étagère + passe-haut) avec double-gating (-70 LUFS et -10 dB) pour le calcul de LUFS.
+- Adaptation des seuils d'issues QA : clipping à true_peak >= 1.0 (0 dBTP), et loudness excessif/insuffisant selon le profil (musique : -10 à -26 LUFS ; sfx : -6 à -45 LUFS).
 
 ## Livrables produits ou modifiés
-- `EDITEUR/roadmap_editeur_musical.md` : section Phase 12 restructurée avec constat de session et
-  tâches réordonnées en 7 étapes séquentielles (statut phase inchangé, [TODO]).
+- `backend/src/crea_zik/audio_info.py` : calcul de true_peak et lufs.
+- `backend/src/crea_zik/qa.py` : intégration dans evaluate_wav et issues.
+- `tests/test_audio_info.py` : tests unitaires sur silence, sinus pur et ISP.
 
 ## Hypothèses validées / invalidées
-- VALIDE : le moteur de rendu (`render_composition`), l'écriture WAV float32/PCM24
-  (`composition_dsp.py::write_wav`), les jobs avec progression/annulation (`jobs.py`) et les
-  métriques peak/RMS/DC/clipping (`audio_info.py::wav_info`) existent déjà et sont réutilisables.
-- INVALIDE : aucune trace de true peak ni de LUFS dans le dépôt (ni backend ni frontend) — à
-  implémenter en premier (étape 12.1), les étapes suivantes en dépendant partiellement.
-- EN ATTENTE : confirmer avec l'utilisateur le comportement attendu pour les rendus simultanés avant
-  d'écrire un test de « concurrence » — l'executor de jobs actuel n'a qu'un seul worker
-  (`ThreadPoolExecutor(max_workers=1)`), donc les rendus sont aujourd'hui sériés, pas parallèles.
+- VALIDE : resample_poly de scipy permet une détection robuste des inter-sample peaks sur les signaux à la fréquence de Nyquist (ex: motif [0.707, 0.707, -0.707, -0.707] monte bien à 1.0 en True Peak).
+- VALIDE : Les coefficients biquad IIR de K-weighting calculés dynamiquement assurent la conformité BS.1770 sur toutes les fréquences cibles.
 
 ## Prochaine étape exacte
-Démarrer l'étape 12.1 : implémenter true peak (suréchantillonnage) et LUFS (BS.1770) dans
-`backend/src/crea_zik/audio_info.py`, les brancher sur `evaluate_wav`/`qa.py`, puis tester sur des
-signaux verrouillés.
+Entamer l'étape 12.2 : étendre le modèle de rendu (boucles et sélection) et enrichir le manifeste (seed, versions, spec_hash, rapport QA).
 
 ## Question bloquante pour la session suivante
 Aucune.
