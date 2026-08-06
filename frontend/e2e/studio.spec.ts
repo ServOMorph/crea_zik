@@ -434,3 +434,49 @@ test("the piano roll edits notes with the mouse and keeps them after reload", as
   await rackName("bass").click();
   await expect(page.getByRole("button", { name: /Note Sol#3, temps 6, durée 1\.5/ })).toBeVisible();
 });
+
+test("automations create, move and delete a point with working undo/redo", async ({ page }) => {
+  const projectName = `E2E automations ${Date.now()}`;
+  await page.goto("/");
+  await page.getByRole("textbox", { name: "Name", exact: true }).fill(projectName);
+  await page.getByRole("button", { name: "Create", exact: true }).click();
+  await page.getByRole("link", { name: "Éditeur musical" }).click();
+  await page.getByRole("button", { name: "Créer une copie éditable" }).click();
+  await expect(page).toHaveURL(/\/editor\?project=.*&composition=.*/);
+  await expect(page.getByRole("heading", { name: "Lignes de nuit" })).toBeVisible();
+
+  const automationsHeading = page.locator(".automations__header h2");
+  await automationsHeading.scrollIntoViewIfNeeded();
+  const laneCountBefore = Number((await automationsHeading.textContent())?.match(/\((\d+)\)/)?.[1] ?? "0");
+  await page.getByRole("combobox", { name: "Piste à automatiser" }).selectOption({ label: "bass" });
+  await page.getByRole("button", { name: "Créer l’automation" }).click();
+  await expect(page.getByRole("heading", { name: `Automations (${laneCountBefore + 1})` })).toBeVisible();
+
+  const curve = page.getByRole("img", { name: /Courbe d’automation bass · Gain/ });
+  await curve.scrollIntoViewIfNeeded();
+  const box = (await curve.boundingBox()) ?? { x: 0, y: 0, width: 0, height: 0 };
+
+  await page.mouse.click(box.x + 6 * 96, box.y + 20);
+  const points = curve.locator("circle");
+  await expect(points).toHaveCount(3);
+
+  const addedPoint = points.nth(2);
+  const pointBox = (await addedPoint.boundingBox()) ?? { x: 0, y: 0, width: 0, height: 0 };
+  await page.mouse.move(pointBox.x + pointBox.width / 2, pointBox.y + pointBox.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(pointBox.x + pointBox.width / 2 + 144, pointBox.y + pointBox.height / 2, { steps: 6 });
+  await page.mouse.up();
+  await expect(page.getByRole("spinbutton", { name: "Temps du point sélectionné" })).toHaveValue("7.5");
+
+  const selectedPoint = curve.locator("circle.is-selected");
+  await selectedPoint.dblclick();
+  await expect(points).toHaveCount(2);
+
+  await page.getByRole("button", { name: "Annuler", exact: true }).click();
+  await expect(points).toHaveCount(3);
+  await page.getByRole("button", { name: "Rétablir", exact: true }).click();
+  await expect(points).toHaveCount(2);
+
+  await page.getByRole("button", { name: "Sauvegarder" }).click();
+  await expect(page.getByText("Enregistré")).toBeVisible();
+});

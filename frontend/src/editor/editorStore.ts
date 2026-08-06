@@ -201,7 +201,7 @@ export function execute(
   };
   return {
     ...state,
-    composition: after,
+    composition: clone(after),
     undoStack: limitHistory(grouped ? [...state.undoStack.slice(0, -1), entry] : [...state.undoStack, entry]),
     redoStack: [],
     saveError: null,

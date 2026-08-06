@@ -1,5 +1,33 @@
 # Changelog
 
+## v0.32 — 2026-08-06
+
+### Ajouté
+
+- `frontend/src/editor/editorStore.property.test.ts` : générateurs `fast-check` pour les commandes
+  d'automation (ajouter/déplacer/modifier/supprimer un point, dupliquer/copier/mettre à l'échelle/
+  inverser/supprimer une lane) intégrés au test d'inverses undo/redo.
+- `frontend/e2e/studio.spec.ts` : test Playwright « automations create, move and delete a point with
+  working undo/redo ».
+
+### Corrigé
+
+- `frontend/src/editor/editorStore.ts` : `execute()` assignait l'objet muté brut à l'état courant
+  (`composition: after`) sans le cloner, alors que l'historique stockait `clone(after)` — une valeur
+  `-0` issue d'une mise à l'échelle par facteur négatif (`scaleAutomationValues`) survivait dans
+  l'état courant mais pas dans l'état reconstruit par un undo/redo ultérieur. Corrigé en clonant
+  `after` avant assignation. Bug trouvé par le test de propriétés `fast-check` ajouté cette session.
+- Lint Markdown de `EDITEUR/roadmap_editeur_musical.md` (ligne vide manquante avant le titre de la
+  Phase V11).
+
+### Notes
+
+- Phase 10 (Automations) et qualification V10 closes [FAIT] : runner canonique complet vert
+  (`EDITEUR/test-results/v1-20260806-112817.json`, success true, 260 tests unitaires, mutation
+  Stryker 74,89 % ≥ 60 %, 16 e2e, visuel, markdownlint). Phase 11 (Mixer, routage et effets) ouverte
+  [EN COURS]. Deux écarts assumés restent à trancher : panneau `Automations.tsx` dédié plutôt que
+  lanes dans la Playlist, scope `master` d'automation non appliqué par le moteur de rendu.
+
 ## v0.31 — 2026-08-06
 
 ### Ajouté

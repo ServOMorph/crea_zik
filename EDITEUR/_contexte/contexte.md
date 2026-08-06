@@ -27,14 +27,20 @@ Music Composer, Adaptive Lab, Analyse & Export) et son backend de rendu, permett
   Csound réel restant avant de poursuivre la roadmap applicative.
 
 ## État actuel (réécrit intégralement à chaque /close)
-Phase 9 et qualification V9 closes [FAIT] (voir décisions structurantes). Phase 10 (Automations)
-ouverte [EN COURS] : moteur backend et store frontend complets et testés, panneau UI
-`Automations.tsx` livré (lanes, courbes, points, snap, dupliquer/copier/échelle/inverser, valeur sous
-playhead). Manquent pour clore V10 : tests `fast-check` et parcours Playwright. Deux écarts à
-trancher (voir `_contexte/signals.md`) : panneau dédié plutôt que lanes dans `Playlist.tsx`, et
-scope `master` d'automation validé par le schéma mais non appliqué par le moteur de rendu.
+Phases 9 et 10 (Automations) et leurs qualifications V9/V10 closes [FAIT] (voir décisions
+structurantes). Panneau `Automations.tsx` livré et qualifié : lanes, courbes step/linéaire/lissée,
+points (ajout/déplacement/suppression), snap, dupliquer/copier/échelle/inverser, valeur sous
+playhead, tests `fast-check` et parcours Playwright complets. Phase 11 (Mixer et routage) à ouvrir.
+Deux écarts restent à trancher (voir `_contexte/signals.md`) : panneau Automations dédié plutôt que
+lanes dans `Playlist.tsx`, et scope `master` d'automation validé par le schéma mais non appliqué par
+le moteur de rendu.
 
 ## Décisions structurantes (append only — 10 entrées max, 5 lignes max/entrée, archiver au-delà)
+- 2026-08-06 : Phases 10 et V10 (Automations) closes [FAIT] — tests `fast-check` sur les commandes
+  d'automation et parcours Playwright (création/déplacement/suppression/undo-redo) ajoutés ; bug réel
+  mineur corrigé dans `execute()` (`editorStore.ts`) trouvé par le test de propriétés : `composition:
+  after` non cloné désynchronisait l'état courant de l'état reconstruit par undo/redo sur les valeurs
+  `-0`. Runner canonique vert (`v1-20260806-112817.json`). Phase 11 à ouvrir.
 - 2026-08-06 : Automations (Phase 10) — moteur backend et store frontend hérités d'une session
   interrompue (lint cassé, aucune vue), vérifiés complets et verts puis complétés par le panneau
   `Automations.tsx`. Écart assumé : panneau dédié plutôt que lanes dans `Playlist.tsx` ; scope
@@ -82,8 +88,3 @@ scope `master` d'automation validé par le schéma mais non appliqué par le mot
   vol (`saveInFlightRef`) et `requestPreview` affiche « Sauvegarde impossible, préécoute
   annulée. » en cas d'échec : un clic « Lire la sélection » pendant une sauvegarde attend la fin
   du PUT (e2e route directe verrouillé).
-- 2026-08-05 : Phases 7 et V7 closes [FAIT] — lanes vélocité/probabilité/micro-décalage/pan,
-  ghost notes hors drums, édition souris qualifiée (e2e sauvegarde/rechargement), gamme/tonalité
-  avec surbrillance non bloquante, fix accélération des drags, preuve backend note→rendu par
-  hash ; runner canonique vert (`v1-20260805-191709.json`). Réserves : comparaison audio
-  post-édition hors Chromium, snapshot visuel shell seul. Phase 8 (Playlist) ouverte.

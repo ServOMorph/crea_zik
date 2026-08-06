@@ -42,3 +42,8 @@ Décisions archivées depuis `_contexte/contexte.md` (append only).
   de page testés (Vitest+RTL), axe-core sur l'éditeur réel et ses états introuvable/vide, parcours
   Playwright URL directe/historique/sidebar active/conservation du projet, snapshots visuels
   approuvés ; runner canonique complet vert (V0→V2 inclus).
+- 2026-08-05 : Phases 7 et V7 closes [FAIT] — lanes vélocité/probabilité/micro-décalage/pan,
+  ghost notes hors drums, édition souris qualifiée (e2e sauvegarde/rechargement), gamme/tonalité
+  avec surbrillance non bloquante, fix accélération des drags, preuve backend note→rendu par
+  hash ; runner canonique vert (`v1-20260805-191709.json`). Réserves : comparaison audio
+  post-édition hors Chromium, snapshot visuel shell seul. Phase 8 (Playlist) ouverte.

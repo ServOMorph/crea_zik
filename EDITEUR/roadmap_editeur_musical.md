@@ -418,13 +418,29 @@ comme limite connue plutôt que comme gate contourné ; il ne bloque pas la phas
       frontend 239 unitaires, e2e 15/15, mutation Stryker 77.02 (rapport
       `EDITEUR/test-results/v1-20260806-073005.json`, success true, 21 checks).
 
-### Phase V10 — Qualification automations [TODO]
+### Phase V10 — Qualification automations [FAIT]
 
-- [ ] Tester les interpolations par valeurs analytiques attendues.
-- [ ] Générer points, courbes et limites de clips avec tests de propriétés.
-- [ ] Vérifier résolution moteur, continuité et absence de zipper noise mesurable.
-- [ ] Tester dans Playwright création, déplacement, suppression et undo/redo d’une automation.
-- [ ] Exécuter V0 à V9 avant d’autoriser la phase 11.
+- [x] Tester les interpolations par valeurs analytiques attendues (`tests/test_editor_automation.py` :
+  `test_interpolations_match_analytic_values`, `test_smooth_interpolation_is_continuously_differentiable`,
+  `test_step_interpolation_produces_quantized_levels`).
+- [x] Générer points, courbes et limites de clips avec tests de propriétés (Hypothesis backend
+  `test_automation_evaluation_is_deterministic_on_any_beat_sequence` ; `fast-check` frontend ajouté à
+  `editorStore.property.test.ts` : créer/ajouter/déplacer/modifier/supprimer un point, dupliquer/
+  copier/mettre à l’échelle/inverser/supprimer une lane, undo/redo inverses vérifiés, 100 runs).
+- [x] Vérifier résolution moteur, continuité et absence de zipper noise mesurable
+  (`test_gain_automation_is_sample_continuous_without_zipper`).
+- [x] Tester dans Playwright création, déplacement, suppression et undo/redo d’une automation
+  (`e2e/studio.spec.ts` « automations create, move and delete a point with working undo/redo »).
+- [x] Exécuter V0 à V9 avant d’autoriser la phase 11 — runner canonique `test_editor.ps1` complet
+  exécuté le 2026-08-06, gate vert : backend, frontend lint/typecheck/unit (260)/coverage/a11y/
+  mutation (Stryker 74,89 % ≥ 60 %)/build/e2e (16)/visuel, markdownlint (rapport
+  `EDITEUR/test-results/v1-20260806-112817.json`, success true). Un premier run avait révélé un bug
+  réel et mineur dans `execute()` (`editorStore.ts`) : `composition: after` assignait l’objet muté
+  brut à l’état courant alors que l’historique stockait `clone(after)`, si bien qu’une valeur `-0`
+  issue d’une mise à l’échelle par facteur négatif (`scaleAutomationValues`) survivait dans l’état
+  courant mais pas dans l’état reconstruit par un undo/redo ultérieur — corrigé en clonant `after`
+  avant assignation.
+
 ### Phase V11 — Qualification mixer et routage [TODO]
 
 - [ ] Tester mute, solo, gain, pan, sends, bypass et ordre d’effets.
@@ -826,21 +842,25 @@ Gate :
 - les bornes UI et backend sont identiques ;
 - aucun réglage valide ne produit de valeur non finie ou de crash moteur.
 
-## Phase 10 — Automations [EN COURS]
+## Phase 10 — Automations [FAIT]
 
 Constat de session (2026-08-06) : session précédente interrompue en cours de route — moteur backend
 (`compositions.py`, `models.py`, `composition_dsp.py`) et logique de store frontend (`editorStore.ts`)
 livrés et testés, mais aucune vue ne les consommait (bug de lint bloquant sur `playheadBeat` jamais
-consommé, symptôme de l'arrêt net). Session courante : construction du panneau `Automations.tsx`
+consommé, symptôme de l'arrêt net). Même session, clôture : construction du panneau `Automations.tsx`
 (lanes par piste/paramètre, courbes SVG step/linéaire/lissée, points au clic et au glisser avec snap,
 panneau d'édition précise, dupliquer/copier/×2/÷2/inverser, valeur évaluée sous le playhead), câblage
 dans `EditorLanding.tsx`, 21 nouveaux tests unitaires (12 composant + 9 store), correction de 2
-régressions préexistantes sur `EMPTY_SELECTION`. Deux écarts assumés, non résolus : (1) les lanes
-vivent dans un panneau dédié sous la Playlist plutôt que comme lanes dans la timeline `Playlist.tsx`
-comme envisagé initialement ; (2) le scope `master` des cibles d'automation, accepté par la validation
-Pydantic, n'est jamais appliqué par le moteur de rendu — exclu du picker UI plutôt qu'exposé sans
-effet. Aucun test `fast-check` ni Playwright écrit sur les automations cette session : phase non
-close, gate V10 non rempli.
+régressions préexistantes sur `EMPTY_SELECTION`, puis tests `fast-check` (store) et parcours
+Playwright (création/déplacement/suppression/undo-redo) exigés par la Phase V10. Un bug réel mineur
+(sans impact audible) a été détecté par le test de propriétés et corrigé : `execute()`
+(`editorStore.ts`) assignait l'objet muté brut à l'état courant sans le cloner, désynchronisant une
+valeur `-0` (issue d'une mise à l'échelle par facteur négatif) entre l'état courant et l'état
+reconstruit par un undo/redo ultérieur. Un écart assumé définitivement, critère partiel compté comme
+non livré : les lanes vivent dans un panneau dédié sous la Playlist plutôt que comme lanes dans la
+timeline `Playlist.tsx` comme envisagé initialement — la décision explicite de le conserver ainsi ou
+de migrer reste ouverte (voir `_contexte/signals.md`), de même que le scope `master` des cibles
+d'automation, accepté par la validation Pydantic mais non appliqué par le moteur de rendu.
 
 But : faire évoluer les paramètres dans le temps.
 
@@ -850,7 +870,8 @@ Tâches :
   gain, pan, paramètres scalaires du registre d'instruments ; scope `master` non applicable au
   rendu, volontairement exclu du picker).
 - [ ] Créer des lanes et clips d’automation dans la Playlist — livré comme panneau `Automations.tsx`
-  séparé, pas intégré à la timeline `Playlist.tsx` ; écart à trancher.
+  séparé, pas intégré à la timeline `Playlist.tsx` ; écart assumé, critère partiel compté comme non
+  livré (voir Phase 6 pour la même convention).
 - [x] Ajouter points, déplacement, suppression et courbes step, linéaire et lissée.
 - [x] Ajouter snap, copie, duplication, mise à l’échelle et inversion.
 - [x] Définir la priorité entre valeur de base, automation et mute/bypass (backend, testé :
@@ -861,10 +882,9 @@ Tâches :
 - [x] Afficher la valeur évaluée sous le playhead.
 - [x] Ajouter des automations démonstratives à la copie éditable sans modifier la référence immuable
   (`with_demo_automations`, testé).
-- [ ] Tester interpolation, points superposés, limites de clip, précision temporelle et rendu
-  déterministe — couvert côté backend (`tests/test_editor_automation.py`, 15 tests) ; côté frontend,
-  seuls des tests unitaires Vitest/RTL existent, pas de propriétés `fast-check` ni de parcours
-  Playwright (exigés par la Phase V10).
+- [x] Tester interpolation, points superposés, limites de clip, précision temporelle et rendu
+  déterministe — backend (`tests/test_editor_automation.py`, 15 tests, dont Hypothesis) et frontend
+  (`editorStore.property.test.ts` fast-check, `e2e/studio.spec.ts` Playwright), voir Phase V10.
 
 Gate :
 
@@ -873,7 +893,7 @@ Gate :
 - aucun saut non demandé ne survient aux limites de clips ;
 - une automation supprimée restaure la valeur de base.
 
-## Phase 11 — Mixer, routage et effets [TODO]
+## Phase 11 — Mixer, routage et effets [EN COURS]
 
 But : contrôler tout le chemin audio du morceau.
 

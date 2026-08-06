@@ -1,8 +1,24 @@
-import { assert, array, integer, oneof, property, string, tuple } from "fast-check";
+import { assert, array, constant, double, integer, oneof, property, string, tuple } from "fast-check";
 import { describe, expect, it } from "vitest";
 
 import type { EditorState } from "./editorStore";
-import { createEditorState, execute, redo, undo } from "./editorStore";
+import {
+  addAutomationLane,
+  addAutomationPoint,
+  automationTarget,
+  copyAutomationLanes,
+  createEditorState,
+  duplicateAutomationLane,
+  execute,
+  invertAutomationValues,
+  moveAutomationPoint,
+  redo,
+  removeAutomationLane,
+  removeAutomationPoint,
+  scaleAutomationValues,
+  undo,
+  updateAutomationPoint,
+} from "./editorStore";
 
 type Action = { label: string; run: (state: EditorState) => EditorState };
 
@@ -129,7 +145,145 @@ const removeClip = integer({ min: 0, max: 11 }).map<Action>((offset) => ({
   },
 }));
 
-const actionArbitrary = oneof(tempos, titles, meters, addTrack, removeTrack, addPattern, removePattern, addClip, removeClip);
+function laneAt(state: EditorState, offset: number) {
+  const lanes = state.composition.automation_lanes ?? [];
+  if (lanes.length === 0) return undefined;
+  return lanes[offset % lanes.length];
+}
+
+// -0 est numériquement égal à 0 mais JSON.stringify/parse (clone) le normalise en 0 alors que
+// l’état muté en mémoire garde le signe : évité pour ne pas comparer -0 à 0 avec toEqual.
+function avoidNegativeZero(value: number): number {
+  return value === 0 ? 0 : value;
+}
+
+const finiteValue = double({ min: -2, max: 2, noNaN: true, noDefaultInfinity: true }).map(avoidNegativeZero);
+const finiteBeat = double({ min: 0, max: 32, noNaN: true, noDefaultInfinity: true }).map(avoidNegativeZero);
+const interpolations = oneof(constant("step" as const), constant("linear" as const), constant("smooth" as const));
+
+const addAutomation = tuple(integer({ min: 0, max: 11 }), oneof(constant("gain"), constant("pan"))).map<Action>(
+  ([offset, property]) => ({
+    label: "ajouter automation",
+    run: (state) => {
+      if (state.composition.tracks.length === 0) return state;
+      const trackId = state.composition.tracks[offset % state.composition.tracks.length].id;
+      return addAutomationLane(state, automationTarget(trackId, property));
+    },
+  }),
+);
+
+const addAutomationPointAction = tuple(integer({ min: 0, max: 11 }), finiteBeat, finiteValue, interpolations).map<Action>(
+  ([offset, beat, value, interpolation]) => ({
+    label: "ajouter point d’automation",
+    run: (state) => {
+      const lane = laneAt(state, offset);
+      if (!lane) return state;
+      return addAutomationPoint(state, lane.id, { beat, value, interpolation });
+    },
+  }),
+);
+
+const updateAutomation = tuple(integer({ min: 0, max: 11 }), integer({ min: 0, max: 11 }), finiteValue).map<Action>(
+  ([laneOffset, pointOffset, value]) => ({
+    label: "modifier point d’automation",
+    run: (state) => {
+      const lane = laneAt(state, laneOffset);
+      if (!lane || lane.points.length === 0) return state;
+      const point = lane.points[pointOffset % lane.points.length];
+      return updateAutomationPoint(state, lane.id, point.beat, { value });
+    },
+  }),
+);
+
+const moveAutomation = tuple(integer({ min: 0, max: 11 }), integer({ min: 0, max: 11 }), finiteBeat).map<Action>(
+  ([laneOffset, pointOffset, toBeat]) => ({
+    label: "déplacer point d’automation",
+    run: (state) => {
+      const lane = laneAt(state, laneOffset);
+      if (!lane || lane.points.length === 0) return state;
+      const point = lane.points[pointOffset % lane.points.length];
+      return moveAutomationPoint(state, lane.id, point.beat, toBeat);
+    },
+  }),
+);
+
+const removeAutomation = tuple(integer({ min: 0, max: 11 }), integer({ min: 0, max: 11 })).map<Action>(
+  ([laneOffset, pointOffset]) => ({
+    label: "supprimer point d’automation",
+    run: (state) => {
+      const lane = laneAt(state, laneOffset);
+      if (!lane || lane.points.length === 0) return state;
+      const point = lane.points[pointOffset % lane.points.length];
+      return removeAutomationPoint(state, lane.id, point.beat);
+    },
+  }),
+);
+
+const scaleAutomation = tuple(
+  integer({ min: 0, max: 11 }),
+  double({ min: -4, max: 4, noNaN: true, noDefaultInfinity: true }).map(avoidNegativeZero),
+).map<Action>(([offset, factor]) => ({
+  label: "mettre l’automation à l’échelle",
+  run: (state) => {
+    const lane = laneAt(state, offset);
+    if (!lane) return state;
+    return scaleAutomationValues(state, lane.id, factor);
+  },
+}));
+
+const invertAutomation = integer({ min: 0, max: 11 }).map<Action>((offset) => ({
+  label: "inverser l’automation",
+  run: (state) => {
+    const lane = laneAt(state, offset);
+    if (!lane) return state;
+    return invertAutomationValues(state, lane.id);
+  },
+}));
+
+const duplicateAutomation = integer({ min: 0, max: 11 }).map<Action>((offset) => ({
+  label: "dupliquer l’automation",
+  run: (state) => {
+    const lane = laneAt(state, offset);
+    if (!lane) return state;
+    return duplicateAutomationLane(state, lane.id);
+  },
+}));
+
+const copyAutomation = constant(null).map<Action>(() => ({
+  label: "copier les automations",
+  run: (state) => copyAutomationLanes(state),
+}));
+
+const removeAutomationLaneAction = integer({ min: 0, max: 11 }).map<Action>((offset) => ({
+  label: "supprimer l’automation",
+  run: (state) => {
+    const lane = laneAt(state, offset);
+    if (!lane) return state;
+    return removeAutomationLane(state, lane.id);
+  },
+}));
+
+const actionArbitrary = oneof(
+  tempos,
+  titles,
+  meters,
+  addTrack,
+  removeTrack,
+  addPattern,
+  removePattern,
+  addClip,
+  removeClip,
+  addAutomation,
+  addAutomationPointAction,
+  updateAutomation,
+  moveAutomation,
+  removeAutomation,
+  scaleAutomation,
+  invertAutomation,
+  duplicateAutomation,
+  copyAutomation,
+  removeAutomationLaneAction,
+);
 
 const sequenceArbitrary = array(actionArbitrary, { minLength: 1, maxLength: 15 });
 
