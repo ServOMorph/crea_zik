@@ -3,7 +3,8 @@ from uuid import uuid4
 import pytest
 from pydantic import ValidationError
 
-from crea_zik.intent import IntentProposal, ProposalOperation, preview_proposal
+from crea_zik.intent import preview_proposal
+from crea_zik.models import IntentProposal, ProposalOperation
 from crea_zik.models import Patch, PatchKind, Project
 
 

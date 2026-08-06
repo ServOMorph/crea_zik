@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from math import ceil
 from re import fullmatch
-from typing import Callable
 from uuid import UUID
 
 from .models import AdaptiveGraph, AdaptiveTransition

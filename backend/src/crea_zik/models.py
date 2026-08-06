@@ -319,6 +319,8 @@ class RenderSettings(DomainModel):
     channels: Literal[2] = 2
     stems: bool = True
     stem_fader: Literal["pre", "post"] = "post"
+    loop: bool = False
+    clip_ids: list[UUID] | None = None
 
 
 class Composition(SeededModel):

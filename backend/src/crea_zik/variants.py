@@ -4,7 +4,6 @@ from random import Random
 
 from .models import Patch
 
-
 DEFAULT_RANGES: dict[str, tuple[float, float]] = {
     "pitch_hz": (.82, 1.18),
     "brightness": (-.18, .18),

@@ -14,7 +14,8 @@ from .engine import CsoundEngine, RenderCancelled, RenderEngine
 from .errors import error_detail
 from .logging import log_event
 from .models import Composition, ErrorDetail, JobState, Patch
-from .provenance import resolve_project_path
+from .provenance import resolve_project_path, composition_hash
+from .qa import evaluate_wav
 
 
 @dataclass
@@ -63,6 +64,8 @@ class JobManager:
         track_ids: Collection[UUID] | None = None,
         start_beat: float = 0,
         end_beat: float | None = None,
+        loop: bool = False,
+        clip_ids: Collection[UUID] | None = None,
     ) -> RenderJob:
         job = RenderJob(
             project_id=project_id,
@@ -79,6 +82,8 @@ class JobManager:
                 set(track_ids) if track_ids is not None else None,
                 start_beat,
                 end_beat,
+                loop,
+                set(clip_ids) if clip_ids is not None else None,
             )
             self._changed(job)
         log_event(
@@ -142,6 +147,8 @@ class JobManager:
         track_ids: set[UUID] | None,
         start_beat: float,
         end_beat: float | None,
+        loop: bool = False,
+        clip_ids: set[UUID] | None = None,
     ) -> None:
         with self._condition:
             if job.cancel_requested.is_set():
@@ -157,9 +164,20 @@ class JobManager:
         )
         destination = (
             render_directory
-            if start_beat == 0 and end_beat is None
+            if start_beat == 0 and end_beat is None and clip_ids is None and not loop
             else render_directory / "previews" / str(job.id)
         )
+
+        if clip_ids is not None:
+            selected_clips = [c for c in composition.clips if c.id in clip_ids]
+            composition.clips = selected_clips
+            if selected_clips:
+                if start_beat == 0 and end_beat is None:
+                    start_beat = min(c.start_beat for c in selected_clips)
+                    end_beat = max(c.start_beat + c.length_beats * c.repeat_count for c in selected_clips)
+            else:
+                start_beat = 0
+                end_beat = 0.25
 
         def report_progress(progress: int) -> None:
             with self._condition:
@@ -176,34 +194,54 @@ class JobManager:
                 end_beat=end_beat,
                 cancelled=job.cancel_requested.is_set,
                 progress=report_progress,
+                loop=loop,
+                clip_ids=clip_ids,
             )
             if job.cancel_requested.is_set():
                 raise RenderCancelled("render cancelled")
+
+            # Evaluate QA
+            from uuid import uuid5, NAMESPACE_URL
+            qa_id = uuid5(NAMESPACE_URL, f"crea-zik:{job.project_id}:{composition.id}:{composition.revision}")
+            qa_report = evaluate_wav(
+                qa_id,
+                rendered.mix_path,
+                profile="music",
+                loop=loop,
+            )
+            qa_json_path = destination / "qa.json"
+            qa_json_path.write_text(qa_report.model_dump_json(indent=2), encoding="utf-8")
+
             relative = lambda path: path.resolve().relative_to(self._project_root.resolve()).as_posix()
             artifacts = {
                 "mix": relative(rendered.mix_path),
                 **{f"stem:{track_id}": relative(path) for track_id, path in rendered.stem_paths.items()},
             }
             manifest_path = destination / "manifest.json"
+            manifest_data = {
+                "composition_id": str(composition.id),
+                "revision": composition.revision,
+                "start_beat": start_beat,
+                "end_beat": end_beat,
+                "track_ids": sorted(str(track_id) for track_id in track_ids) if track_ids else None,
+                "artifacts": artifacts,
+                "seed": composition.seed,
+                "versions": {
+                    "engine": "csound7",
+                    "schema_version": composition.schema_version,
+                },
+                "spec_hash": composition_hash(composition),
+                "qa": qa_report.model_dump(mode="json"),
+            }
             manifest_path.write_text(
-                json.dumps(
-                    {
-                        "composition_id": str(composition.id),
-                        "revision": composition.revision,
-                        "start_beat": start_beat,
-                        "end_beat": end_beat,
-                        "track_ids": sorted(str(track_id) for track_id in track_ids) if track_ids else None,
-                        "artifacts": artifacts,
-                    },
-                    indent=2,
-                    sort_keys=True,
-                ),
+                json.dumps(manifest_data, indent=2, sort_keys=True),
                 encoding="utf-8",
             )
             if destination != render_directory:
                 render_directory.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(rendered.mix_path, render_directory / "mix.wav")
                 shutil.copy2(manifest_path, render_directory / "manifest.json")
+                shutil.copy2(qa_json_path, render_directory / "qa.json")
             artifacts["manifest"] = relative(manifest_path)
             with self._condition:
                 job.wav = artifacts["mix"]

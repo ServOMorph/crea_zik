@@ -243,7 +243,22 @@ def render_composition(
     end_beat: float | None = None,
     cancelled: Callable[[], bool] | None = None,
     progress: Callable[[int], None] | None = None,
+    loop: bool = False,
+    clip_ids: Collection[UUID] | None = None,
 ) -> RenderedComposition:
+    if clip_ids is not None:
+        selected_clip_ids = set(clip_ids)
+        selected_clips = [c for c in composition.clips if c.id in selected_clip_ids]
+        composition = composition.model_copy(update={"clips": selected_clips})
+        if selected_clips:
+            if start_beat == 0 and end_beat is None:
+                start_beat = min(c.start_beat for c in selected_clips)
+                end_beat = max(c.start_beat + c.length_beats * c.repeat_count for c in selected_clips)
+        else:
+            if start_beat == 0 and end_beat is None:
+                start_beat = 0
+                end_beat = 0.25
+
     if start_beat < 0:
         raise ValueError("start_beat must be non-negative")
     total_beats = composition.render_settings.duration_seconds * composition.tempo_bpm / 60

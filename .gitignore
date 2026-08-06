@@ -24,3 +24,8 @@ benchmarks/engine_selection/csound7-runtime/
 benchmarks/engine_selection/csound7-unpacked/
 benchmarks/engine_selection/*.zip
 benchmarks/engine_selection/csound7-install.log
+
+# Local files
+artifacts/
+projects/
+

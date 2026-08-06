@@ -4,7 +4,6 @@ import json
 import logging
 from typing import Any
 
-
 LOGGER = logging.getLogger("crea_zik")
 
 

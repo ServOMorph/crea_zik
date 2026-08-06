@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from .models import IntentProposal, Patch, Project, ProposalOperation
+from .models import IntentProposal, Patch, Project
 
 
 def preview_proposal(project: Project, proposal: IntentProposal) -> Project:

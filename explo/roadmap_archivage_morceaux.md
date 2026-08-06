@@ -14,12 +14,8 @@ explications techniques et empreintes d'intégrité, puis exploiter ces archives
 - Archiver les sources, le master, les stems et le rapport QA de la version `v001`.
 - Tester la création, le refus d'écrasement, la déduplication et la détection de corruption.
 
-**⏸ Checkpoint** — Demander à l'utilisateur de faire `/compact` avant de continuer.
-
 ## Phase 2 — Intégration au futur éditeur [TODO]
 
 - Faire du manifeste d'archive un contrat du domaine applicatif.
 - Ajouter depuis l'éditeur les actions « Archiver une version » et « Comparer ».
 - Présenter les différences de spec, code, son, QA et intention entre deux versions.
-
-**⏸ Checkpoint** — Demander à l'utilisateur de faire `/compact` avant de continuer.

@@ -26,8 +26,8 @@ CATALOGUE.md               point d'entrée de toutes les œuvres
 4. Exécuter :
 
 ```powershell
-python explo/archives/archive_piece.py archive explo/morceau_electro/archive.json
-python explo/archives/archive_piece.py verify
+python EXPLO/archives/archive_piece.py archive EXPLO/morceau_electro/archive.json
+python EXPLO/archives/archive_piece.py verify
 ```
 
 Une version déjà archivée n'est jamais remplacée. Toute amélioration crée `v002`, `v003`, etc.

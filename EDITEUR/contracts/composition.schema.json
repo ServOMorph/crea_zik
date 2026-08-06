@@ -415,6 +415,19 @@
        "pre",
        "post"
       ]
+     },
+     "loop": {
+      "type": "boolean"
+     },
+     "clip_ids": {
+      "type": [
+       "array",
+       "null"
+      ],
+      "items": {
+       "type": "string",
+       "format": "uuid"
+      }
      }
     }
    },

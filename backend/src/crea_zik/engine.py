@@ -3,12 +3,12 @@ from __future__ import annotations
 import shutil
 import subprocess
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable
 
-from .models import Patch, PatchKind
 from .errors import RenderEngineUnavailableError, RenderFailedError, RenderTimeoutError
+from .models import Patch, PatchKind
 from .provenance import patch_hash
 
 

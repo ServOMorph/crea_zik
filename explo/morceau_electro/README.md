@@ -7,7 +7,7 @@ Morceau electronique instrumental original de 30 secondes, genere sans sample ni
 Depuis la racine du projet :
 
 ```powershell
-python explo/morceau_electro/render.py
+python EXPLO/morceau_electro/render.py
 ```
 
 Le master PCM WAV 24 bits est ecrit dans `renders/lignes_de_nuit_30s.wav`. Les stems, en alignement

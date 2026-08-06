@@ -1005,15 +1005,15 @@ Tâches (ordre d’exécution) :
 - [x] Étendre `evaluate_wav`/`qa.py` avec ces métriques et leurs seuils.
 - [x] Tester sur signaux verrouillés (sinus, silence, plein niveau, inter-sample peak connu).
 
-### 12.2 — Modèle de rendu étendu et manifeste enrichi [EN COURS]
+### 12.2 — Modèle de rendu étendu et manifeste enrichi [FAIT]
 
-- [ ] Étendre la requête de rendu : boucle et sélection de clips, au-delà de la plage temps et des
+- [x] Étendre la requête de rendu : boucle et sélection de clips, au-delà de la plage temps et des
   pistes choisies déjà supportées.
-- [ ] Étendre le manifeste (`jobs.py`) : seed, versions moteur, spec_hash, rapport QA fusionné.
-- [ ] Mettre à jour `EDITEUR/contracts/composition.schema.json` en conséquence.
-- [ ] Tester round-trip et rendu par boucle et par sélection.
+- [x] Étendre le manifeste (`jobs.py`) : seed, versions moteur, spec_hash, rapport QA fusionné.
+- [x] Mettre à jour `EDITEUR/contracts/composition.schema.json` en conséquence.
+- [x] Tester round-trip et rendu par boucle et par sélection.
 
-
+### 12.3 — Détection des rendus périmés [EN COURS]
 
 - [ ] Comparer la révision du dernier rendu à la révision courante de la composition.
 - [ ] Signaler explicitement un rendu périmé (API et UI).

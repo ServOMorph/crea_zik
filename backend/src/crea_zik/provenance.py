@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 
 from .errors import ProjectPathError
-from .models import Patch
+from .models import Patch, Composition
 
 ENGINE_VERSION = "csound-7.0.0-beta.17"
 
@@ -16,6 +16,11 @@ def canonical_json(value: object) -> bytes:
 
 def patch_hash(patch: Patch) -> str:
     payload = {"engine": ENGINE_VERSION, "patch": patch.model_dump(mode="json")}
+    return hashlib.sha256(canonical_json(payload)).hexdigest()
+
+
+def composition_hash(composition: Composition) -> str:
+    payload = {"engine": ENGINE_VERSION, "composition": composition.model_dump(mode="json")}
     return hashlib.sha256(canonical_json(payload)).hexdigest()
 
 

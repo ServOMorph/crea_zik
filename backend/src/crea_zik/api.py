@@ -136,6 +136,8 @@ class CompositionRenderRequest(BaseModel):
     track_ids: set[UUID] | None = None
     start_beat: float = Field(default=0, ge=0)
     end_beat: float | None = Field(default=None, gt=0)
+    loop: bool = False
+    clip_ids: set[UUID] | None = None
 
 
 class GameplayEventRequest(BaseModel):
@@ -560,12 +562,21 @@ def render_project_composition(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="unknown composition track",
         )
+    if request.clip_ids is not None and not request.clip_ids <= {
+        clip.id for clip in composition.clips
+    }:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="unknown composition clip",
+        )
     job = jobs.submit_composition(
         project_id,
         composition,
         track_ids=request.track_ids,
         start_beat=request.start_beat,
         end_beat=request.end_beat,
+        loop=request.loop,
+        clip_ids=request.clip_ids,
     )
     return job_response(job)
 

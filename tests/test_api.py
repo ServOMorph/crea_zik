@@ -454,3 +454,81 @@ def test_artifact_metadata_and_export_are_available_from_the_api(tmp_path: Path,
     assert exported.status_code == 200
     assert (project_root / exported.json()["wav"]).is_file()
     assert (project_root / exported.json()["manifest"]).is_file()
+
+
+def test_composition_render_rejects_unknown_clip(tmp_path: Path, monkeypatch) -> None:
+    project_root = tmp_path / "projects"
+    monkeypatch.setattr("crea_zik.api.PROJECT_ROOT", project_root)
+    monkeypatch.setattr("crea_zik.cli.PROJECT_ROOT", project_root)
+    client = TestClient(app)
+    project = client.post("/api/projects", json={"name": "render clip guard"}).json()
+    source = client.get("/api/composition-gallery").json()[0]
+    composition = client.post(
+        f"/api/projects/{project['id']}/compositions",
+        json={"example_id": source["id"]},
+    ).json()
+    foreign = "00000000-0000-4000-8000-000000000096"
+
+    response = client.post(
+        f"/api/projects/{project['id']}/compositions/{composition['id']}/render",
+        json={"clip_ids": [foreign]},
+    )
+
+    assert response.status_code == 422
+    assert response.json()["detail"] == "unknown composition clip"
+
+
+def test_composition_render_loop_and_clip_selection(tmp_path: Path, monkeypatch) -> None:
+    project_root = tmp_path / "projects"
+    manager = JobManager(project_root)
+    monkeypatch.setattr("crea_zik.api.PROJECT_ROOT", project_root)
+    monkeypatch.setattr("crea_zik.cli.PROJECT_ROOT", project_root)
+    monkeypatch.setattr("crea_zik.api.jobs", manager)
+    client = TestClient(app)
+    project = client.post("/api/projects", json={"name": "composition render loop and clip"}).json()
+    source = client.get("/api/composition-gallery").json()[0]
+    composition = client.post(
+        f"/api/projects/{project['id']}/compositions",
+        json={"example_id": source["id"]},
+    ).json()
+    composition["render_settings"]["duration_seconds"] = .05
+    saved = client.put(
+        f"/api/projects/{project['id']}/compositions/{composition['id']}",
+        json={"expected_revision": 0, "composition": composition},
+    ).json()
+
+    # Get one of the clips from the composition
+    clip_id = saved["clips"][0]["id"]
+
+    # Render with loop=True and specific clip_ids
+    queued = client.post(
+        f"/api/projects/{project['id']}/compositions/{saved['id']}/render",
+        json={"clip_ids": [clip_id], "loop": True},
+    )
+    assert queued.status_code == 202
+    job = manager.get(UUID(queued.json()["id"]))
+    assert job is not None and job.future is not None
+    job.future.result(timeout=10)
+
+    completed = client.get(f"/api/jobs/{job.id}").json()
+    assert completed["state"] == "completed"
+
+    manifest_resp = client.get(
+        f"/api/projects/{project['id']}/compositions/{saved['id']}/renders/1/manifest"
+    )
+    assert manifest_resp.status_code == 200
+    manifest = manifest_resp.json()
+    assert "seed" in manifest
+    assert manifest["versions"]["engine"] == "csound7"
+    assert "spec_hash" in manifest
+    assert "qa" in manifest
+    assert manifest["qa"]["passed"] is True or manifest["qa"]["passed"] is False
+
+    qa_resp = client.get(
+        f"/api/projects/{project['id']}/compositions/{saved['id']}/renders/1/qa"
+    )
+    assert qa_resp.status_code == 200
+    assert qa_resp.json()["artifact_id"] == manifest["qa"]["artifact_id"]
+
+    manager.shutdown()
+

@@ -88,9 +88,8 @@ via un rendu de préécoute qui ne persiste jamais la composition ; runner canon
 La Phase 12 (Rendu final, QA et export) est ouverte : découpée en sept étapes séquentielles (12.1
 métriques true peak/LUFS manquantes, 12.2 modèle de rendu et manifeste étendus, 12.3 comparaison
 rendu périmé, 12.4 gate de promotion master, 12.5 écran Analyse & Export, 12.6 téléchargement et
-bundle, 12.7 non-régression) documentées dans `EDITEUR/roadmap_editeur_musical.md`. L'étape 12.1 (true peak
-et LUFS) a été complétée et validée avec succès via des filtres K-weighting par sample rate, du suréchantillonnage 4x (resample_poly) et des tests sur signaux verrouillés. L'étape 12.2 (modèle de rendu étendu et manifeste enrichi) est en cours.
-Le gate de déterminisme Csound réel de la phase 1 (roadmap studio audio procédural) est validé (trois rendus indépendants, même SHA-256 du WAV).
+bundle, 12.7 non-régression) documentées dans `EDITEUR/roadmap_editeur_musical.md`. L'étape 12.1 (true peak et LUFS) et l'étape 12.2 (modèle de rendu étendu et manifeste enrichi avec seed, versions, spec_hash et QA fusionné) ont été complétées et validées. L'étape 12.3 (détection des rendus périmés) est en cours.
+Le gate de déterminisme Csound réel de la phase 1 (roadmap studio audio procédural) est validee (trois rendus indépendants, même SHA-256 du WAV).
 La phase 2 de `roadmap_studio_audio_procedural.md` a été réauditée et close [FAIT] : le code réel
 dépasse largement sa description initiale. Les phases 3 (bibliothèque DSP/Sound Designer) et 4
 (Composition/Music Composer) ont été réauditées le 2026-08-02 et restent [TODO] : un socle réel
