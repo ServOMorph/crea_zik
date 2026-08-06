@@ -526,3 +526,33 @@ test("the mixer routes a track through a bus, chains an effect and keeps changes
   await page.getByRole("button", { name: "Sauvegarder" }).click();
   await expect(page.getByText("Enregistré")).toBeVisible();
 });
+
+test("the render analysis screen renders a loop, shows QA metrics and exports the bundle", async ({ page }) => {
+  const projectName = `E2E render ${Date.now()}`;
+  await page.goto("/");
+  await page.getByRole("textbox", { name: "Name", exact: true }).fill(projectName);
+  await page.getByRole("button", { name: "Create", exact: true }).click();
+  await page.getByRole("link", { name: "Éditeur musical" }).click();
+  await page.getByRole("button", { name: "Créer une copie éditable" }).click();
+  await expect(page).toHaveURL(/\/editor\?project=.*&composition=.*/);
+  await expect(page.getByRole("heading", { name: "Lignes de nuit" })).toBeVisible();
+
+  const renderHeading = page.getByRole("heading", { name: "Rendu & Export" });
+  await renderHeading.scrollIntoViewIfNeeded();
+
+  await page.getByRole("radio", { name: "Boucle" }).check();
+  await page.getByLabel("Début (temps)").fill("0");
+  await page.getByLabel("Fin (temps)").fill("8");
+
+  await page.getByRole("button", { name: "Lancer le rendu" }).click();
+  await expect(page.getByText(/: completed \(100%\)/)).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText(/Rendu à jour \(révision \d+\)/)).toBeVisible();
+
+  await page.getByRole("button", { name: "Actualiser le QA" }).click();
+  await expect(page.getByText(/True peak:/)).toBeVisible();
+  await expect(page.getByText(/LUFS:/)).toBeVisible();
+
+  await page.getByRole("button", { name: "Exporter le bundle" }).click();
+  await expect(page.getByText(/WAV : /)).toBeVisible({ timeout: 5_000 });
+  await expect(page.getByText(/Manifeste : /)).toBeVisible();
+});

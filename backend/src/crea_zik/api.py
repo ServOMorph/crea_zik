@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+from datetime import UTC
 from pathlib import Path
 from typing import Any, cast
 from uuid import NAMESPACE_URL, UUID, uuid4, uuid5
@@ -26,9 +27,10 @@ from .errors import (
     CreaZikError,
     ExportArtifactMissingError,
     PatchNotFoundError,
+    QaCheckFailedError,
     error_detail,
 )
-from .exports import export_patch
+from .exports import export_composition, export_patch
 from .gallery import composition_example, composition_examples, examples
 from .instrument_registry import registry_payload
 from .intent import IntentProposal, preview_proposal
@@ -132,6 +134,11 @@ class CompositionSave(BaseModel):
     composition: Composition
 
 
+class CompositionPromoteRequest(BaseModel):
+    waiver_author: str | None = None
+    waiver_reason: str | None = None
+
+
 class CompositionRenderRequest(BaseModel):
     track_ids: set[UUID] | None = None
     start_beat: float = Field(default=0, ge=0)
@@ -169,6 +176,14 @@ class IntentRequest(BaseModel):
 class QaRequest(BaseModel):
     profile: str = Field(default="sfx", min_length=1, max_length=80)
     loop: bool = False
+
+
+class RenderInfo(BaseModel):
+    revision: int
+    up_to_date: bool
+    stale: bool
+    manifest_url: str | None = None
+    qa_url: str | None = None
 
 
 class PluginSummary(BaseModel):
@@ -244,8 +259,8 @@ def get_composition(project: Project, composition_id: UUID) -> Composition:
     return composition
 
 
-def composition_render_directory(
-    project: Project, composition_id: UUID, revision: int
+def composition_renders_directory(
+    project: Project, composition_id: UUID
 ) -> Path:
     get_composition(project, composition_id)
     return resolve_project_path(
@@ -253,8 +268,34 @@ def composition_render_directory(
         str(project.id),
         "compositions",
         str(composition_id),
-        f"revision-{revision}",
     )
+
+
+def composition_render_directory(
+    project: Project, composition_id: UUID, revision: int
+) -> Path:
+    get_composition(project, composition_id)
+    return composition_renders_directory(project, composition_id) / f"revision-{revision}"
+
+
+def list_render_revisions(project: Project, composition_id: UUID) -> list[int]:
+    renders_dir = composition_renders_directory(project, composition_id)
+    if not renders_dir.is_dir():
+        return []
+    revisions: list[int] = []
+    for entry in renders_dir.iterdir():
+        if entry.is_dir() and entry.name.startswith("revision-"):
+            try:
+                revisions.append(int(entry.name[len("revision-"):]))
+            except ValueError:
+                continue
+    revisions.sort()
+    return revisions
+
+
+def is_render_up_to_date(project: Project, composition_id: UUID, revision: int) -> bool:
+    composition = get_composition(project, composition_id)
+    return revision == composition.revision
 
 
 def record_proposal_decision(
@@ -579,6 +620,63 @@ def render_project_composition(
         clip_ids=request.clip_ids,
     )
     return job_response(job)
+
+
+@app.get(
+    "/api/projects/{project_id}/compositions/{composition_id}/renders",
+    response_model=list[RenderInfo],
+)
+def list_composition_renders(
+    project_id: UUID, composition_id: UUID
+) -> list[RenderInfo]:
+    project = get_project(project_id)
+    revisions = list_render_revisions(project, composition_id)
+    base_renders_url = f"/api/projects/{project_id}/compositions/{composition_id}/renders"
+    result: list[RenderInfo] = []
+    for revision in revisions:
+        render_dir = composition_render_directory(project, composition_id, revision)
+        manifest_path = render_dir / "manifest.json"
+        has_manifest = manifest_path.is_file()
+        has_qa = (render_dir / "qa.json").is_file()
+        up_to_date = is_render_up_to_date(project, composition_id, revision)
+        result.append(
+            RenderInfo(
+                revision=revision,
+                up_to_date=up_to_date,
+                stale=not up_to_date,
+                manifest_url=f"{base_renders_url}/{revision}/manifest" if has_manifest else None,
+                qa_url=f"{base_renders_url}/{revision}/qa" if has_qa else None,
+            )
+        )
+    return result
+
+
+@app.get(
+    "/api/projects/{project_id}/compositions/{composition_id}/renders/latest",
+    response_model=RenderInfo,
+)
+def read_latest_render(
+    project_id: UUID, composition_id: UUID
+) -> RenderInfo:
+    project = get_project(project_id)
+    revisions = list_render_revisions(project, composition_id)
+    if not revisions:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="no render found for this composition",
+        )
+    latest = revisions[-1]
+    up_to_date = is_render_up_to_date(project, composition_id, latest)
+    render_dir = composition_render_directory(project, composition_id, latest)
+    manifest_path = render_dir / "manifest.json"
+    base_renders_url = f"/api/projects/{project_id}/compositions/{composition_id}/renders"
+    return RenderInfo(
+        revision=latest,
+        up_to_date=up_to_date,
+        stale=not up_to_date,
+        manifest_url=f"{base_renders_url}/{latest}/manifest" if manifest_path.is_file() else None,
+        qa_url=f"{base_renders_url}/{latest}/qa" if (render_dir / "qa.json").is_file() else None,
+    )
 
 
 @app.get(
@@ -933,6 +1031,95 @@ def export_project_patch(project_id: UUID, patch_id: UUID) -> ExportResponse:
     return ExportResponse(
         wav=destination.resolve().relative_to(PROJECT_ROOT.resolve()).as_posix(),
         manifest=manifest.resolve().relative_to(PROJECT_ROOT.resolve()).as_posix(),
+    )
+
+
+@app.post(
+    "/api/projects/{project_id}/compositions/{composition_id}/renders/{revision}/export",
+    response_model=ExportResponse,
+)
+def export_project_composition(
+    project_id: UUID, composition_id: UUID, revision: int = ApiPath(ge=0)
+) -> ExportResponse:
+    project = get_project(project_id)
+    render_dir = composition_render_directory(project, composition_id, revision)
+    mix_path = render_dir / "mix.wav"
+    if not mix_path.is_file():
+        raise ExportArtifactMissingError(
+            "Render the composition before exporting it.",
+            {"composition_id": str(composition_id), "revision": str(revision)},
+        )
+    bundle = export_composition(
+        PROJECT_ROOT, str(project_id), str(composition_id), revision
+    )
+    relative = lambda path: path.resolve().relative_to(PROJECT_ROOT.resolve()).as_posix()
+    return ExportResponse(
+        wav=relative(mix_path),
+        manifest=relative(bundle),
+    )
+
+
+class PromoteResponse(BaseModel):
+    revision: int
+    promoted: bool
+    waiver: dict[str, str] | None = None
+    qa: dict[str, object] | None = None
+
+
+@app.post(
+    "/api/projects/{project_id}/compositions/{composition_id}/renders/{revision}/promote",
+    response_model=PromoteResponse,
+)
+def promote_project_composition(
+    project_id: UUID,
+    composition_id: UUID,
+    revision: int = ApiPath(ge=0),
+    request: CompositionPromoteRequest | None = None,
+) -> PromoteResponse:
+    project = get_project(project_id)
+    composition = get_composition(project, composition_id)
+    if not composition.revision == revision:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="Render revision does not match current composition revision; re-render before promoting.",
+        )
+    render_dir = composition_render_directory(project, composition_id, revision)
+    mix_path = render_dir / "mix.wav"
+    if not mix_path.is_file():
+        raise ExportArtifactMissingError(
+            "Render the composition before promoting it.",
+            {"composition_id": str(composition_id), "revision": str(revision)},
+        )
+    qa_path = render_dir / "qa.json"
+    qa_data: dict[str, object] = {}
+    if qa_path.is_file():
+        qa_data = json.loads(qa_path.read_text(encoding="utf-8"))
+    passed = bool(qa_data.get("passed", True))
+    request = request or CompositionPromoteRequest()
+    if not passed and not (request.waiver_author and request.waiver_reason):
+        raise QaCheckFailedError(
+            "Cannot promote a render that failed QA; provide a waiver_author and waiver_reason to override.",
+            {"composition_id": str(composition_id), "revision": str(revision)},
+        )
+    waiver = None
+    if request.waiver_author or request.waiver_reason:
+        from datetime import datetime
+
+        waiver = {
+            "author": request.waiver_author or "",
+            "reason": request.waiver_reason or "",
+            "timestamp": datetime.now(UTC).isoformat(),
+        }
+    marker = render_dir / "master.marker"
+    marker.write_text(
+        json.dumps({"revision": revision, "promoted": True, "waiver": waiver}, indent=2, sort_keys=True),
+        encoding="utf-8",
+    )
+    return PromoteResponse(
+        revision=revision,
+        promoted=True,
+        waiver=waiver,
+        qa=qa_data if qa_data else None,
     )
 
 

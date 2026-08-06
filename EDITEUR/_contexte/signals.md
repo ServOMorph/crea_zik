@@ -12,11 +12,18 @@
   que le scope `track`). Décider si c'est un gap backend à combler ou un scope à retirer du schéma.
   - fait quand: le scope `master` est soit appliqué au rendu, soit retiré du pattern de validation
   - réf: `backend/src/crea_zik/models.py` (AutomationLane.target), `backend/src/crea_zik/compositions.py`
-- [P1|ouvert] Poursuivre les étapes 12.2 à 12.7 de la Phase 12 (modèle de rendu étendu/manifeste
-  enrichi, comparaison rendu périmé, gate de promotion master, écran « Analyse & Export »,
-  téléchargement/bundle, non-régression et clarification du comportement rendu concurrent) en commençant par 12.2.
-  - fait quand: Étape 12.2 close (modèle de rendu étendu et manifeste enrichi fonctionnels et testés).
-  - réf: `EDITEUR/roadmap_editeur_musical.md` (Phase 12, étape 12.2), `backend/src/crea_zik/jobs.py`
+- [P1|ouvert] Terminer l'étape 12.7 de la Phase 12 (non-régression formats/durées/métadonnées/hashes/
+  annulation, et clarification avec l'utilisateur du comportement attendu pour plusieurs rendus
+  simultanés — l'executor de rendu est aujourd'hui à un seul worker, donc les rendus sont sériés, pas
+  parallèles réels).
+  - fait quand: Étape 12.7 close (fonctionnelle et testée), Phase 12 entièrement close.
+  - réf: `EDITEUR/roadmap_editeur_musical.md` (Phase 12, étape 12.7), `backend/src/crea_zik/jobs.py`
+- [P2|ouvert] Test e2e Playwright « the editor transport plays, pauses, stops and reaches media end »
+  rouge en environnement local, indépendamment de toute modification récente (confirmé par
+  `git stash` : échoue aussi hors des changements de cette session). Non investigué plus avant.
+  - fait quand: cause identifiée et test de nouveau vert, ou limite documentée si liée à
+    l'environnement local (Web Audio réel en CI/local).
+  - réf: `frontend/e2e/studio.spec.ts:312`, `frontend/src/editor/TransportBar.tsx`
 
 ## Contexte chaud
 - `mixer_channels` reste vide par défaut pour `Lignes de nuit` (aucun canal par piste tant qu'aucune
@@ -28,28 +35,48 @@
   appliqué lors de la synthèse par événement, non séparable sans réécrire `_render_event`) — ne pas
   confondre avec la convention DAW stricte « avant fader ».
 - La détection de cycle du mixer (`_has_mixer_cycle` backend, `hasMixerCycle` frontend
-  `mixerRouting.ts`) suit désormais à la fois `output` ET `sends` (étendue cette session, un cycle
-  pouvait auparavant se former par une combinaison des deux non détectée). Tout nouveau champ de
-  routage doit être ajouté aux deux implémentations en parallèle.
+  `mixerRouting.ts`) suit désormais à la fois `output` ET `sends`. Tout nouveau champ de routage doit
+  être ajouté aux deux implémentations en parallèle.
+- Le bouton d'annulation d'un rendu dans l'écran « Rendu & Export » est nommé « Annuler le rendu »
+  (pas « Annuler ») pour ne pas entrer en collision avec le bouton Undo global de l'éditeur, lui-même
+  nommé « Annuler ». Tout nouveau contrôle d'annulation dans l'éditeur doit suivre cette convention.
 
 ## Dernière session
 # Session du 2026-08-06
 
 ## Décisions prises
-- Choix pragmatiques d'analyse : suréchantillonnage 4x (ou 2x pour fs >= 96 kHz) avec resample_poly pour le True Peak, et K-weighting IIR précis dynamique (filtre haute-étagère + passe-haut) avec double-gating (-70 LUFS et -10 dB) pour le calcul de LUFS.
-- Adaptation des seuils d'issues QA : clipping à true_peak >= 1.0 (0 dBTP), et loudness excessif/insuffisant selon le profil (musique : -10 à -26 LUFS ; sfx : -6 à -45 LUFS).
+- Étape 12.5 (écran « Analyse & Export ») complétée après vérification : une première version livrée
+  par un agent tiers (opencode, tombé en panne de crédits en tentant `/close`) passait ses tests mais
+  restait partielle au regard du gate de la roadmap — complétée plutôt que clôturée telle quelle.
+- Portée du rendu limitée à morceau entier / boucle (plage de temps) / sélection de clips courante /
+  pistes choisies, sans plomberie d'état supplémentaire (pas de concept de « boucle » partagé au-delà
+  de ce qu'expose déjà l'API `loop`/`start_beat`/`end_beat`).
 
 ## Livrables produits ou modifiés
-- `backend/src/crea_zik/audio_info.py` : calcul de true_peak et lufs.
-- `backend/src/crea_zik/qa.py` : intégration dans evaluate_wav et issues.
-- `tests/test_audio_info.py` : tests unitaires sur silence, sinus pur et ISP.
+- `frontend/src/editor/RenderAnalysis.tsx` : réécrit (portée, format, sauvegarde préalable
+  obligatoire, polling réel, annulation, reprise, waveform, métriques QA nommées, badge périmé/à jour).
+- `frontend/src/editor/editorStore.ts` : commande `setRenderFormat`.
+- `frontend/src/editor/EditorLanding.tsx` : intégration des nouvelles props.
+- `frontend/src/editor/RenderAnalysis.test.tsx` : réécrit, 23 tests.
+- `frontend/e2e/studio.spec.ts` : nouveau parcours Playwright « Rendu & Export ».
+- `backend/src/crea_zik/api.py` : `qa_url` ajouté au modèle `RenderInfo` (bug réel, voir ci-dessous).
+- `tests/test_api.py` : assertions `qa_url`.
+- `EDITEUR/roadmap_editeur_musical.md` : étape 12.5 marquée [FAIT] avec détail vérifié.
+- Fichier `Continue` (vide, non suivi, artefact accidentel) : supprimé.
 
 ## Hypothèses validées / invalidées
-- VALIDE : resample_poly de scipy permet une détection robuste des inter-sample peaks sur les signaux à la fréquence de Nyquist (ex: motif [0.707, 0.707, -0.707, -0.707] monte bien à 1.0 en True Peak).
-- VALIDE : Les coefficients biquad IIR de K-weighting calculés dynamiquement assurent la conformité BS.1770 sur toutes les fréquences cibles.
+- INVALIDE : la version de 12.5 livrée par l'agent tiers était complète malgré des tests verts ->
+  gate non satisfait (pas de portée/format/annulation/polling réel, pas d'état périmé affiché, aucun
+  test Playwright) -> complétée cette session.
+- VALIDE : le parcours Playwright est un filet de sécurité réel, pas redondant avec Vitest — il a
+  détecté que `GET .../renders` n'exposait jamais `qa_url` côté backend, un bug masqué depuis l'étape
+  12.3 par des tests unitaires qui fabriquaient ce champ dans leurs stubs.
 
 ## Prochaine étape exacte
-Entamer l'étape 12.2 : étendre le modèle de rendu (boucles et sélection) et enrichir le manifeste (seed, versions, spec_hash, rapport QA).
+Entamer l'étape 12.7 : non-régression (formats, durées, métadonnées, hashes, annulation) et
+clarifier avec l'utilisateur le comportement attendu pour plusieurs rendus simultanés avant d'écrire
+un test de « concurrence » (l'executor de rendu est à un seul worker aujourd'hui : file sériée).
 
 ## Question bloquante pour la session suivante
-Aucune.
+Comportement attendu pour plusieurs rendus simultanés (étape 12.7) : accepter la file sériée actuelle
+comme comportement définitif, ou faire évoluer l'executor vers un parallélisme réel ?

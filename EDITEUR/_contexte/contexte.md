@@ -27,9 +27,18 @@ Music Composer, Adaptive Lab, Analyse & Export) et son backend de rendu, permett
   Csound réel restant avant de poursuivre la roadmap applicative.
 
 ## État actuel (réécrit intégralement à chaque /close)
-Phases 9, 10 et 11 (instruments, Automations, Mixer/routage/effets) et leurs qualifications V9/V10/V11 closes [FAIT]. Phase 12 (Rendu final, QA et export) ouverte : étape 12.1 (true peak et LUFS) complétée et validée avec succès ; étape 12.2 (modèle de rendu étendu et manifeste enrichi) à démarrer.
+Phases 9, 10 et 11 et leurs qualifications V9/V10/V11 closes [FAIT]. Phase 12 (Rendu final, QA et
+export) ouverte : étapes 12.1 à 12.6 closes [FAIT] (true peak/LUFS, modèle de rendu étendu, détection
+des rendus périmés, gate de promotion master, écran « Analyse & Export », téléchargement/bundle).
+Seule l'étape 12.7 (non-régression et clarification du comportement rendu concurrent) reste ouverte
+avant de clore la Phase 12.
 
 ## Décisions structurantes (append only — 10 entrées max, 5 lignes max/entrée, archiver au-delà)
+- 2026-08-06 : Étape 12.5 (écran « Analyse & Export ») close [FAIT] après reprise d'une session
+  interrompue par une panne de crédits d'un agent tiers dont la livraison, malgré des tests verts,
+  restait partielle au regard du gate (portée/format/annulation/état périmé absents). Le parcours
+  Playwright ajouté a détecté un bug réel masqué par les tests unitaires stubés : `GET .../renders`
+  n'exposait jamais `qa_url` côté backend (`api.py`) depuis l'étape 12.3 — corrigé et testé.
 - 2026-08-06 : Phase 12 (Rendu final, QA et export) ouverte — découpée en 7 étapes séquentielles
   après audit de l'existant (moteur de rendu, WAV, jobs, métriques de base déjà livrés ; true peak,
   LUFS, manifeste enrichi, gate promotion master, écran Analyse & Export et bundle restent à

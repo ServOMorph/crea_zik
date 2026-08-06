@@ -711,6 +711,17 @@ export function setStemFaderMode(state: EditorState, mode: "pre" | "post"): Edit
   });
 }
 
+export function setRenderFormat(
+  state: EditorState,
+  format: "wav_pcm24" | "wav_pcm16" | "wav_float32",
+): EditorState {
+  return execute(state, "Modifier le format de rendu", (draft) => {
+    const settings = draft.render_settings ?? {};
+    if (!draft.render_settings) draft.render_settings = settings;
+    settings.format = format;
+  });
+}
+
 export function addPattern(state: EditorState, trackId: string): EditorState {
   return execute(state, "Ajouter un pattern", (draft) => {
     draft.patterns.push({ id: newId(), track_id: trackId, events: [] });

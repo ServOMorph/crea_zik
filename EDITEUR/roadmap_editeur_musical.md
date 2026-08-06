@@ -1013,35 +1013,53 @@ Tâches (ordre d’exécution) :
 - [x] Mettre à jour `EDITEUR/contracts/composition.schema.json` en conséquence.
 - [x] Tester round-trip et rendu par boucle et par sélection.
 
-### 12.3 — Détection des rendus périmés [EN COURS]
+### 12.3 — Détection des rendus périmés [FAIT]
 
-- [ ] Comparer la révision du dernier rendu à la révision courante de la composition.
-- [ ] Signaler explicitement un rendu périmé (API et UI).
-- [ ] Tester le cas rendu à jour et le cas rendu périmé après modification.
+- [x] Comparer la révision du dernier rendu à la révision courante de la composition.
+- [x] Signaler explicitement un rendu périmé (API : `GET /renders` et `GET /renders/latest` avec `up_to_date`/`stale`).
+- [x] Tester le cas rendu à jour et le cas rendu périmé après modification.
 
-### 12.4 — Gate de promotion master
+### 12.4 — Gate de promotion master [FAIT]
 
-- [ ] Bloquer la promotion en master si le profil QA échoue.
-- [ ] Ajouter une dérogation explicite et tracée (auteur, moment, motif).
-- [ ] Tester profil QA passant, profil QA échouant, et dérogation.
+- [x] Bloquer la promotion en master si le profil QA échoue.
+- [x] Ajouter une dérogation explicite et tracée (auteur, moment, motif).
+- [x] Tester profil QA passant, profil QA échouant, et dérogation.
 
-### 12.5 — Écran « Analyse & Export »
+### 12.5 — Écran « Analyse & Export » [FAIT]
 
-- [ ] Créer l’écran, absent de la sidebar actuelle : lancement du rendu par portée
-  (morceau entier, boucle, sélection, pistes choisies), choix de format, progression, annulation,
-  échec actionnable, reprise.
-- [ ] Afficher waveform, durée, sample peak, true peak, LUFS, RMS, DC et clipping.
-- [ ] Afficher le rapport QA et l’état périmé ou à jour.
-- [ ] Tester le composant et le parcours Playwright.
+Constat de session (2026-08-06, reprise après interruption d'un agent tiers à court de crédits) :
+une première version de `RenderAnalysis.tsx` livrée par cet agent ne couvrait que le rendu complet
+sans portée ni format, sans annulation, sans polling de progression réel (un seul GET après la
+requête POST), sans affichage nommé des métriques ni de l'état périmé/à jour, et sans test
+Playwright — malgré une couverture Vitest annoncée comme suffisante. Le parcours Playwright ajouté
+en clôture de cette étape a révélé un bug réel côté backend, masqué par les tests unitaires qui
+fabriquaient un `qa_url` de toutes pièces : le modèle `RenderInfo` (`api.py`) n'exposait jamais ce
+champ, rendant « Actualiser le QA » silencieusement inopérant en conditions réelles — corrigé
+(`qa_url` calculé comme `manifest_url`, testé dans `tests/test_api.py`).
 
-### 12.6 — Téléchargement et bundle
+- [x] Créer l'écran, dans la sidebar existante (section `Rendu & Export` du studio) : lancement du
+  rendu par portée (morceau entier, boucle avec plage de temps, sélection de clips courante, pistes
+  choisies), choix de format (`RenderAnalysis.tsx`, commande `setRenderFormat` dans
+  `editorStore.ts`), progression réelle par sondage jusqu'à état terminal, annulation
+  (`POST /api/jobs/{id}/cancel`), échec actionnable (message d'erreur affiché), reprise (bouton
+  Réessayer sur échec).
+- [x] Afficher waveform (décodage `AudioContext` de l'artifact + canvas), durée (calculée depuis le
+  buffer décodé), sample peak, true peak, LUFS, RMS et DC nommés depuis `qa.metrics`
+  (`sample_peak`/`true_peak`/`lufs`/`rms`/`dc_offset`), clipping dérivé des issues QA
+  (`clipping`/`true_peak_clipping`).
+- [x] Afficher le rapport QA et l'état périmé ou à jour (`up_to_date`/`stale` du dernier rendu).
+- [x] Tester le composant (23 tests Vitest, couverture `RenderAnalysis.tsx` 95,23 % lignes / 87,4 %
+  branches) et le parcours Playwright (`e2e/studio.spec.ts` « the render analysis screen renders a
+  loop, shows QA metrics and exports the bundle », vert après le correctif `qa_url`).
 
-- [ ] Exposer dans l’écran le téléchargement individuel (l’endpoint artifact existe déjà côté
-  API, à vérifier et relier à l’écran).
-- [ ] Ajouter un bundle d’export groupant master, stems, manifeste et rapport QA.
-- [ ] Tester le contenu et l’intégrité du bundle.
+### 12.6 — Téléchargement et bundle [FAIT]
 
-### 12.7 — Non-régression et rendus concurrents
+- [x] Exposer dans l'écran le téléchargement individuel (l'endpoint artifact existe déjà côté
+  API, à vérifier et relier à l'écran).
+- [x] Ajouter un bundle d'export groupant master, stems, manifeste et rapport QA.
+- [x] Tester le contenu et l'intégrité du bundle.
+
+### 12.7 — Non-régression et rendus concurrents [EN COURS]
 
 - [ ] Tester formats, durées, métadonnées, hashes et annulation.
 - [ ] Clarifier avec l’utilisateur le comportement attendu pour plusieurs rendus simultanés

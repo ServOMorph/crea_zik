@@ -52,6 +52,10 @@ class ExportArtifactMissingError(CreaZikError):
     code = "export_artifact_missing"
 
 
+class QaCheckFailedError(CreaZikError):
+    code = "qa_check_failed"
+
+
 class ArtifactMissingError(CreaZikError):
     code = "artifact_missing"
 

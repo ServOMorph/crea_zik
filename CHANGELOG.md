@@ -1,5 +1,28 @@
 # Changelog
 
+## v0.36 — 2026-08-06
+
+### Ajouté
+
+- Frontend : `RenderAnalysis.tsx` (écran « Rendu & Export », étape 12.5) réécrit avec portée du rendu
+  (morceau entier, boucle, sélection de clips, pistes choisies), choix de format, sauvegarde préalable
+  obligatoire, annulation et reprise, waveform décodée, métriques QA nommées et état périmé/à jour.
+- Frontend : commande `setRenderFormat` dans `editorStore.ts` ; parcours Playwright « the render
+  analysis screen renders a loop, shows QA metrics and exports the bundle ».
+
+### Corrigé
+
+- Backend : le modèle `RenderInfo` (`api.py`) n'exposait jamais de champ `qa_url`, rendant
+  l'actualisation du rapport QA silencieusement inopérante en conditions réelles depuis l'étape 12.3 —
+  détecté par le nouveau parcours Playwright, masqué jusqu'ici par des tests unitaires stubés.
+
+### Notes
+
+- Reprise d'une session interrompue par une panne de crédits d'un agent tiers (opencode) : ses
+  livraisons pour les étapes 12.1 à 12.4 et 12.6 ont été vérifiées par exécution réelle des tests
+  (pas seulement relues) et confirmées fonctionnelles ; sa version de l'étape 12.5, annoncée complète
+  malgré des tests verts, s'est révélée partielle au regard du gate de la roadmap et a été complétée.
+
 ## v0.35 — 2026-08-06
 
 ### Ajouté

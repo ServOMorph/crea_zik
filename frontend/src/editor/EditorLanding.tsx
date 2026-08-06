@@ -56,6 +56,7 @@ import {
   setChannelEffectBypass,
   setChannelEffectParameter,
   setStemFaderMode,
+  setRenderFormat,
 } from "./editorStore";
 import { ChannelRackRow } from "./ChannelRack";
 import {
@@ -99,6 +100,7 @@ import { Automations } from "./Automations";
 import { Mixer } from "./Mixer";
 import { PatternEditor } from "./PatternEditor";
 import { Playlist } from "./Playlist";
+import { RenderAnalysis } from "./RenderAnalysis";
 import { TransportBar } from "./TransportBar";
 import { VirtualList } from "./VirtualList";
 import { InstrumentInspector } from "./InstrumentInspector";
@@ -888,6 +890,23 @@ export function EditorLanding({ search, onNavigate, onDirtyChange }: EditorLandi
               )
             }
           />
+        <RenderAnalysis
+          projectId={projectId ?? ""}
+          compositionId={compositionId ?? ""}
+          tracks={editor.composition.tracks}
+          selectedClipIds={editor.selection.clips}
+          renderFormat={
+            (editor.composition.render_settings?.format as
+              | "wav_pcm24"
+              | "wav_pcm16"
+              | "wav_float32"
+              | undefined) ?? "wav_pcm24"
+          }
+          onSetRenderFormat={(format) =>
+            setEditor((current) => (current ? setRenderFormat(current, format) : current))
+          }
+          ensureSaved={save}
+        />
         </section>
       )}
     </section>

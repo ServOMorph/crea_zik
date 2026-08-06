@@ -532,3 +532,217 @@ def test_composition_render_loop_and_clip_selection(tmp_path: Path, monkeypatch)
 
     manager.shutdown()
 
+
+def test_composition_render_outdated_detection(tmp_path: Path, monkeypatch) -> None:
+    project_root = tmp_path / "projects"
+    manager = JobManager(project_root)
+    monkeypatch.setattr("crea_zik.api.PROJECT_ROOT", project_root)
+    monkeypatch.setattr("crea_zik.cli.PROJECT_ROOT", project_root)
+    monkeypatch.setattr("crea_zik.api.jobs", manager)
+    client = TestClient(app)
+    project = client.post("/api/projects", json={"name": "outdated detection"}).json()
+    source = client.get("/api/composition-gallery").json()[0]
+    composition = client.post(
+        f"/api/projects/{project['id']}/compositions",
+        json={"example_id": source["id"]},
+    ).json()
+    composition["render_settings"]["duration_seconds"] = .01
+    saved = client.put(
+        f"/api/projects/{project['id']}/compositions/{composition['id']}",
+        json={"expected_revision": 0, "composition": composition},
+    ).json()
+
+    renders_empty = client.get(
+        f"/api/projects/{project['id']}/compositions/{saved['id']}/renders"
+    )
+    assert renders_empty.status_code == 200
+    assert renders_empty.json() == []
+
+    latest_empty = client.get(
+        f"/api/projects/{project['id']}/compositions/{saved['id']}/renders/latest"
+    )
+    assert latest_empty.status_code == 404
+
+    queued = client.post(
+        f"/api/projects/{project['id']}/compositions/{saved['id']}/render",
+        json={"track_ids": [saved["tracks"][0]["id"]], "start_beat": 0, "end_beat": .01},
+    )
+    job = manager.get(UUID(queued.json()["id"]))
+    assert job is not None and job.future is not None
+    job.future.result(timeout=2)
+
+    renders = client.get(
+        f"/api/projects/{project['id']}/compositions/{saved['id']}/renders"
+    )
+    assert renders.status_code == 200
+    render_list = renders.json()
+    assert len(render_list) == 1
+    assert render_list[0]["revision"] == 1
+    assert render_list[0]["up_to_date"] is True
+    assert render_list[0]["stale"] is False
+    assert render_list[0]["qa_url"] == (
+        f"/api/projects/{project['id']}/compositions/{saved['id']}/renders/1/qa"
+    )
+    qa_response = client.get(render_list[0]["qa_url"])
+    assert qa_response.status_code == 200
+    assert "passed" in qa_response.json()
+
+    latest = client.get(
+        f"/api/projects/{project['id']}/compositions/{saved['id']}/renders/latest"
+    )
+    assert latest.status_code == 200
+    latest_info = latest.json()
+    assert latest_info["revision"] == 1
+    assert latest_info["up_to_date"] is True
+    assert latest_info["stale"] is False
+    assert latest_info["qa_url"] == render_list[0]["qa_url"]
+
+    saved["title"] = "Modified after render"
+    client.put(
+        f"/api/projects/{project['id']}/compositions/{saved['id']}",
+        json={"expected_revision": 1, "composition": saved},
+    )
+
+    renders_after = client.get(
+        f"/api/projects/{project['id']}/compositions/{saved['id']}/renders"
+    )
+    render_list_after = renders_after.json()
+    assert render_list_after[0]["revision"] == 1
+    assert render_list_after[0]["up_to_date"] is False
+    assert render_list_after[0]["stale"] is True
+
+    latest_after = client.get(
+        f"/api/projects/{project['id']}/compositions/{saved['id']}/renders/latest"
+    )
+    latest_after_info = latest_after.json()
+    assert latest_after_info["revision"] == 1
+    assert latest_after_info["up_to_date"] is False
+    assert latest_after_info["stale"] is True
+
+    manager.shutdown()
+
+
+def test_composition_export_creates_bundle_with_integrity(tmp_path: Path, monkeypatch) -> None:
+    import zipfile
+
+    project_root = tmp_path / "projects"
+    manager = JobManager(project_root)
+    monkeypatch.setattr("crea_zik.api.PROJECT_ROOT", project_root)
+    monkeypatch.setattr("crea_zik.cli.PROJECT_ROOT", project_root)
+    monkeypatch.setattr("crea_zik.api.jobs", manager)
+    client = TestClient(app)
+    project = client.post("/api/projects", json={"name": "composition export"}).json()
+    source = client.get("/api/composition-gallery").json()[0]
+    composition = client.post(
+        f"/api/projects/{project['id']}/compositions",
+        json={"example_id": source["id"]},
+    ).json()
+    composition["render_settings"]["duration_seconds"] = .01
+    saved = client.put(
+        f"/api/projects/{project['id']}/compositions/{composition['id']}",
+        json={"expected_revision": 0, "composition": composition},
+    ).json()
+
+    queued = client.post(
+        f"/api/projects/{project['id']}/compositions/{saved['id']}/render",
+    )
+    job = manager.get(UUID(queued.json()["id"]))
+    assert job is not None and job.future is not None
+    job.future.result(timeout=15)
+
+    exported = client.post(
+        f"/api/projects/{project['id']}/compositions/{saved['id']}/renders/1/export"
+    )
+    assert exported.status_code == 200, exported.json()
+    export_info = exported.json()
+    assert "wav" in export_info
+    assert "manifest" in export_info
+
+    bundle_path = project_root / export_info["manifest"]
+    assert bundle_path.is_file()
+
+    with zipfile.ZipFile(bundle_path, "r") as archive:
+        names = archive.namelist()
+        assert "mix.wav" in names
+        assert "manifest.json" in names
+        assert "qa.json" in names
+        stem_files = [name for name in names if name.startswith("stems/")]
+        assert len(stem_files) > 0
+        manifest_content = archive.read("manifest.json").decode("utf-8")
+        import json
+        manifest = json.loads(manifest_content)
+        assert "revision" in manifest or "composition_id" in manifest
+
+    manager.shutdown()
+
+
+def test_composition_render_promote_blocks_failed_qa_without_waiver(tmp_path: Path, monkeypatch) -> None:
+    project_root = tmp_path / "projects"
+    manager = JobManager(project_root)
+    monkeypatch.setattr("crea_zik.api.PROJECT_ROOT", project_root)
+    monkeypatch.setattr("crea_zik.cli.PROJECT_ROOT", project_root)
+    monkeypatch.setattr("crea_zik.api.jobs", manager)
+    client = TestClient(app)
+    project = client.post("/api/projects", json={"name": "promote qa"}).json()
+    source = client.get("/api/composition-gallery").json()[0]
+    composition = client.post(
+        f"/api/projects/{project['id']}/compositions",
+        json={"example_id": source["id"]},
+    ).json()
+    composition["render_settings"]["duration_seconds"] = .01
+    saved = client.put(
+        f"/api/projects/{project['id']}/compositions/{composition['id']}",
+        json={"expected_revision": 0, "composition": composition},
+    ).json()
+
+    queued = client.post(
+        f"/api/projects/{project['id']}/compositions/{saved['id']}/render",
+    )
+    job = manager.get(UUID(queued.json()["id"]))
+    assert job is not None and job.future is not None
+    job.future.result(timeout=15)
+
+    revision = saved["revision"]
+
+    # Replace qa.json with a passing report for the first promotion
+    render_dir = project_root / str(project["id"]) / "compositions" / str(saved["id"]) / f"revision-{revision}"
+    import json as _json
+
+    qa_path = render_dir / "qa.json"
+    qa_path.write_text(_json.dumps({"passed": True, "issues": [], "metrics": {}}), encoding="utf-8")
+
+    promote = client.post(
+        f"/api/projects/{project['id']}/compositions/{saved['id']}/renders/{revision}/promote"
+    )
+    assert promote.status_code == 200
+    body = promote.json()
+    assert body["revision"] == revision
+    assert body["promoted"] is True
+    assert body["waiver"] is None
+
+    qa_path.write_text(_json.dumps({"passed": False, "issues": ["clipping"], "metrics": {}}), encoding="utf-8")
+
+    no_waiver = client.post(
+        f"/api/projects/{project['id']}/compositions/{saved['id']}/renders/{revision}/promote"
+    )
+    assert no_waiver.status_code == 422
+    assert no_waiver.json()["detail"]["code"] == "qa_check_failed"
+
+    with_waiver = client.post(
+        f"/api/projects/{project['id']}/compositions/{saved['id']}/renders/{revision}/promote",
+        json={"waiver_author": "tester", "waiver_reason": "manual review"},
+    )
+    assert with_waiver.status_code == 200
+    waiver_body = with_waiver.json()
+    assert waiver_body["waiver"]["author"] == "tester"
+    assert waiver_body["waiver"]["reason"] == "manual review"
+    assert waiver_body["waiver"]["timestamp"]
+
+    marker = render_dir / "master.marker"
+    assert marker.is_file()
+    marker_data = _json.loads(marker.read_text(encoding="utf-8"))
+    assert marker_data["promoted"] is True
+    assert marker_data["waiver"]["author"] == "tester"
+
+    manager.shutdown()
+

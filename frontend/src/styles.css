@@ -1597,3 +1597,63 @@ audio {
   border: 1px solid #2a3a55;
   border-radius: 8px;
 }
+
+.render-analysis {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #3a4a65;
+  border-radius: 12px;
+  background: #182233;
+}
+
+.render-analysis__scope {
+  display: grid;
+  gap: 6px;
+  border: 1px solid #2a3a55;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.render-analysis__loop-range,
+.render-analysis__tracks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.render-analysis__tracks input[type="number"] {
+  width: 80px;
+}
+
+.render-analysis__format {
+  display: grid;
+  gap: 4px;
+  max-width: 220px;
+}
+
+.render-analysis__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.render-analysis__waveform {
+  width: 100%;
+  max-width: 600px;
+  height: 80px;
+  background: #101827;
+  border: 1px solid #2a3a55;
+  border-radius: 6px;
+}
+
+.render-stale {
+  color: #e0a95c;
+}
+
+.render-up-to-date {
+  color: #7fd18b;
+}
