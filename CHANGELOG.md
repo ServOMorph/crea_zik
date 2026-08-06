@@ -1,5 +1,25 @@
 # Changelog
 
+## v0.29 — 2026-08-06
+
+### Corrigé
+
+- `frontend/e2e/studio.spec.ts` : assertion V8 du drag-and-drop Playlist rendue dynamique — le test
+  rouge n'était pas un bug du ripple mais une attente erronée (le clip ajouté démarre à
+  `compositionEndBeat` = 62 beats, pad déplacé à 2..62, pas à 60) ; l'assertion vérifie que le clip
+  suivant est poussé de la distance exacte du drag. Désambiguïsation du checkbox « Boucle sélection »
+  (collision avec le checkbox « Ripple » de la Playlist en strict mode).
+- `EDITEUR/test_editor.ps1` : gate `python-lock` échouait à tort — `uv lock --check` écrit sa
+  progression sur stderr même en succès, transformé en exception par `$ErrorActionPreference="Stop"` ;
+  `Invoke-Gate` abaisse localement la préférence à `Continue` (les échecs réels restent détectés via
+  `$LASTEXITCODE`).
+
+### Modifié
+
+- Qualification V8 close : runner canonique complet vert (`EDITEUR/test-results/v1-20260806-060208.json`,
+  success true, 20 checks), e2e 15/15, backend 130 tests, golden `Lignes de nuit` inchangé. Phase 9
+  (Instruments procéduraux et inspecteur) ouverte.
+
 ## v0.28 — 2026-08-06
 
 ### Ajouté

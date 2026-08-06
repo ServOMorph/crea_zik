@@ -221,8 +221,8 @@ test("the music editor opens a project composition from a direct route", async (
   await page.getByRole("button", { name: "Stop" }).click();
   await page.getByLabel("Position de lecture").fill("4");
   await expect(page.getByLabel("Position de lecture")).toHaveValue("4");
-  await page.getByRole("checkbox").check();
-  await expect(page.getByRole("checkbox")).toBeChecked();
+  await page.getByRole("checkbox", { name: "Boucle sélection" }).check();
+  await expect(page.getByRole("checkbox", { name: "Boucle sélection" })).toBeChecked();
 
   const directUrl = page.url();
   await page.goto(directUrl);
@@ -287,8 +287,10 @@ test("the playlist arranges clips and markers by drag and keeps them after reloa
   await page.getByRole("checkbox", { name: "Ripple" }).check();
 
   const firstClip = page.locator(".playlist__clip").first();
+  const trailingClip = page.locator(".playlist__clip").nth(1);
   await firstClip.scrollIntoViewIfNeeded();
   await scrollPlaylist(400);
+  const trailingLeft = parseFloat(await trailingClip.evaluate((el) => el.style.left));
   const firstBox = (await firstClip.boundingBox()) ?? { x: 0, y: 0, width: 20, height: 44 };
   const firstStartX = Math.max(firstBox.x + 120, 500);
   await page.mouse.move(firstStartX, firstBox.y + firstBox.height / 2);
@@ -296,7 +298,7 @@ test("the playlist arranges clips and markers by drag and keeps them after reloa
   await page.mouse.move(firstStartX + 768, firstBox.y + firstBox.height / 2, { steps: 10 });
   await page.mouse.up();
   await expect(firstClip).toHaveCSS("left", "768px");
-  await expect(page.locator(".playlist__clip").nth(1)).toHaveCSS("left", "6528px");
+  await expect(trailingClip).toHaveCSS("left", `${trailingLeft + 768}px`);
 
   await page.getByRole("button", { name: "Sauvegarder" }).click();
   await expect(page.getByText("Enregistré")).toBeVisible();

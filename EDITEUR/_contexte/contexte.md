@@ -27,21 +27,23 @@ Music Composer, Adaptive Lab, Analyse & Export) et son backend de rendu, permett
   Csound réel restant avant de poursuivre la roadmap applicative.
 
 ## État actuel (réécrit intégralement à chaque /close)
-Phase 8 en cours : Playlist multipiste livrée (composant autonome, lanes synchronisées au Channel
-Rack, clips déplacement/resize/split/ripple, insert/delete time, mute/lock, marqueurs éditables,
-pistes ↑/↓, chevauchements `is-obscured`, alerte densité 300), 17 tests composant + 194 unitaires
-éditeur verts, typecheck/lint propres. Qualification V8 e2e ROUGE : le drag ripple déplace le clip
-ajouté à 70 beats (6720 px) au lieu de 68 (6528 px) — debug en cours. Phase 8 [EN COURS], V8 [TODO].
+Phase 8 close, qualification V8 verte : le test e2e rouge était une attente erronée (clip ajouté à
+`compositionEndBeat` = 62, pas 60 ; ripple +8 → 70 beats) ; assertion rendue dynamique (clip suivant
+poussé de la distance exacte du drag). Fix du runner `test_editor.ps1` (stderr de `uv lock --check`
+sous `$ErrorActionPreference="Stop"` → `Invoke-Gate` en `Continue` local). Runner canonique vert
+20/20 (`v1-20260806-060208.json`, success true). Phase 9 (Instruments procéduraux et inspecteur) ouverte [EN COURS].
 
 ## Décisions structurantes (append only — 10 entrées max, 5 lignes max/entrée, archiver au-delà)
+- 2026-08-06 : Qualification V8 close — le test e2e rouge était une attente erronée (clip ajouté à
+  `compositionEndBeat` = 62 beats, pas 60) ; l'assertion vérifie que le clip suivant est poussé de
+  la distance exacte du drag. Fix du runner `test_editor.ps1` (stderr de `uv lock --check` sous
+  `$ErrorActionPreference="Stop"` → `Invoke-Gate` en `Continue` local, échecs via `$LASTEXITCODE`).
+  Runner canonique vert 20/20 (`v1-20260806-060208.json`). Phase 9 ouverte [EN COURS].
 - 2026-08-06 : Playlist livrée comme composant autonome (`Playlist.tsx`) avec 19 callbacks câblés au
   store, drag à deltas incrémentés + snap, poignées de resize en vrais boutons accessibles ; le drag
   e2e pilote le défilement horizontal par `scrollLeft` explicite (`scrollIntoViewIfNeeded` fait
   passer le contenu sous le side sticky 220 px ou hors viewport). Test e2e V8 encore rouge
   (nth(1) = 6720 px vs 6528 px attendu).
-- 2026-08-04 : Phase V1 close [FAIT] — propriétés Hypothesis (round-trip `Composition` + validation
-  des références) ajoutées via stratégies composites respectant le graphe de références ; le point
-  mutations reste bloqué et documenté (LIM-001). Phase V2 ouverte.
 - 2026-08-04 : Phase V2 et Phase 2 (API de composition et persistance sûre) closes [FAIT] —
   qualification complète de l'API de composition (routes nominales, erreurs typées, fuzz, concurrence,
   interruption/reprise, chemins hostiles, isolation) ; runner canonique complet vert. 500 non typé

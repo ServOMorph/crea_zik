@@ -37,6 +37,7 @@ function Invoke-Gate {
     $exitCode = 1
     try {
         Push-Location $WorkingDirectory
+        $ErrorActionPreference = "Continue"
         & $Command @Arguments
         $exitCode = $LASTEXITCODE
     }
@@ -44,6 +45,7 @@ function Invoke-Gate {
         Write-Error $_
     }
     finally {
+        $ErrorActionPreference = "Stop"
         Pop-Location
     }
     $results.Add([pscustomobject]@{

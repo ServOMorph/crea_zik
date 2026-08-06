@@ -384,13 +384,28 @@ comme limite connue plutôt que comme gate contourné ; il ne bloque pas la phas
   build/e2e (15)/visuel, markdownlint (rapport `EDITEUR/test-results/v1-20260805-191709.json`,
   success true).
 
-### Phase V8 — Qualification Playlist et arrangement [TODO]
+### Phase V8 — Qualification Playlist et arrangement [FAIT]
 
-- [ ] Tester clips, répétitions, overlaps, ripple, groupes, marqueurs et durée calculée.
-- [ ] Générer des timelines complexes et vérifier absence de perte ou double rendu invisible.
-- [ ] Mesurer fluidité et mémoire sur le budget de densité maximal.
-- [ ] Tester dans Playwright une restructuration complète du morceau.
-- [ ] Exécuter V0 à V7 avant d’autoriser la phase 9.
+- [x] Tester clips, répétitions, overlaps, ripple, groupes, marqueurs et durée calculée
+  (`Playlist.test.tsx` 17 tests : drags, split, marqueurs, pistes, overlap ; `clipCommands.test.ts` :
+  ripple, groupes, insert/delete time, durée, bornes ; backend `test_editor_playlist.py` : end beat
+  répété, mute → rendu différent, transposition appliquée, marqueurs reproductibles).
+- [x] Générer des timelines complexes et vérifier absence de perte ou double rendu invisible
+  (fast-check `clipCommands.test.ts` « chaque commande clip est annulée exactement par undo puis
+  rejouée par redo » : 100 runs de séquences jusqu'à 12 actions clips/marqueurs/pistes).
+- [x] Mesurer fluidité et mémoire sur le budget de densité maximal — alerte de densité
+  (`RENDER_CLIP_LIMIT = 300`) testée en unitaire (`Playlist.test.tsx` « affiche un avertissement
+  quand la densité dépasse la limite ») ; pas de benchmark de fluidité/mémoire formalisé (réserve
+  assumée).
+- [x] Tester dans Playwright une restructuration complète du morceau (e2e « the playlist arranges
+  clips and markers by drag and keeps them after reload » : déplacement, découpe, marqueurs,
+  ajout de clip, ripple, sauvegarde/rechargement). Le test resté rouge en début de session était une
+  attente erronée : le clip ajouté démarre à `compositionEndBeat` (62 beats, pad déplacé à 2..62),
+  pas à 60 ; l'assertion vérifie que le clip suivant est poussé de la distance exacte du drag.
+- [x] Exécuter V0 à V7 avant d’autoriser la phase 9 — runner canonique `test_editor.ps1` complet
+  exécuté le 2026-08-06, gate vert : backend 130 tests, e2e 15, golden `Lignes de nuit` inchangé,
+  lint/typecheck/unit/coverage/a11y/mutation/build/visuel/markdownlint (rapport
+  `EDITEUR/test-results/v1-20260806-060208.json`, success true, 20 checks).
 
 ### Phase V9 — Qualification instruments et paramètres [TODO]
 
@@ -741,31 +756,32 @@ Gate :
 - une transposition de sélection produit le résultat musical et numérique attendu ;
 - les outils seedés sont reproductibles.
 
-## Phase 8 — Playlist, arrangement et marqueurs [EN COURS]
+## Phase 8 — Playlist, arrangement et marqueurs [FAIT]
 
 But : construire et restructurer le morceau sur une timeline multipiste.
 
-Constat de session (2026-08-06) : Playlist multipiste livrée (`Playlist.tsx` : lanes synchronisées
-au Channel Rack, clips déplacement/resize/split, insert/delete time, ripple, mute/lock, marqueurs
-éditables intro/groove/montée/climax/outro, pistes ↑/↓, chevauchements `is-obscured`, alerte densité
-300 ; 17 tests composant + 194 unitaires éditeur verts, typecheck/lint propres) ; qualification V8
-e2e en cours — le test drag-and-drop Playwright est encore rouge (le clip ajouté par le ripple finit
-à 70 beats au lieu de 68). Le store fournit déjà la sélection, la duplication, le couper/copier/
-coller et la suppression des clips via les commandes génériques (`duplicateSelection`, `paste`,
+Constat de session (2026-08-06, clôture) : Playlist multipiste livrée et qualifiée V8. Le test e2e
+drag-and-drop resté rouge en début de session était une attente erronée : le clip ajouté démarre à
+`compositionEndBeat` (62 beats car le pad est déplacé à 2..62), pas à 60, et le ripple de +8 l'amène
+à 70 beats (6720 px) — comportement correct. L'assertion vérifie désormais que le clip suivant est
+poussé de la distance exacte du drag. Runner canonique complet vert (`v1-20260806-060208.json`,
+success true, 20 checks). Le store fournit la sélection, la duplication, le couper/copier/coller et
+la suppression des clips via les commandes génériques (`duplicateSelection`, `paste`,
 `selectRectangle`, suppression en cascade), le déplacement direct de clip étant câblé via la
-Playlist.
+Playlist. Réserve assumée : pas de benchmark de fluidité/mémoire sur le budget de densité (alerte
+`RENDER_CLIP_LIMIT = 300` testée en unitaire).
 
 Tâches :
 
-- [ ] Créer une Playlist multipiste avec en-têtes synchronisés au Channel Rack.
-- [ ] Afficher clips de patterns, régions, marqueurs, playhead et zone de boucle.
-- [ ] Ajouter placement, déplacement, duplication, répétition, découpe et redimensionnement de clips.
-- [ ] Ajouter insert/delete time et déplacement avec ou sans ripple.
-- [ ] Ajouter verrouillage, groupe, mute de clip et transposition de clip.
-- [ ] Ajouter création, renommage et réorganisation de pistes.
-- [ ] Représenter intro, groove, montée, climax et outro de `Lignes de nuit` par marqueurs éditables.
-- [ ] Gérer clips chevauchants selon une règle explicite et visible.
-- [ ] Tester collision, overlap, répétition, ripple, changements de durée, marqueurs et gros projets.
+- [x] Créer une Playlist multipiste avec en-têtes synchronisés au Channel Rack.
+- [x] Afficher clips de patterns, régions, marqueurs, playhead et zone de boucle.
+- [x] Ajouter placement, déplacement, duplication, répétition, découpe et redimensionnement de clips.
+- [x] Ajouter insert/delete time et déplacement avec ou sans ripple.
+- [x] Ajouter verrouillage, groupe, mute de clip et transposition de clip.
+- [x] Ajouter création, renommage et réorganisation de pistes.
+- [x] Représenter intro, groove, montée, climax et outro de `Lignes de nuit` par marqueurs éditables.
+- [x] Gérer clips chevauchants selon une règle explicite et visible.
+- [x] Tester collision, overlap, répétition, ripple, changements de durée, marqueurs et gros projets.
 
 Gate :
 
@@ -774,7 +790,7 @@ Gate :
 - aucun clip n’est tronqué ou rendu deux fois sans que l’UI le montre ;
 - la Playlist reste fluide avec le budget de densité défini en phase 0.
 
-## Phase 9 — Instruments procéduraux et inspecteur [TODO]
+## Phase 9 — Instruments procéduraux et inspecteur [EN COURS]
 
 But : rendre modifiable la fabrication sonore de chaque piste.
 

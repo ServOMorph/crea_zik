@@ -31,3 +31,6 @@ Décisions archivées depuis `_contexte/contexte.md` (append only).
   typables) migrés vers `list[NoteEvent]` et `MixerChannel` typés, pour tenir la promesse de la
   Phase 1 (schéma entièrement pilotable par données) plutôt que de considérer la phase close sur
   un socle partiel.
+- 2026-08-04 : Phase V1 close [FAIT] — propriétés Hypothesis (round-trip `Composition` + validation
+  des références) ajoutées via stratégies composites respectant le graphe de références ; le point
+  mutations reste bloqué et documenté (LIM-001). Phase V2 ouverte.
