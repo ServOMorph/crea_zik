@@ -28,14 +28,20 @@ Music Composer, Adaptive Lab, Analyse & Export) et son backend de rendu, permett
 
 ## État actuel (réécrit intégralement à chaque /close)
 Phases 9, 10 et 11 (instruments, Automations, Mixer/routage/effets) et leurs qualifications V9/V10/
-V11 closes [FAIT] (voir décisions structurantes). Chemin audio complet livré : pistes, bus, sends,
-master, chaînes d'effets ordonnées (EQ/saturation/compresseur/délai/réverbération), routage validé
-sans cycle, stems pré/post-fader, comparaison A/B via préécoute non persistante. Phase 12 (Rendu
-final, QA et export) à ouvrir. Deux écarts restent à trancher (voir `_contexte/signals.md`) : panneau
-Automations dédié plutôt que lanes dans `Playlist.tsx`, et scope `master` d'automation validé par le
-schéma mais non appliqué par le moteur de rendu.
+V11 closes [FAIT]. Phase 12 (Rendu final, QA et export) ouverte : découpée en sept étapes
+séquentielles (12.1 métriques true peak/LUFS manquantes, 12.2 modèle/manifeste étendu, 12.3 rendu
+périmé, 12.4 gate promotion master, 12.5 écran Analyse & Export, 12.6 téléchargement/bundle, 12.7
+non-régression) documentées dans `EDITEUR/roadmap_editeur_musical.md`. Le moteur de rendu, l'écriture
+WAV et les métriques de base existent déjà ; à construire en premier : true peak et LUFS. Deux écarts
+restent à trancher (voir `_contexte/signals.md`) : panneau Automations dédié plutôt que lanes dans
+`Playlist.tsx`, et scope `master` d'automation validé par le schéma mais non appliqué par le moteur
+de rendu.
 
 ## Décisions structurantes (append only — 10 entrées max, 5 lignes max/entrée, archiver au-delà)
+- 2026-08-06 : Phase 12 (Rendu final, QA et export) ouverte — découpée en 7 étapes séquentielles
+  après audit de l'existant (moteur de rendu, WAV, jobs, métriques de base déjà livrés ; true peak,
+  LUFS, manifeste enrichi, gate promotion master, écran Analyse & Export et bundle restent à
+  construire). Détail dans `EDITEUR/roadmap_editeur_musical.md`, Phase 12.
 - 2026-08-06 : Phases 11 et V11 (Mixer, routage et effets) closes [FAIT] — routage topologique
   piste→bus→master avec sends, DSP réel mais minimal (EQ biquad, saturation, compresseur, délai,
   réverbération existante conservée), cycle détecté sur `output` ET `sends` (extension backend +
@@ -83,9 +89,3 @@ schéma mais non appliqué par le moteur de rendu.
   runner canonique vert 20 checks (`v1-20260805-102645.json`, backend 116, frontend 96 unitaires,
   13 e2e). V6 [EN COURS] : reste longueur/duplication/renommage/suppression de patterns,
   sélection multiple, remplissages, couleur (migration schéma), drag-and-drop Playwright.
-- 2026-08-05 : Phases 6 et V6 closes [FAIT] — longueur/duplication/renommage/variation seedée/
-  suppression sûre, sélection multiple, remplissages, préécoute piste, couleur et nom de pattern
-  via migration de schéma v3 (contrat et fixture alignés, golden inchangés) ; runner canonique
-  vert final (`v1-20260805-110735.json`, success true). Réserves assumées : glisser et
-  multi-sélection couverts en unitaire, preuve rendu/hash frontend non formalisée (backend) ;
-  couleur de piste et accès instrument reportés à la Phase 9. Phase 7 (Piano Roll) ouverte.

@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.34 — 2026-08-06
+
+### Modifié
+
+- `EDITEUR/roadmap_editeur_musical.md` : Phase 12 (Rendu final, QA et export) ouverte et découpée en
+  sept étapes séquentielles (12.1 métriques true peak/LUFS manquantes, 12.2 modèle de rendu et
+  manifeste étendus, 12.3 comparaison rendu périmé, 12.4 gate de promotion master, 12.5 écran
+  Analyse & Export, 12.6 téléchargement et bundle, 12.7 non-régression) avec constat de l'existant.
+
+### Notes
+
+- Audit de l'existant : moteur de rendu, écriture WAV float32/PCM24, jobs progression/annulation et
+  métriques peak/RMS/DC/clipping déjà livrés. True peak et LUFS absents du dépôt — à implémenter en
+  premier (étape 12.1). Aucun code applicatif modifié cette session.
+
 ## v0.33 — 2026-08-06
 
 ### Ajouté

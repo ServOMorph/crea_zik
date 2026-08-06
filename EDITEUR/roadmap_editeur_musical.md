@@ -984,17 +984,70 @@ ci-dessous pour le détail.
 
 But : livrer les résultats utilisables directement depuis l’éditeur.
 
-Tâches :
+Constat de session (2026-08-06, ouverture) : le moteur de rendu (`render_composition`),
+l’écriture WAV float32/PCM24, les jobs avec progression/annulation et les métriques peak/RMS/DC/
+clipping existent déjà (`compositions.py`, `composition_dsp.py::write_wav`, `jobs.py`,
+`audio_info.py::wav_info`). Manquent : true peak et LUFS (aucune trace dans le dépôt), notion de
+boucle/sélection de clips dans `RenderSettings` (seules plage temps et pistes choisies existent
+aujourd’hui), manifeste enrichi (seed, versions moteur, spec_hash, rapport QA fusionnés —
+actuellement `manifest.json`/`qa.json` séparés), comparaison rendu périmé, gate de promotion
+master, bundle d’export, écran « Analyse & Export » (absent de la sidebar actuelle, qui ne route
+que `studio`/`editor`/`plugins`). Découpage en sept étapes séquentielles pour absorber ce périmètre
+sur plusieurs sessions ; le worker de rendu actuel est unique (`ThreadPoolExecutor(max_workers=1)`),
+donc les rendus sont aujourd’hui sériés, pas parallèles — point à confirmer avant l’étape 12.7.
 
-- [ ] Ajouter rendu du morceau entier, de la boucle, de la sélection et des pistes choisies.
-- [ ] Ajouter choix master, stems, WAV float 32 bits et PCM 24 bits.
-- [ ] Afficher progression, annulation, échec actionnable et reprise.
+Tâches (ordre d’exécution) :
+
+### 12.1 — Métriques audio manquantes (true peak, LUFS)
+
+- [ ] Implémenter le true peak (suréchantillonnage) dans `audio_info.py`.
+- [ ] Implémenter le LUFS (norme BS.1770) dans `audio_info.py`.
+- [ ] Étendre `evaluate_wav`/`qa.py` avec ces métriques et leurs seuils.
+- [ ] Tester sur signaux verrouillés (sinus, silence, plein niveau, inter-sample peak connu).
+
+### 12.2 — Modèle de rendu étendu et manifeste enrichi
+
+- [ ] Étendre la requête de rendu : boucle et sélection de clips, au-delà de la plage temps et des
+  pistes choisies déjà supportées.
+- [ ] Étendre le manifeste (`jobs.py`) : seed, versions moteur, spec_hash, rapport QA fusionné.
+- [ ] Mettre à jour `EDITEUR/contracts/composition.schema.json` en conséquence.
+- [ ] Tester round-trip et rendu par boucle et par sélection.
+
+### 12.3 — Comparaison rendu périmé
+
+- [ ] Comparer la révision du dernier rendu à la révision courante de la composition.
+- [ ] Signaler explicitement un rendu périmé (API et UI).
+- [ ] Tester le cas rendu à jour et le cas rendu périmé après modification.
+
+### 12.4 — Gate de promotion master
+
+- [ ] Bloquer la promotion en master si le profil QA échoue.
+- [ ] Ajouter une dérogation explicite et tracée (auteur, moment, motif).
+- [ ] Tester profil QA passant, profil QA échouant, et dérogation.
+
+### 12.5 — Écran « Analyse & Export »
+
+- [ ] Créer l’écran, absent de la sidebar actuelle : lancement du rendu par portée
+  (morceau entier, boucle, sélection, pistes choisies), choix de format, progression, annulation,
+  échec actionnable, reprise.
 - [ ] Afficher waveform, durée, sample peak, true peak, LUFS, RMS, DC et clipping.
-- [ ] Ajouter comparaison du dernier rendu avec la révision courante et signaler un rendu périmé.
-- [ ] Produire manifeste, hash, seed, versions moteur, spec et rapport QA.
-- [ ] Ajouter téléchargement individuel et bundle d’export.
-- [ ] Empêcher la promotion en master si le profil QA bloque, sauf dérogation tracée.
-- [ ] Tester formats, durées, métadonnées, hashes, annulation, rendu concurrent et profils QA.
+- [ ] Afficher le rapport QA et l’état périmé ou à jour.
+- [ ] Tester le composant et le parcours Playwright.
+
+### 12.6 — Téléchargement et bundle
+
+- [ ] Exposer dans l’écran le téléchargement individuel (l’endpoint artifact existe déjà côté
+  API, à vérifier et relier à l’écran).
+- [ ] Ajouter un bundle d’export groupant master, stems, manifeste et rapport QA.
+- [ ] Tester le contenu et l’intégrité du bundle.
+
+### 12.7 — Non-régression et rendus concurrents
+
+- [ ] Tester formats, durées, métadonnées, hashes et annulation.
+- [ ] Clarifier avec l’utilisateur le comportement attendu pour plusieurs rendus simultanés
+  (executor à un seul worker aujourd’hui : file sériée, pas de parallélisme réel) avant d’écrire
+  un test de « concurrence ».
+- [ ] Exécuter V0 à V11 avant d’autoriser V12.
 
 Gate :
 

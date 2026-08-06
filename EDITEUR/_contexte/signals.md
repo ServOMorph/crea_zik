@@ -12,9 +12,16 @@
   que le scope `track`). Décider si c'est un gap backend à combler ou un scope à retirer du schéma.
   - fait quand: le scope `master` est soit appliqué au rendu, soit retiré du pattern de validation
   - réf: `backend/src/crea_zik/models.py` (AutomationLane.target), `backend/src/crea_zik/compositions.py`
-- [P1|ouvert] Démarrer la Phase 12 (Rendu final, QA et export) : rendu morceau entier/boucle/
-  sélection/pistes choisies, formats master/stems/WAV float32/PCM24, waveform, sample peak, true
-  peak, LUFS, RMS, DC, clipping, progression/annulation/échec actionnable/reprise.
+- [P1|ouvert] Implémenter l'étape 12.1 (true peak + LUFS) de la Phase 12 : ces deux métriques sont
+  absentes du dépôt (backend et frontend), à ajouter dans `audio_info.py` puis brancher sur
+  `evaluate_wav`/`qa.py`.
+  - fait quand: true peak et LUFS calculés et testés sur signaux verrouillés (sinus, silence, plein
+    niveau, inter-sample peak connu)
+  - réf: `EDITEUR/roadmap_editeur_musical.md` (Phase 12, étape 12.1), `backend/src/crea_zik/audio_info.py`
+- [P1|ouvert] Poursuivre les étapes 12.2 à 12.7 de la Phase 12 (modèle de rendu étendu/manifeste
+  enrichi, comparaison rendu périmé, gate de promotion master, écran « Analyse & Export »,
+  téléchargement/bundle, non-régression et clarification du comportement rendu concurrent) une fois
+  12.1 close.
   - fait quand: Phase 12 fonctionnelle livrée et qualification V12 close (runner canonique vert)
   - réf: `EDITEUR/roadmap_editeur_musical.md` (Phase 12, Phase V12)
 
@@ -36,45 +43,29 @@
 # Session du 2026-08-06
 
 ## Décisions prises
-- Phase 11 (Mixer, routage et effets) et qualification V11 closes [FAIT] : chemin audio complet
-  (pistes, bus, sends, master), DSP réel mais minimal (EQ, saturation, compresseur, délai,
-  réverbération existante), routage topologique validé sans cycle, comparaison A/B sans risque de
-  perte via un endpoint de préécoute qui ne persiste jamais la composition.
-- Trois décisions de portée validées avec l'utilisateur avant implémentation : DSP réel mais minimal
-  (pas de multi-bandes), vu-mètres peak/RMS post-rendu (pas d'`AnalyserNode` temps réel), A/B rendu
-  via préécoute non persistante plutôt que sauvegarde/restauration.
-- Les deux écarts P2 (panneau Automations, scope `master`) restent ouverts, non traités cette
-  session.
+- Phase 12 (Rendu final, QA et export) ouverte. Après audit de l'existant, découpage en sept étapes
+  séquentielles (12.1 à 12.7 : métriques manquantes, modèle/manifeste étendu, rendu périmé, gate
+  promotion master, écran Analyse & Export, téléchargement/bundle, non-régression) documentées
+  directement dans la roadmap.
 
 ## Livrables produits ou modifiés
-- Backend : `effect_registry.py` (nouveau, bornes/sanitize/defaults par kind d'effet),
-  `composition_dsp.py` (`eq_band`, `saturate`, `compress`, `delay_line`, `apply_balance_pan`),
-  `compositions.py` (routage topologique piste→bus→master, `_apply_effect_chain`, stems pré/post-
-  fader), `models.py` (`MixerChannel.name`, `RenderSettings.stem_fader`, cycle étendu aux `sends`),
-  `api.py` (`GET /api/effect-registry`, `POST .../mixer-preview`).
-- Frontend : `Mixer.tsx`, `mixerRouting.ts`, `effectRegistry.ts` (nouveaux) ; `editorStore.ts`
-  (type `ChannelSelector` piste/bus/master, commandes mixer génériques) ; `transport.ts`
-  (`peakOf`/`rmsOf`/`meterStatsFromBuffer`) ; `EditorLanding.tsx` (montage `Mixer`) ; `styles.css`.
-- Tests : `tests/test_editor_mixer.py`, `tests/test_effect_registry.py` (backend) ; `Mixer.test.tsx`,
-  `mixerRouting.test.ts`, extensions `editorStore.property.test.ts`/`transport.test.ts`/
-  `studio.spec.ts` (frontend).
-- `EDITEUR/roadmap_editeur_musical.md` : Phases 11 et V11 cochées [FAIT] avec preuves.
-- `EDITEUR/contracts/composition.schema.json` : champs `name`/`stem_fader` ajoutés au contrat.
+- `EDITEUR/roadmap_editeur_musical.md` : section Phase 12 restructurée avec constat de session et
+  tâches réordonnées en 7 étapes séquentielles (statut phase inchangé, [TODO]).
 
 ## Hypothèses validées / invalidées
-- VALIDE : le pipeline de rendu refactoré (routage topologique) préserve la bit-exactitude des
-  rendus existants sans bus — 216 tests backend restés verts avant et après refactor, y compris les
-  golden hashes de `Lignes de nuit`.
-- INVALIDE : les sends seuls suffisaient à garantir l'absence de cycle indépendamment de `output` —
-  un cycle réel peut se former par combinaison des deux ; `_has_mixer_cycle` étendu en conséquence
-  (voir Contexte chaud).
-- VALIDE : runner canonique complet vert (`EDITEUR/test-results/v1-20260806-144211.json`,
-  success true, 20 checks, mutation Stryker 63,69 % ≥ 60 %, 283 tests unitaires frontend, 17 e2e,
-  visuel, markdownlint).
+- VALIDE : le moteur de rendu (`render_composition`), l'écriture WAV float32/PCM24
+  (`composition_dsp.py::write_wav`), les jobs avec progression/annulation (`jobs.py`) et les
+  métriques peak/RMS/DC/clipping (`audio_info.py::wav_info`) existent déjà et sont réutilisables.
+- INVALIDE : aucune trace de true peak ni de LUFS dans le dépôt (ni backend ni frontend) — à
+  implémenter en premier (étape 12.1), les étapes suivantes en dépendant partiellement.
+- EN ATTENTE : confirmer avec l'utilisateur le comportement attendu pour les rendus simultanés avant
+  d'écrire un test de « concurrence » — l'executor de jobs actuel n'a qu'un seul worker
+  (`ThreadPoolExecutor(max_workers=1)`), donc les rendus sont aujourd'hui sériés, pas parallèles.
 
 ## Prochaine étape exacte
-Ouvrir la Phase 12 (Rendu final, QA et export) ; trancher les deux écarts P2 encore ouverts au
-moment jugé opportun.
+Démarrer l'étape 12.1 : implémenter true peak (suréchantillonnage) et LUFS (BS.1770) dans
+`backend/src/crea_zik/audio_info.py`, les brancher sur `evaluate_wav`/`qa.py`, puis tester sur des
+signaux verrouillés.
 
 ## Question bloquante pour la session suivante
 Aucune.

@@ -51,3 +51,9 @@ Décisions archivées depuis `_contexte/contexte.md` (append only).
   vol (`saveInFlightRef`) et `requestPreview` affiche « Sauvegarde impossible, préécoute
   annulée. » en cas d'échec : un clic « Lire la sélection » pendant une sauvegarde attend la fin
   du PUT (e2e route directe verrouillé).
+- 2026-08-05 : Phases 6 et V6 closes [FAIT] — longueur/duplication/renommage/variation seedée/
+  suppression sûre, sélection multiple, remplissages, préécoute piste, couleur et nom de pattern
+  via migration de schéma v3 (contrat et fixture alignés, golden inchangés) ; runner canonique
+  vert final (`v1-20260805-110735.json`, success true). Réserves assumées : glisser et
+  multi-sélection couverts en unitaire, preuve rendu/hash frontend non formalisée (backend) ;
+  couleur de piste et accès instrument reportés à la Phase 9. Phase 7 (Piano Roll) ouverte.
