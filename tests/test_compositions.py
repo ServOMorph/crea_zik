@@ -214,7 +214,7 @@ def test_beats_to_samples_is_deterministic_and_non_negative(
 
 def test_legacy_project_payload_migrates_to_composition_schema() -> None:
     project = Project.model_validate({"name": "legacy", "schema_version": 1})
-    assert project.schema_version == 3
+    assert project.schema_version == 4
     assert project.compositions == []
 
 
@@ -230,9 +230,9 @@ def test_project_schema_two_composition_patterns_gain_names_colors() -> None:
             "compositions": [{**source, "schema_version": 2}],
         }
     )
-    assert legacy.schema_version == 3
+    assert legacy.schema_version == 4
     migrated = legacy.compositions[0]
-    assert migrated.schema_version == 3
+    assert migrated.schema_version == 4
     assert [pattern.name for pattern in migrated.patterns] == [
         f"Pattern {index + 1}" for index in range(len(migrated.patterns))
     ]
@@ -241,7 +241,7 @@ def test_project_schema_two_composition_patterns_gain_names_colors() -> None:
 
 def test_composition_rejects_invalid_references_and_future_versions() -> None:
     source = reference_composition().model_dump(mode="json")
-    source["schema_version"] = 4
+    source["schema_version"] = 5
     with pytest.raises(ValidationError):
         Composition.model_validate(source)
     source = reference_composition().model_dump(mode="json")

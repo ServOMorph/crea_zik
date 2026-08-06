@@ -33,6 +33,26 @@ import {
 } from "./editorStore";
 import { ChannelRackRow } from "./ChannelRack";
 import {
+  addClip,
+  addMarker,
+  addTrack,
+  deleteMarker,
+  deleteTime,
+  insertTime,
+  moveClip,
+  moveMarker,
+  moveTrack,
+  renameMarker,
+  renameTrack,
+  resizeClip,
+  rippleMoveClip,
+  setClipLocked,
+  setClipMute,
+  setClipRepeat,
+  setClipTransposition,
+  splitClip,
+} from "./clipCommands";
+import {
   addNote,
   buildChord,
   deleteNotes,
@@ -50,6 +70,7 @@ import {
   uniformDuration,
 } from "./noteCommands";
 import { PatternEditor } from "./PatternEditor";
+import { Playlist } from "./Playlist";
 import { TransportBar } from "./TransportBar";
 import { VirtualList } from "./VirtualList";
 
@@ -487,6 +508,84 @@ export function EditorLanding({ search, onNavigate, onDirtyChange }: EditorLandi
               )}
             />
           </section>
+          <Playlist
+            editor={editor}
+            onSelect={(collection, ids, additive) =>
+              setEditor((current) => (current ? select(current, collection, ids, additive) : current))
+            }
+            onMoveClip={(clipId, deltaBeats, groupWithPrevious) =>
+              setEditor((current) =>
+                current ? moveClip(current, clipId, deltaBeats, groupWithPrevious) : current,
+              )
+            }
+            onResizeClip={(clipId, deltaBeats, groupWithPrevious) =>
+              setEditor((current) =>
+                current ? resizeClip(current, clipId, deltaBeats, groupWithPrevious) : current,
+              )
+            }
+            onRippleMoveClip={(clipId, deltaBeats, groupWithPrevious) =>
+              setEditor((current) =>
+                current ? rippleMoveClip(current, clipId, deltaBeats, groupWithPrevious) : current,
+              )
+            }
+            onSplitClip={(clipId, atBeat) =>
+              setEditor((current) => (current ? splitClip(current, clipId, atBeat) : current))
+            }
+            onAddClip={(patternId, startBeat) =>
+              setEditor((current) =>
+                current
+                  ? addClip(current, patternId, startBeat, current.composition.patterns.find((p) => p.id === patternId)?.length_beats ?? 4)
+                  : current,
+              )
+            }
+            onToggleMute={(clipId) =>
+              setEditor((current) => {
+                if (!current) return current;
+                const clip = current.composition.clips.find((item) => item.id === clipId);
+                return clip ? setClipMute(current, clipId, !(clip.mute ?? false)) : current;
+              })
+            }
+            onToggleLock={(clipId) =>
+              setEditor((current) => {
+                if (!current) return current;
+                const clip = current.composition.clips.find((item) => item.id === clipId);
+                return clip ? setClipLocked(current, clipId, !(clip.locked ?? false)) : current;
+              })
+            }
+            onSetRepeat={(clipId, repeat) =>
+              setEditor((current) => (current ? setClipRepeat(current, clipId, repeat) : current))
+            }
+            onSetTransposition={(clipId, semitones) =>
+              setEditor((current) => (current ? setClipTransposition(current, clipId, semitones) : current))
+            }
+            onInsertTime={(beat, lengthBeats) =>
+              setEditor((current) => (current ? insertTime(current, beat, lengthBeats) : current))
+            }
+            onDeleteTime={(beat, lengthBeats) =>
+              setEditor((current) => (current ? deleteTime(current, beat, lengthBeats) : current))
+            }
+            onAddMarker={(beat) =>
+              setEditor((current) => (current ? addMarker(current, beat, "repère") : current))
+            }
+            onMoveMarker={(markerId, beat) =>
+              setEditor((current) => (current ? moveMarker(current, markerId, beat) : current))
+            }
+            onRenameMarker={(markerId, label) =>
+              setEditor((current) => (current ? renameMarker(current, markerId, label) : current))
+            }
+            onDeleteMarker={(markerId) =>
+              setEditor((current) => (current ? deleteMarker(current, markerId) : current))
+            }
+            onAddTrack={(name, kind) =>
+              setEditor((current) => (current ? addTrack(current, name, kind) : current))
+            }
+            onRenameTrack={(trackId, name) =>
+              setEditor((current) => (current ? renameTrack(current, trackId, name) : current))
+            }
+            onMoveTrack={(trackId, offset) =>
+              setEditor((current) => (current ? moveTrack(current, trackId, offset) : current))
+            }
+          />
           <PatternEditor
             editor={editor}
             selectedPatternId={selectedPatternId}

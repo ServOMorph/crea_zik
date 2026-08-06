@@ -870,3 +870,286 @@ audio {
   margin: 0;
   color: #8ba5cf;
 }
+
+.playlist {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #3a4a65;
+  border-radius: 12px;
+  background: #182233;
+}
+
+.playlist__header {
+  display: grid;
+  gap: 8px;
+}
+
+.playlist__header h2 {
+  margin: 0;
+}
+
+.playlist__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 8px;
+}
+
+.playlist__toolbar label,
+.playlist__clip-actions label,
+.playlist__add-track label {
+  display: grid;
+  gap: 4px;
+  min-width: 140px;
+}
+
+.playlist__time-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 8px;
+}
+
+.playlist__toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.playlist__clip-actions,
+.playlist__add-track {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 8px;
+  padding: 8px 0;
+  border-top: 1px solid #3a4a65;
+}
+
+.playlist__scroll {
+  overflow: auto;
+  max-height: 520px;
+  border: 1px solid #3a4a65;
+  border-radius: 8px;
+  background: #101827;
+}
+
+.playlist__grid {
+  position: relative;
+  display: flex;
+  min-width: 100%;
+}
+
+.playlist__side {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  flex: none;
+  background: #182233;
+  border-right: 1px solid #3a4a65;
+}
+
+.playlist__side-header {
+  height: 28px;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  font-weight: 700;
+  color: #8ba5cf;
+}
+
+.playlist__lane-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px;
+  border-top: 1px solid #2a3a55;
+}
+
+.playlist__lane-name {
+  flex: 1;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.playlist__lane-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.playlist__lane-actions button {
+  padding: 0 6px;
+}
+
+.playlist__timeline {
+  position: relative;
+  flex: none;
+}
+
+.playlist__ruler {
+  position: relative;
+  border-bottom: 1px solid #3a4a65;
+  background: #182233;
+}
+
+.playlist__beat-tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #2a3a55;
+  font-size: 0.7em;
+  color: #8ba5cf;
+  padding-top: 2px;
+}
+
+.playlist__beat-tick--measure {
+  width: 2px;
+  background: #3a4a65;
+  color: #c8d6ef;
+}
+
+.playlist__markers-lane {
+  position: relative;
+  border-bottom: 1px solid #3a4a65;
+  background: #141c2b;
+}
+
+.playlist__marker {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 160px;
+  padding: 0 6px;
+  border-radius: 6px;
+  background: #7a4d9e;
+  border: 1px solid #c9a4e8;
+  color: #f3e7ff;
+  font-size: 0.8em;
+  cursor: grab;
+  touch-action: none;
+}
+
+.playlist__marker.is-selected {
+  outline: 2px solid #9ee5bd;
+}
+
+.playlist__marker button {
+  padding: 0 4px;
+  line-height: 1;
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.playlist__marker form,
+.playlist__lane-head form {
+  margin: 0;
+  display: flex;
+}
+
+.playlist__marker input,
+.playlist__lane-head input {
+  min-width: 0;
+  width: 120px;
+  padding: 2px 4px;
+}
+
+.playlist__lane {
+  position: relative;
+  border-top: 1px solid #2a3a55;
+}
+
+.playlist__clip {
+  position: absolute;
+  top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px;
+  border-radius: 6px;
+  background: #2f7d55;
+  border: 1px solid #9ee5bd;
+  color: #eafff2;
+  font-size: 0.85em;
+  cursor: grab;
+  touch-action: none;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.playlist__clip.is-selected {
+  outline: 2px solid #9ee5bd;
+  background: #c47a2d;
+  border-color: #ffd29e;
+}
+
+.playlist__clip.is-muted {
+  opacity: 0.5;
+  border-style: dashed;
+}
+
+.playlist__clip.is-locked {
+  background: #4a4a4a;
+  border-color: #9a9a9a;
+}
+
+.playlist__clip.is-obscured {
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(0, 0, 0, 0.25) 0 6px,
+    transparent 6px 12px
+  );
+}
+
+.playlist__clip-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.playlist__clip-transpose {
+  flex: none;
+  font-size: 0.8em;
+  color: #ffd29e;
+}
+
+.playlist__clip-handle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 10px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: ew-resize;
+  touch-action: none;
+}
+
+.playlist__duration {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #ff9d9d;
+  pointer-events: none;
+}
+
+.playlist__hint {
+  margin: 0;
+  color: #8ba5cf;
+}
+
+.playlist__density {
+  margin: 0;
+  color: #ff9d9d;
+  font-weight: 700;
+}

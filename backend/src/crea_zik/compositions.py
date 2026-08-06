@@ -48,11 +48,23 @@ def beats_to_samples(beats: float, tempo_bpm: float, sample_rate: int) -> int:
     return round(beats * 60 / tempo_bpm * sample_rate)
 
 
+def composition_end_beat(composition: Composition) -> float:
+    return max(
+        (
+            clip.start_beat + clip.length_beats * clip.repeat_count
+            for clip in composition.clips
+        ),
+        default=0,
+    )
+
+
 def schedule_composition(composition: Composition) -> list[ScheduledCompositionEvent]:
     patterns = {pattern.id: pattern for pattern in composition.patterns}
     tracks = {track.id: track for track in composition.tracks}
     scheduled: list[ScheduledCompositionEvent] = []
     for clip in composition.clips:
+        if clip.mute:
+            continue
         pattern = patterns[clip.pattern_id]
         track = tracks[pattern.track_id]
         for repeat in range(clip.repeat_count):
@@ -364,6 +376,9 @@ def copy_composition(source: Composition) -> Composition:
         )
         for clip in source.clips
     ]
+    markers = [
+        marker.model_copy(update={"id": uuid4()}) for marker in source.markers
+    ]
     channels = [
         channel.model_copy(
             update={
@@ -396,6 +411,7 @@ def copy_composition(source: Composition) -> Composition:
             "tracks": tracks,
             "patterns": patterns,
             "clips": clips,
+            "markers": markers,
             "mixer_channels": channels,
             "automation_lanes": lanes,
             "master_channel": _copy_master_channel(source.master_channel, track_ids),

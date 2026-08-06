@@ -1,5 +1,24 @@
 # Changelog
 
+## v0.28 — 2026-08-06
+
+### Ajouté
+
+- `frontend/src/editor/Playlist.tsx` : Playlist multipiste (Phase 8) — lanes synchronisées au
+  Channel Rack, clips déplacement/redimensionnement/découpe, insert/delete time, ripple,
+  mute/lock, marqueurs éditables (intro/groove/montée/climax/outro), création/renommage/
+  réorganisation de pistes, chevauchements `is-obscured`, alerte de densité (limite 300) ;
+  drag à deltas incrémentés + snap, poignées de resize en vrais boutons.
+- `frontend/src/editor/Playlist.test.tsx` : 17 tests du composant (drags, split, marqueurs,
+  pistes, overlap).
+- `frontend/src/editor/clipCommands.ts` : `resizeClip` clamp aux bornes
+  (`CLIP_LENGTH_MIN`/`CLIP_LENGTH_MAX`) ; `clipMute` inutilisée supprimée.
+- `frontend/src/editor/editorStore.ts` : `EMPTY_SELECTION` inclut `markers`.
+- `frontend/src/editor/EditorLanding.tsx` : intégration de la Playlist (callbacks → store).
+- `frontend/src/styles.css` : styles `.playlist*`.
+- `frontend/e2e/studio.spec.ts` : test e2e V8 drag-and-drop Playwright (clips + marqueurs,
+  sauvegarde/rechargement) — en cours de qualification.
+
 ## v0.27 — 2026-08-05
 
 ### Ajouté

@@ -28,7 +28,25 @@ export type Pattern = {
   length_beats?: number | null;
   [key: string]: unknown;
 };
-export type Clip = { id: string; pattern_id: string; start_beat: number; length_beats: number; [key: string]: unknown };
+export type Clip = {
+  id: string;
+  pattern_id: string;
+  start_beat: number;
+  length_beats: number;
+  repeat_count?: number;
+  transposition?: number;
+  mute?: boolean;
+  locked?: boolean;
+  group?: string | null;
+  [key: string]: unknown;
+};
+
+export type Marker = {
+  id: string;
+  beat: number;
+  label: string;
+  [key: string]: unknown;
+};
 
 export type MixerChannel = {
   id: string;
@@ -52,12 +70,14 @@ export type EditableComposition = {
   tracks: Track[];
   patterns: Pattern[];
   clips: Clip[];
+  markers?: Marker[];
+  render_settings?: { duration_seconds?: number; [key: string]: unknown };
   mixer_channels?: MixerChannel[];
   master_channel?: MixerChannel;
   [key: string]: unknown;
 };
 
-export type CollectionName = "tracks" | "patterns" | "clips";
+export type CollectionName = "tracks" | "patterns" | "clips" | "markers";
 
 export type EditorSelection = Record<CollectionName, string[]> & { notes: string[] };
 
@@ -90,7 +110,7 @@ export type EditorState = {
 
 export type EditorOperation = (composition: EditableComposition) => void;
 
-const EMPTY_SELECTION: EditorSelection = { tracks: [], patterns: [], clips: [], notes: [] };
+const EMPTY_SELECTION: EditorSelection = { tracks: [], patterns: [], clips: [], markers: [], notes: [] };
 const DEFAULT_GRID: TimeGrid = { snapBeats: 0.25, horizontalZoom: 1, verticalZoom: 1, scrollBeat: 0 };
 const MAX_HISTORY = 200;
 

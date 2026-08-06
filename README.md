@@ -64,7 +64,10 @@ vélocité/probabilité/micro-décalage/pan, ghost notes des autres pistes, édi
 surbrillance non bloquante, fix de l'accélération des drags, preuve backend « note modifiée →
 rendu » par hash ; runner canonique vert final (`EDITEUR/test-results/v1-20260805-191709.json`,
 success true). Réserve assumée : comparaison audio post-édition hors Chromium. La Phase 8
-(Playlist, arrangement et marqueurs) est ouverte [EN COURS].
+(Playlist, arrangement et marqueurs) est en cours [EN COURS] : Playlist multipiste livrée
+(`Playlist.tsx` : clips déplacement/resize/split, ripple, insert/delete time, mute/lock, marqueurs
+éditables, pistes ↑/↓, chevauchements visibles, alerte densité), 194 unitaires éditeur verts ;
+qualification V8 e2e en cours (test drag-and-drop Playwright encore rouge).
 Le gate de déterminisme Csound réel de la phase 1 (roadmap studio audio procédural) est validé (trois rendus indépendants, même SHA-256 du WAV).
 La phase 2 de `roadmap_studio_audio_procedural.md` a été réauditée et close [FAIT] : le code réel
 dépasse largement sa description initiale. Les phases 3 (bibliothèque DSP/Sound Designer) et 4

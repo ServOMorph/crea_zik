@@ -1,109 +1,418 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://crea-zik.local/contracts/composition.schema.json",
-  "title": "Composition",
-  "type": "object",
-  "additionalProperties": false,
-  "required": ["schema_version", "id", "revision", "title", "seed", "sample_rate", "tempo_bpm", "time_signature", "tracks", "patterns", "clips", "master_channel", "render_settings"],
-  "properties": {
-    "schema_version": {"const": 3},
-    "id": {"type": "string", "format": "uuid"},
-    "revision": {"type": "integer", "minimum": 0},
-    "title": {"type": "string", "minLength": 1, "maxLength": 160},
-    "seed": {"type": "integer", "minimum": 0, "maximum": 4294967295},
-    "sample_rate": {"type": "integer", "enum": [44100, 48000, 88200, 96000]},
-    "tempo_bpm": {"type": "number", "minimum": 20, "maximum": 400},
-    "time_signature": {
-      "type": "array",
-      "prefixItems": [{"type": "integer", "minimum": 1, "maximum": 32}, {"type": "integer", "enum": [1, 2, 4, 8, 16]}],
-      "items": false
-    },
-    "tracks": {"type": "array", "items": {"$ref": "#/$defs/track"}, "minItems": 1},
-    "patterns": {"type": "array", "items": {"$ref": "#/$defs/pattern"}},
-    "clips": {"type": "array", "items": {"$ref": "#/$defs/clip"}},
-    "master_channel": {"$ref": "#/$defs/mixerChannel"},
-    "render_settings": {"$ref": "#/$defs/renderSettings"}
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "https://crea-zik.local/contracts/composition.schema.json",
+ "title": "Composition",
+ "type": "object",
+ "additionalProperties": false,
+ "required": [
+  "schema_version",
+  "id",
+  "revision",
+  "title",
+  "seed",
+  "sample_rate",
+  "tempo_bpm",
+  "time_signature",
+  "tracks",
+  "patterns",
+  "clips",
+  "master_channel",
+  "render_settings"
+ ],
+ "properties": {
+  "schema_version": {
+   "const": 4
   },
-  "$defs": {
-    "id": {"type": "string", "format": "uuid"},
-    "track": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["id", "name", "kind", "gain", "pan", "instrument", "processors"],
-      "properties": {
-        "id": {"$ref": "#/$defs/id"},
-        "name": {"type": "string", "minLength": 1, "maxLength": 80},
-        "kind": {"enum": ["drums", "bass", "pad", "arp", "lead", "audio", "midi"]},
-        "gain": {"type": "number", "minimum": 0, "maximum": 2},
-        "pan": {"type": "number", "minimum": -1, "maximum": 1},
-        "instrument": {"type": "object"},
-        "processors": {"type": "array", "items": {"type": "object"}}
-      }
+  "id": {
+   "type": "string",
+   "format": "uuid"
+  },
+  "revision": {
+   "type": "integer",
+   "minimum": 0
+  },
+  "title": {
+   "type": "string",
+   "minLength": 1,
+   "maxLength": 160
+  },
+  "seed": {
+   "type": "integer",
+   "minimum": 0,
+   "maximum": 4294967295
+  },
+  "sample_rate": {
+   "type": "integer",
+   "enum": [
+    44100,
+    48000,
+    88200,
+    96000
+   ]
+  },
+  "tempo_bpm": {
+   "type": "number",
+   "minimum": 20,
+   "maximum": 400
+  },
+  "time_signature": {
+   "type": "array",
+   "prefixItems": [
+    {
+     "type": "integer",
+     "minimum": 1,
+     "maximum": 32
     },
-    "pattern": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["id", "track_id", "events"],
-      "properties": {
-        "id": {"$ref": "#/$defs/id"},
-        "track_id": {"$ref": "#/$defs/id"},
-        "events": {"type": "array", "items": {"$ref": "#/$defs/noteEvent"}},
-        "name": {"type": ["string", "null"], "minLength": 1, "maxLength": 80},
-        "color": {"type": ["string", "null"], "pattern": "^#[0-9a-f]{6}$"},
-        "length_beats": {"type": ["number", "null"], "exclusiveMinimum": 0, "maximum": 100000}
-      }
-    },
-    "noteEvent": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["id", "start_beat", "duration_beats", "midi_note", "velocity", "pan"],
-      "properties": {
-        "id": {"$ref": "#/$defs/id"},
-        "start_beat": {"type": "number", "minimum": 0, "maximum": 100000},
-        "duration_beats": {"type": "number", "exclusiveMinimum": 0, "maximum": 10000},
-        "midi_note": {"type": "integer", "minimum": 0, "maximum": 127},
-        "velocity": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
-        "probability": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
-        "micro_timing_beats": {"type": "number", "minimum": -1, "maximum": 1},
-        "pan": {"type": "number", "minimum": -1, "maximum": 1}
-      }
-    },
-    "clip": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["id", "pattern_id", "start_beat", "length_beats"],
-      "properties": {
-        "id": {"$ref": "#/$defs/id"},
-        "pattern_id": {"$ref": "#/$defs/id"},
-        "start_beat": {"type": "number", "minimum": 0},
-        "length_beats": {"type": "number", "exclusiveMinimum": 0}
-      }
-    },
-    "mixerChannel": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["id", "gain", "pan", "mute", "solo", "output", "sends", "effects"],
-      "properties": {
-        "id": {"$ref": "#/$defs/id"},
-        "track_id": {"type": ["string", "null"]},
-        "gain": {"type": "number", "minimum": 0, "maximum": 2},
-        "pan": {"type": "number", "minimum": -1, "maximum": 1},
-        "mute": {"type": "boolean"},
-        "solo": {"type": "boolean"},
-        "output": {},
-        "sends": {"type": "object"},
-        "effects": {"type": "array", "items": {"type": "object"}}
-      }
-    },
-    "renderSettings": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["duration_seconds", "format", "channels"],
-      "properties": {
-        "duration_seconds": {"type": "number", "exclusiveMinimum": 0, "maximum": 7200},
-        "format": {"enum": ["wav_pcm24", "wav_pcm16", "wav_float32"]},
-        "channels": {"const": 2}
-      }
+    {
+     "type": "integer",
+     "enum": [
+      1,
+      2,
+      4,
+      8,
+      16
+     ]
     }
+   ],
+   "items": false
+  },
+  "tracks": {
+   "type": "array",
+   "items": {
+    "$ref": "#/$defs/track"
+   },
+   "minItems": 1
+  },
+  "patterns": {
+   "type": "array",
+   "items": {
+    "$ref": "#/$defs/pattern"
+   }
+  },
+  "clips": {
+   "type": "array",
+   "items": {
+    "$ref": "#/$defs/clip"
+   }
+  },
+  "master_channel": {
+   "$ref": "#/$defs/mixerChannel"
+  },
+  "render_settings": {
+   "$ref": "#/$defs/renderSettings"
+  },
+  "markers": {
+   "type": "array",
+   "items": {
+    "$ref": "#/$defs/marker"
+   }
   }
+ },
+ "$defs": {
+  "id": {
+   "type": "string",
+   "format": "uuid"
+  },
+  "track": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "id",
+    "name",
+    "kind",
+    "gain",
+    "pan",
+    "instrument",
+    "processors"
+   ],
+   "properties": {
+    "id": {
+     "$ref": "#/$defs/id"
+    },
+    "name": {
+     "type": "string",
+     "minLength": 1,
+     "maxLength": 80
+    },
+    "kind": {
+     "enum": [
+      "drums",
+      "bass",
+      "pad",
+      "arp",
+      "lead",
+      "audio",
+      "midi"
+     ]
+    },
+    "gain": {
+     "type": "number",
+     "minimum": 0,
+     "maximum": 2
+    },
+    "pan": {
+     "type": "number",
+     "minimum": -1,
+     "maximum": 1
+    },
+    "instrument": {
+     "type": "object"
+    },
+    "processors": {
+     "type": "array",
+     "items": {
+      "type": "object"
+     }
+    }
+   }
+  },
+  "pattern": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "id",
+    "track_id",
+    "events"
+   ],
+   "properties": {
+    "id": {
+     "$ref": "#/$defs/id"
+    },
+    "track_id": {
+     "$ref": "#/$defs/id"
+    },
+    "events": {
+     "type": "array",
+     "items": {
+      "$ref": "#/$defs/noteEvent"
+     }
+    },
+    "name": {
+     "type": [
+      "string",
+      "null"
+     ],
+     "minLength": 1,
+     "maxLength": 80
+    },
+    "color": {
+     "type": [
+      "string",
+      "null"
+     ],
+     "pattern": "^#[0-9a-f]{6}$"
+    },
+    "length_beats": {
+     "type": [
+      "number",
+      "null"
+     ],
+     "exclusiveMinimum": 0,
+     "maximum": 100000
+    }
+   }
+  },
+  "noteEvent": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "id",
+    "start_beat",
+    "duration_beats",
+    "midi_note",
+    "velocity",
+    "pan"
+   ],
+   "properties": {
+    "id": {
+     "$ref": "#/$defs/id"
+    },
+    "start_beat": {
+     "type": "number",
+     "minimum": 0,
+     "maximum": 100000
+    },
+    "duration_beats": {
+     "type": "number",
+     "exclusiveMinimum": 0,
+     "maximum": 10000
+    },
+    "midi_note": {
+     "type": "integer",
+     "minimum": 0,
+     "maximum": 127
+    },
+    "velocity": {
+     "type": "number",
+     "exclusiveMinimum": 0,
+     "maximum": 1
+    },
+    "probability": {
+     "type": "number",
+     "exclusiveMinimum": 0,
+     "maximum": 1
+    },
+    "micro_timing_beats": {
+     "type": "number",
+     "minimum": -1,
+     "maximum": 1
+    },
+    "pan": {
+     "type": "number",
+     "minimum": -1,
+     "maximum": 1
+    }
+   }
+  },
+  "clip": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "id",
+    "pattern_id",
+    "start_beat",
+    "length_beats"
+   ],
+   "properties": {
+    "id": {
+     "$ref": "#/$defs/id"
+    },
+    "pattern_id": {
+     "$ref": "#/$defs/id"
+    },
+    "start_beat": {
+     "type": "number",
+     "minimum": 0
+    },
+    "length_beats": {
+     "type": "number",
+     "exclusiveMinimum": 0
+    },
+    "repeat_count": {
+     "type": "integer",
+     "minimum": 1,
+     "maximum": 10000
+    },
+    "transposition": {
+     "type": "integer",
+     "minimum": -48,
+     "maximum": 48
+    },
+    "mute": {
+     "type": "boolean"
+    },
+    "locked": {
+     "type": "boolean"
+    },
+    "group": {
+     "type": [
+      "string",
+      "null"
+     ],
+     "minLength": 1,
+     "maxLength": 80
+    }
+   }
+  },
+  "mixerChannel": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "id",
+    "gain",
+    "pan",
+    "mute",
+    "solo",
+    "output",
+    "sends",
+    "effects"
+   ],
+   "properties": {
+    "id": {
+     "$ref": "#/$defs/id"
+    },
+    "track_id": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "gain": {
+     "type": "number",
+     "minimum": 0,
+     "maximum": 2
+    },
+    "pan": {
+     "type": "number",
+     "minimum": -1,
+     "maximum": 1
+    },
+    "mute": {
+     "type": "boolean"
+    },
+    "solo": {
+     "type": "boolean"
+    },
+    "output": {},
+    "sends": {
+     "type": "object"
+    },
+    "effects": {
+     "type": "array",
+     "items": {
+      "type": "object"
+     }
+    }
+   }
+  },
+  "renderSettings": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "duration_seconds",
+    "format",
+    "channels"
+   ],
+   "properties": {
+    "duration_seconds": {
+     "type": "number",
+     "exclusiveMinimum": 0,
+     "maximum": 7200
+    },
+    "format": {
+     "enum": [
+      "wav_pcm24",
+      "wav_pcm16",
+      "wav_float32"
+     ]
+    },
+    "channels": {
+     "const": 2
+    }
+   }
+  },
+  "marker": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "id",
+    "beat",
+    "label"
+   ],
+   "properties": {
+    "id": {
+     "$ref": "#/$defs/id"
+    },
+    "beat": {
+     "type": "number",
+     "minimum": 0
+    },
+    "label": {
+     "type": "string",
+     "minLength": 1,
+     "maxLength": 80
+    }
+   }
+  }
+ }
 }

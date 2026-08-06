@@ -232,6 +232,81 @@ test("the music editor opens a project composition from a direct route", async (
   await expect(page).toHaveURL(directUrl);
 });
 
+test("the playlist arranges clips and markers by drag and keeps them after reload", async ({ page }) => {
+  const projectName = `E2E playlist ${Date.now()}`;
+  await page.goto("/");
+  await page.getByRole("textbox", { name: "Name", exact: true }).fill(projectName);
+  await page.getByRole("button", { name: "Create", exact: true }).click();
+  await page.getByRole("link", { name: "Éditeur musical" }).click();
+  await page.getByRole("button", { name: "Créer une copie éditable" }).click();
+  await expect(page).toHaveURL(/\/editor\?project=.*&composition=.*/);
+  await expect(page.getByRole("heading", { name: "Lignes de nuit" })).toBeVisible();
+
+  const scrollPlaylist = (left: number) =>
+    page.evaluate((value) => {
+      const scroll = document.querySelector(".playlist__scroll");
+      if (scroll) scroll.scrollLeft = value;
+    }, left);
+
+  const reveal = async (locator: ReturnType<typeof page.getByRole>) => {
+    await locator.scrollIntoViewIfNeeded();
+    await scrollPlaylist(0);
+  };
+
+  await page.getByRole("heading", { name: "Playlist (5 clips)" }).scrollIntoViewIfNeeded();
+  await expect(page.getByRole("button", { name: "Pattern 3 (piste pad)" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Marqueur intro à 0" })).toBeVisible();
+
+  const padClip = page.getByRole("button", { name: "Pattern 3 (piste pad)" });
+  await reveal(padClip);
+  const padBox = (await padClip.boundingBox()) ?? { x: 0, y: 0, width: 20, height: 44 };
+  await page.mouse.move(padBox.x + 120, padBox.y + padBox.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(padBox.x + 120 + 192, padBox.y + padBox.height / 2, { steps: 8 });
+  await page.mouse.up();
+  await expect(padClip).toHaveCSS("left", "192px");
+
+  const arpClip = page.getByRole("button", { name: "Pattern 4 (piste arp)" });
+  await reveal(arpClip);
+  const arpBox = (await arpClip.boundingBox()) ?? { x: 0, y: 0, width: 20, height: 44 };
+  await arpClip.dblclick({ position: { x: Math.min(768, arpBox.width - 30), y: arpBox.height / 2 } });
+  await expect(page.getByRole("heading", { name: "Playlist (6 clips)" })).toBeVisible();
+
+  const groove = page.getByRole("button", { name: "Marqueur groove à 8" });
+  await reveal(groove);
+  await scrollPlaylist(659);
+  const grooveBox = (await groove.boundingBox()) ?? { x: 0, y: 0, width: 80, height: 24 };
+  await page.mouse.move(grooveBox.x + 20, grooveBox.y + grooveBox.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(grooveBox.x + 20 + 96, grooveBox.y + grooveBox.height / 2, { steps: 4 });
+  await page.mouse.up();
+  await expect(page.getByRole("button", { name: "Marqueur groove à 9" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Ajouter un clip" }).click();
+  await expect(page.getByRole("heading", { name: "Playlist (7 clips)" })).toBeVisible();
+  await page.getByRole("checkbox", { name: "Ripple" }).check();
+
+  const firstClip = page.locator(".playlist__clip").first();
+  await firstClip.scrollIntoViewIfNeeded();
+  await scrollPlaylist(400);
+  const firstBox = (await firstClip.boundingBox()) ?? { x: 0, y: 0, width: 20, height: 44 };
+  const firstStartX = Math.max(firstBox.x + 120, 500);
+  await page.mouse.move(firstStartX, firstBox.y + firstBox.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(firstStartX + 768, firstBox.y + firstBox.height / 2, { steps: 10 });
+  await page.mouse.up();
+  await expect(firstClip).toHaveCSS("left", "768px");
+  await expect(page.locator(".playlist__clip").nth(1)).toHaveCSS("left", "6528px");
+
+  await page.getByRole("button", { name: "Sauvegarder" }).click();
+  await expect(page.getByText("Enregistré")).toBeVisible();
+  await page.goto(page.url());
+  await expect(page.getByRole("heading", { name: "Lignes de nuit" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Playlist (7 clips)" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Pattern 3 (piste pad)" })).toHaveCSS("left", "192px");
+  await expect(page.getByRole("button", { name: "Marqueur groove à 9" })).toBeVisible();
+});
+
 test("the editor transport plays, pauses, stops and reaches media end", async ({ page }) => {
   const projectName = `E2E transport ${Date.now()}`;
   await page.goto("/");

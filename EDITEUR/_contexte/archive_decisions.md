@@ -23,6 +23,10 @@ Décisions archivées depuis `_contexte/contexte.md` (append only).
   incompatibilité structurelle entre `source_paths` de mutmut et le mode d'import réel du projet
   (`pythonpath`). Acté comme limite documentée (LIM-001) plutôt que poursuivi via restructuration
   app-wide des imports.
+- 2026-08-02 : golden `EDITEUR/fixtures/lignes_de_nuit.golden.json` régénéré (root cause : golden
+  désynchronisé par un changement du renderer `explo`, pas une régression éditeur) ; décision actée
+  avec confirmation explicite de l'utilisateur, car régénérer un golden touche un gate de
+  déterminisme.
 - 2026-08-01 : `Pattern.events` et `Composition.mixer` (dicts génériques codant des données
   typables) migrés vers `list[NoteEvent]` et `MixerChannel` typés, pour tenir la promesse de la
   Phase 1 (schéma entièrement pilotable par données) plutôt que de considérer la phase close sur

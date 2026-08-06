@@ -1,2168 +1,2195 @@
 {
-  "schema_version": 3,
-  "id": "9b11b2f0-9cbe-4c85-8d5e-f967cc3d5c01",
-  "revision": 0,
-  "title": "Lignes de nuit",
-  "seed": 20260730,
-  "sample_rate": 48000,
-  "tempo_bpm": 120,
-  "time_signature": [
-    4,
-    4
-  ],
-  "tracks": [
-    {
-      "id": "bc0f4f11-fac7-4d89-b4f0-48789a667101",
-      "name": "drums",
-      "kind": "drums",
-      "gain": 0.78,
-      "pan": 0,
-      "instrument": {
-        "kick": {
-          "frequency_hz": {
-            "base": 47,
-            "drop": 112,
-            "decay": 30
-          },
-          "body_decay": 9.5,
-          "click_hz": 1900,
-          "click_decay": 65,
-          "click_gain": 0.09
-        },
-        "clap": {
-          "duration_seconds": 0.22,
-          "bandpass_hz": [
-            850,
-            9000
-          ],
-          "bursts_seconds": [
-            0,
-            0.018,
-            0.036
-          ],
-          "burst_width_seconds": 0.011,
-          "decay": 7
-        },
-        "hat": {
-          "duration_seconds": 0.085,
-          "highpass_hz": 6800,
-          "decay": 52
-        }
-      },
-      "processors": []
+ "schema_version": 4,
+ "id": "9b11b2f0-9cbe-4c85-8d5e-f967cc3d5c01",
+ "revision": 0,
+ "title": "Lignes de nuit",
+ "seed": 20260730,
+ "sample_rate": 48000,
+ "tempo_bpm": 120,
+ "time_signature": [
+  4,
+  4
+ ],
+ "tracks": [
+  {
+   "id": "bc0f4f11-fac7-4d89-b4f0-48789a667101",
+   "name": "drums",
+   "kind": "drums",
+   "gain": 0.78,
+   "pan": 0,
+   "instrument": {
+    "kick": {
+     "frequency_hz": {
+      "base": 47,
+      "drop": 112,
+      "decay": 30
+     },
+     "body_decay": 9.5,
+     "click_hz": 1900,
+     "click_decay": 65,
+     "click_gain": 0.09
     },
-    {
-      "id": "bc0f4f11-fac7-4d89-b4f0-48789a667102",
-      "name": "bass",
-      "kind": "bass",
-      "gain": 0.7,
-      "pan": 0,
-      "instrument": {
-        "oscillators": [
-          {
-            "ratio": 1,
-            "gain": 1
-          },
-          {
-            "ratio": 2,
-            "gain": 0.33
-          },
-          {
-            "ratio": 3,
-            "gain": 0.12
-          }
-        ],
-        "lowpass_hz": 620,
-        "envelope": {
-          "attack": 0.008,
-          "decay": 0.12,
-          "sustain": 0.72,
-          "release": 0.07
-        }
-      },
-      "processors": []
+    "clap": {
+     "duration_seconds": 0.22,
+     "bandpass_hz": [
+      850,
+      9000
+     ],
+     "bursts_seconds": [
+      0,
+      0.018,
+      0.036
+     ],
+     "burst_width_seconds": 0.011,
+     "decay": 7
     },
-    {
-      "id": "bc0f4f11-fac7-4d89-b4f0-48789a667103",
-      "name": "pad",
-      "kind": "pad",
-      "gain": 0.36,
-      "pan": 0,
-      "instrument": {
-        "oscillators": [
-          {
-            "detune_semitones": -0.004,
-            "gain": 0.18
-          },
-          {
-            "detune_semitones": 0,
-            "gain": 0.3
-          },
-          {
-            "detune_semitones": 0.003,
-            "gain": 0.18
-          },
-          {
-            "ratio": 2,
-            "gain": 0.16
-          }
-        ],
-        "lowpass_hz": 2400,
-        "envelope": {
-          "attack": 0.65,
-          "decay": 1.2,
-          "sustain": 0.7,
-          "release": 0.8
-        }
-      },
-      "processors": []
-    },
-    {
-      "id": "bc0f4f11-fac7-4d89-b4f0-48789a667104",
-      "name": "arp",
-      "kind": "arp",
-      "gain": 0.48,
-      "pan": 0,
-      "instrument": {
-        "oscillators": [
-          {
-            "ratio": 1,
-            "gain": 1
-          },
-          {
-            "ratio": 2,
-            "gain": 0.34
-          },
-          {
-            "ratio": 3,
-            "gain": 0.14
-          }
-        ],
-        "decay": 4.5,
-        "envelope": {
-          "attack": 0.006,
-          "decay": 0.11,
-          "sustain": 0.4,
-          "release": 0.22
-        }
-      },
-      "processors": []
-    },
-    {
-      "id": "bc0f4f11-fac7-4d89-b4f0-48789a667105",
-      "name": "lead",
-      "kind": "lead",
-      "gain": 0.38,
-      "pan": 0,
-      "instrument": {
-        "vibrato": {
-          "depth_semitones": 0.004,
-          "rate_hz": 5.2
-        },
-        "oscillators": [
-          {
-            "ratio": 1,
-            "gain": 1
-          },
-          {
-            "ratio": 2,
-            "gain": 0.23
-          },
-          {
-            "ratio": 3,
-            "gain": 0.07
-          }
-        ],
-        "envelope": {
-          "attack": 0.025,
-          "decay": 0.18,
-          "sustain": 0.68,
-          "release": 0.2
-        }
-      },
-      "processors": []
+    "hat": {
+     "duration_seconds": 0.085,
+     "highpass_hz": 6800,
+     "decay": 52
     }
-  ],
-  "patterns": [
-    {
-      "id": "7cbcaec4-a91c-42ae-ae7d-4d33209aa101",
-      "track_id": "bc0f4f11-fac7-4d89-b4f0-48789a667101",
-      "events": [
-        {
-          "id": "fb08ed8f-d592-4895-ab9a-65f562837e7e",
-          "start_beat": 8.0,
-          "duration_beats": 0.25,
-          "midi_note": 36,
-          "velocity": 0.72,
-          "pan": 0.0
-        },
-        {
-          "id": "52a464c0-3f2b-4670-b78d-7f547cea2b15",
-          "start_beat": 9.0,
-          "duration_beats": 0.25,
-          "midi_note": 39,
-          "velocity": 0.23,
-          "pan": 0.0
-        },
-        {
-          "id": "22db4e97-c361-4f4a-9a57-d7123d57ccb8",
-          "start_beat": 10.0,
-          "duration_beats": 0.25,
-          "midi_note": 36,
-          "velocity": 0.72,
-          "pan": 0.0
-        },
-        {
-          "id": "ef95181c-1b33-40f4-acbb-3a756dc3d563",
-          "start_beat": 11.0,
-          "duration_beats": 0.25,
-          "midi_note": 39,
-          "velocity": 0.23,
-          "pan": 0.0
-        },
-        {
-          "id": "1a4ad9b5-57cf-445a-9e04-6c85b91085bb",
-          "start_beat": 12.0,
-          "duration_beats": 0.25,
-          "midi_note": 36,
-          "velocity": 0.72,
-          "pan": 0.0
-        },
-        {
-          "id": "8c77a40c-bf45-495d-b390-7ca9f3e90121",
-          "start_beat": 13.0,
-          "duration_beats": 0.25,
-          "midi_note": 39,
-          "velocity": 0.23,
-          "pan": 0.0
-        },
-        {
-          "id": "25749165-01ed-4495-93a9-55d4e869ad11",
-          "start_beat": 14.0,
-          "duration_beats": 0.25,
-          "midi_note": 36,
-          "velocity": 0.72,
-          "pan": 0.0
-        },
-        {
-          "id": "9e57aa3e-72e3-4d35-956d-1e9ac330f554",
-          "start_beat": 15.0,
-          "duration_beats": 0.25,
-          "midi_note": 39,
-          "velocity": 0.23,
-          "pan": 0.0
-        },
-        {
-          "id": "b972a12b-32c9-4ff5-b5be-8884937c0512",
-          "start_beat": 16.0,
-          "duration_beats": 0.25,
-          "midi_note": 36,
-          "velocity": 0.72,
-          "pan": 0.0
-        },
-        {
-          "id": "4c0efcf2-bbbf-4c7d-a9a7-c40ba069be77",
-          "start_beat": 16.5,
-          "duration_beats": 0.25,
-          "midi_note": 42,
-          "velocity": 0.075,
-          "pan": -0.28
-        },
-        {
-          "id": "449aeb64-998f-4248-bf4e-dc8761cb3dc8",
-          "start_beat": 17.0,
-          "duration_beats": 0.25,
-          "midi_note": 39,
-          "velocity": 0.23,
-          "pan": 0.0
-        },
-        {
-          "id": "5f55307e-4e42-4180-b2c5-a58265d1f8eb",
-          "start_beat": 17.5,
-          "duration_beats": 0.25,
-          "midi_note": 42,
-          "velocity": 0.075,
-          "pan": 0.28
-        },
-        {
-          "id": "1b4b557f-3b05-4b1e-b74a-72a3fd24c28f",
-          "start_beat": 18.0,
-          "duration_beats": 0.25,
-          "midi_note": 36,
-          "velocity": 0.72,
-          "pan": 0.0
-        },
-        {
-          "id": "6344dfc9-0264-4f00-9f7f-7010fec542f3",
-          "start_beat": 19.0,
-          "duration_beats": 0.25,
-          "midi_note": 39,
-          "velocity": 0.23,
-          "pan": 0.0
-        },
-        {
-          "id": "c9fff809-1690-4b66-b73b-0086023454de",
-          "start_beat": 20.0,
-          "duration_beats": 0.25,
-          "midi_note": 36,
-          "velocity": 0.72,
-          "pan": 0.0
-        },
-        {
-          "id": "701df8dc-2481-4b92-9350-3707ba280e49",
-          "start_beat": 20.5,
-          "duration_beats": 0.25,
-          "midi_note": 42,
-          "velocity": 0.075,
-          "pan": -0.28
-        },
-        {
-          "id": "3e4c540c-b175-4087-b601-48863193c76e",
-          "start_beat": 21.0,
-          "duration_beats": 0.25,
-          "midi_note": 39,
-          "velocity": 0.23,
-          "pan": 0.0
-        },
-        {
-          "id": "ba04da92-8491-4a7e-a0a4-fa53b9ba77b5",
-          "start_beat": 21.5,
-          "duration_beats": 0.25,
-          "midi_note": 42,
-          "velocity": 0.075,
-          "pan": 0.28
-        },
-        {
-          "id": "b3b42ce6-6226-46cf-9927-01d102062fab",
-          "start_beat": 22.0,
-          "duration_beats": 0.25,
-          "midi_note": 36,
-          "velocity": 0.72,
-          "pan": 0.0
-        },
-        {
-          "id": "70b59c3e-507e-4ddd-8e14-7ebbd5f18144",
-          "start_beat": 23.0,
-          "duration_beats": 0.25,
-          "midi_note": 39,
-          "velocity": 0.23,
-          "pan": 0.0
-        },
-        {
-          "id": "572e158f-c891-4933-80b7-9621763d71a3",
-          "start_beat": 24.0,
-          "duration_beats": 0.25,
-          "midi_note": 36,
-          "velocity": 0.72,
-          "pan": 0.0
-        },
-        {
-          "id": "2d6bfb4f-9b3a-4cbf-a6bf-195f86eae70d",
-          "start_beat": 24.5,
-          "duration_beats": 0.25,
-          "midi_note": 42,
-          "velocity": 0.075,
-          "pan": -0.28
-        },
-        {
-          "id": "d616b842-6b2c-41ae-a96a-aa43b18232b6",
-          "start_beat": 25.0,
-          "duration_beats": 0.25,
-          "midi_note": 39,
-          "velocity": 0.23,
-          "pan": 0.0
-        },
-        {
-          "id": "4d5c08b1-0f8f-4969-a860-5c90065258e7",
-          "start_beat": 25.5,
-          "duration_beats": 0.25,
-          "midi_note": 42,
-          "velocity": 0.075,
-          "pan": 0.28
-        },
-        {
-          "id": "61855fd6-dc53-4de6-9872-55f77ba490df",
-          "start_beat": 26.0,
-          "duration_beats": 0.25,
-          "midi_note": 36,
-          "velocity": 0.72,
-          "pan": 0.0
-        },
-        {
-          "id": "16ca1c56-6b02-43ac-a813-5108f26ea613",
-          "start_beat": 27.0,
-          "duration_beats": 0.25,
-          "midi_note": 39,
-          "velocity": 0.23,
-          "pan": 0.0
-        },
-        {
-          "id": "44ed679c-825a-43c4-ac36-6503bf935ac7",
-          "start_beat": 28.0,
-          "duration_beats": 0.25,
-          "midi_note": 36,
-          "velocity": 0.72,
-          "pan": 0.0
-        },
-        {
-          "id": "47d7e939-6679-4f74-bab0-1a3b8ecee113",
-          "start_beat": 28.5,
-          "duration_beats": 0.25,
-          "midi_note": 42,
-          "velocity": 0.075,
-          "pan": -0.28
-        },
-        {
-          "id": "0fcfdaa5-29bb-4f50-a3f3-9cc6b8ebbad4",
-          "start_beat": 29.0,
-          "duration_beats": 0.25,
-          "midi_note": 39,
-          "velocity": 0.23,
-          "pan": 0.0
-        },
-        {
-          "id": "dd236da9-bf23-47fe-84c3-0582d3497352",
-          "start_beat": 29.5,
-          "duration_beats": 0.25,
-          "midi_note": 42,
-          "velocity": 0.075,
-          "pan": 0.28
-        },
-        {
-          "id": "d0d3c17d-3ad8-4b40-be7f-64c549ea4fb8",
-          "start_beat": 30.0,
-          "duration_beats": 0.25,
-          "midi_note": 36,
-          "velocity": 0.72,
-          "pan": 0.0
-        },
-        {
-          "id": "9abd640f-eb42-4acf-9acf-361a534b6d98",
-          "start_beat": 31.0,
-          "duration_beats": 0.25,
-          "midi_note": 39,
-          "velocity": 0.23,
-          "pan": 0.0
-        },
-        {
-          "id": "561d39af-422d-4c69-ac63-5cd817a15734",
-          "start_beat": 32.0,
-          "duration_beats": 0.25,
-          "midi_note": 36,
-          "velocity": 0.72,
-          "pan": 0.0
-        },
-        {
-          "id": "6159111b-f14d-4f78-8f29-c7f6fc573b24",
-          "start_beat": 32.5,
-          "duration_beats": 0.25,
-          "midi_note": 42,
-          "velocity": 0.075,
-          "pan": -0.28
-        },
-        {
-          "id": "2fb7fd57-e1b4-4bf3-b01d-c3c850202766",
-          "start_beat": 33.0,
-          "duration_beats": 0.25,
-          "midi_note": 39,
-          "velocity": 0.23,
-          "pan": 0.0
-        },
-        {
-          "id": "2d6670d9-85d6-477e-9e9c-0d1ca6920fcb",
-          "start_beat": 33.5,
-          "duration_beats": 0.25,
-          "midi_note": 42,
-          "velocity": 0.075,
-          "pan": 0.28
-        },
-        {
-          "id": "2fbcf381-0b2f-4cb8-abcd-0cccded216fb",
-          "start_beat": 34.0,
-          "duration_beats": 0.25,
-          "midi_note": 36,
-          "velocity": 0.72,
-          "pan": 0.0
-        },
-        {
-          "id": "dd71af53-2e07-493d-ad0d-151efff18040",
-          "start_beat": 35.0,
-          "duration_beats": 0.25,
-          "midi_note": 39,
-          "velocity": 0.23,
-          "pan": 0.0
-        },
-        {
-          "id": "0c22ffc0-8df4-4dcb-9325-9f6937294557",
-          "start_beat": 36.0,
-          "duration_beats": 0.25,
-          "midi_note": 36,
-          "velocity": 0.72,
-          "pan": 0.0
-        },
-        {
-          "id": "85f1bf2b-41c9-4156-9060-d2ccfb2e07a9",
-          "start_beat": 36.5,
-          "duration_beats": 0.25,
-          "midi_note": 42,
-          "velocity": 0.075,
-          "pan": -0.28
-        },
-        {
-          "id": "d1cf2d2c-8aa5-4dfa-aa39-d33db8cffca8",
-          "start_beat": 37.0,
-          "duration_beats": 0.25,
-          "midi_note": 39,
-          "velocity": 0.23,
-          "pan": 0.0
-        },
-        {
-          "id": "6e48d00b-4891-432f-b899-cf08fee0c5f5",
-          "start_beat": 37.5,
-          "duration_beats": 0.25,
-          "midi_note": 42,
-          "velocity": 0.075,
-          "pan": 0.28
-        },
-        {
-          "id": "c51db527-724d-4033-88bc-febfa2d8db5e",
-          "start_beat": 38.0,
-          "duration_beats": 0.25,
-          "midi_note": 36,
-          "velocity": 0.72,
-          "pan": 0.0
-        },
-        {
-          "id": "ea21731b-2ba6-4600-b5d3-a9f2ed1414f4",
-          "start_beat": 39.0,
-          "duration_beats": 0.25,
-          "midi_note": 39,
-          "velocity": 0.23,
-          "pan": 0.0
-        },
-        {
-          "id": "edf2d3df-d581-46d0-b8a6-998753e88fed",
-          "start_beat": 40.0,
-          "duration_beats": 0.25,
-          "midi_note": 36,
-          "velocity": 0.72,
-          "pan": 0.0
-        },
-        {
-          "id": "56e397d5-3d21-451c-ba5a-415dcd7b7e71",
-          "start_beat": 40.5,
-          "duration_beats": 0.25,
-          "midi_note": 42,
-          "velocity": 0.075,
-          "pan": -0.28
-        },
-        {
-          "id": "19102af0-470e-4440-a821-ab4e8c3ed125",
-          "start_beat": 41.0,
-          "duration_beats": 0.25,
-          "midi_note": 39,
-          "velocity": 0.23,
-          "pan": 0.0
-        },
-        {
-          "id": "f6e35eaa-7bd6-4339-b852-86cd62d335a1",
-          "start_beat": 41.5,
-          "duration_beats": 0.25,
-          "midi_note": 42,
-          "velocity": 0.075,
-          "pan": 0.28
-        },
-        {
-          "id": "db2a1236-1003-4979-b2ae-ada130d12dcb",
-          "start_beat": 42.0,
-          "duration_beats": 0.25,
-          "midi_note": 36,
-          "velocity": 0.72,
-          "pan": 0.0
-        },
-        {
-          "id": "e7d777cb-4d72-416e-8021-51bee94624cb",
-          "start_beat": 43.0,
-          "duration_beats": 0.25,
-          "midi_note": 39,
-          "velocity": 0.23,
-          "pan": 0.0
-        },
-        {
-          "id": "770068c0-e497-42b5-98bb-b136cf3a5c34",
-          "start_beat": 44.0,
-          "duration_beats": 0.25,
-          "midi_note": 36,
-          "velocity": 0.72,
-          "pan": 0.0
-        },
-        {
-          "id": "b7f1ed45-ea56-4e93-b8c0-5ccc41c13441",
-          "start_beat": 44.5,
-          "duration_beats": 0.25,
-          "midi_note": 42,
-          "velocity": 0.075,
-          "pan": -0.28
-        },
-        {
-          "id": "882ff367-58c0-4336-968d-2aaec5a83a82",
-          "start_beat": 45.0,
-          "duration_beats": 0.25,
-          "midi_note": 39,
-          "velocity": 0.23,
-          "pan": 0.0
-        },
-        {
-          "id": "d9f1e5e2-251d-477f-9c3d-8a67cbfae05c",
-          "start_beat": 45.5,
-          "duration_beats": 0.25,
-          "midi_note": 42,
-          "velocity": 0.075,
-          "pan": 0.28
-        },
-        {
-          "id": "78cbde69-9fac-4399-bd7e-e21f39c4bbc4",
-          "start_beat": 46.0,
-          "duration_beats": 0.25,
-          "midi_note": 36,
-          "velocity": 0.72,
-          "pan": 0.0
-        },
-        {
-          "id": "36598562-a647-426a-9f36-765762cb4eb0",
-          "start_beat": 47.0,
-          "duration_beats": 0.25,
-          "midi_note": 39,
-          "velocity": 0.23,
-          "pan": 0.0
-        },
-        {
-          "id": "9afebf4a-69ad-48ba-b917-df638e887e9b",
-          "start_beat": 48.0,
-          "duration_beats": 0.25,
-          "midi_note": 36,
-          "velocity": 0.72,
-          "pan": 0.0
-        },
-        {
-          "id": "23117c20-88a9-41df-9953-ed2edfb8b5c2",
-          "start_beat": 48.5,
-          "duration_beats": 0.25,
-          "midi_note": 42,
-          "velocity": 0.075,
-          "pan": -0.28
-        },
-        {
-          "id": "cb17d1d0-00b9-44ba-bcc1-82c1fe5387a0",
-          "start_beat": 49.0,
-          "duration_beats": 0.25,
-          "midi_note": 39,
-          "velocity": 0.23,
-          "pan": 0.0
-        },
-        {
-          "id": "f45def1c-5ab1-445d-adbb-34e39dcc605f",
-          "start_beat": 49.5,
-          "duration_beats": 0.25,
-          "midi_note": 42,
-          "velocity": 0.075,
-          "pan": 0.28
-        },
-        {
-          "id": "d4f5189d-0be0-44c4-8a4a-540c76206015",
-          "start_beat": 50.0,
-          "duration_beats": 0.25,
-          "midi_note": 36,
-          "velocity": 0.72,
-          "pan": 0.0
-        },
-        {
-          "id": "a706173d-29e4-457c-a2f8-ecab8345c4b0",
-          "start_beat": 51.0,
-          "duration_beats": 0.25,
-          "midi_note": 39,
-          "velocity": 0.23,
-          "pan": 0.0
-        },
-        {
-          "id": "c4dfa887-eddd-481d-ba33-0c64aa523138",
-          "start_beat": 52.0,
-          "duration_beats": 0.25,
-          "midi_note": 36,
-          "velocity": 0.72,
-          "pan": 0.0
-        },
-        {
-          "id": "50bf18ed-ad7d-4322-b3cc-0078037fd4a9",
-          "start_beat": 52.5,
-          "duration_beats": 0.25,
-          "midi_note": 42,
-          "velocity": 0.075,
-          "pan": -0.28
-        },
-        {
-          "id": "6d6d1622-e301-45d3-bdbd-44d0e9c6f060",
-          "start_beat": 53.0,
-          "duration_beats": 0.25,
-          "midi_note": 39,
-          "velocity": 0.23,
-          "pan": 0.0
-        },
-        {
-          "id": "731104b6-a474-4e3b-b5b8-75ba40cade75",
-          "start_beat": 53.5,
-          "duration_beats": 0.25,
-          "midi_note": 42,
-          "velocity": 0.075,
-          "pan": 0.28
-        },
-        {
-          "id": "2e96e9dd-abe9-4408-8784-0bb24d709fc6",
-          "start_beat": 54.0,
-          "duration_beats": 0.25,
-          "midi_note": 36,
-          "velocity": 0.72,
-          "pan": 0.0
-        },
-        {
-          "id": "1ac38170-9f0d-4117-852d-817fcdfc90fb",
-          "start_beat": 55.0,
-          "duration_beats": 0.25,
-          "midi_note": 39,
-          "velocity": 0.23,
-          "pan": 0.0
-        },
-        {
-          "id": "6cbca99e-febb-43e0-9aad-fa4acefce9b8",
-          "start_beat": 56.0,
-          "duration_beats": 0.25,
-          "midi_note": 36,
-          "velocity": 0.72,
-          "pan": 0.0
-        },
-        {
-          "id": "3ad78685-fc7d-4e1d-96a5-32c3b33cc37d",
-          "start_beat": 56.5,
-          "duration_beats": 0.25,
-          "midi_note": 42,
-          "velocity": 0.075,
-          "pan": -0.28
-        },
-        {
-          "id": "c7e2e08e-39ef-496f-bb94-3585c692ed07",
-          "start_beat": 57.0,
-          "duration_beats": 0.25,
-          "midi_note": 39,
-          "velocity": 0.23,
-          "pan": 0.0
-        },
-        {
-          "id": "e1b3ce93-664e-4a98-b6f3-581a67514909",
-          "start_beat": 57.5,
-          "duration_beats": 0.25,
-          "midi_note": 42,
-          "velocity": 0.075,
-          "pan": 0.28
-        },
-        {
-          "id": "a187df0c-6311-4c64-ba29-900e98774a38",
-          "start_beat": 58.0,
-          "duration_beats": 0.25,
-          "midi_note": 36,
-          "velocity": 0.72,
-          "pan": 0.0
-        },
-        {
-          "id": "8e5aa68b-3c88-4951-9204-df172148dd39",
-          "start_beat": 59.0,
-          "duration_beats": 0.25,
-          "midi_note": 39,
-          "velocity": 0.23,
-          "pan": 0.0
-        }
-      ],
-      "name": "Pattern 1",
-      "color": "#e0a458"
-    },
-    {
-      "id": "7cbcaec4-a91c-42ae-ae7d-4d33209aa102",
-      "track_id": "bc0f4f11-fac7-4d89-b4f0-48789a667102",
-      "events": [
-        {
-          "id": "8dac5dbc-7e9c-499c-bec8-bc36a49dae57",
-          "start_beat": 16.0,
-          "duration_beats": 0.42,
-          "midi_note": 45,
-          "velocity": 0.3,
-          "pan": 0.0
-        },
-        {
-          "id": "a37416a6-9d0d-466b-80a9-14608644b32e",
-          "start_beat": 18.0,
-          "duration_beats": 0.42,
-          "midi_note": 45,
-          "velocity": 0.3,
-          "pan": 0.0
-        },
-        {
-          "id": "54c5c13f-4481-4ea1-98a2-95cbdde94ad9",
-          "start_beat": 20.0,
-          "duration_beats": 0.42,
-          "midi_note": 41,
-          "velocity": 0.3,
-          "pan": 0.0
-        },
-        {
-          "id": "1dfbb395-9aee-4c93-a36e-8d692d0cb8ad",
-          "start_beat": 22.0,
-          "duration_beats": 0.42,
-          "midi_note": 41,
-          "velocity": 0.3,
-          "pan": 0.0
-        },
-        {
-          "id": "a115580e-8c3b-4e48-bc5e-497f0d234e56",
-          "start_beat": 24.0,
-          "duration_beats": 0.42,
-          "midi_note": 48,
-          "velocity": 0.3,
-          "pan": 0.0
-        },
-        {
-          "id": "dda4d007-376b-43b8-a999-c321e297d104",
-          "start_beat": 26.0,
-          "duration_beats": 0.42,
-          "midi_note": 48,
-          "velocity": 0.3,
-          "pan": 0.0
-        },
-        {
-          "id": "542916b6-339f-4c4d-8b60-5e9aa27a4282",
-          "start_beat": 28.0,
-          "duration_beats": 0.42,
-          "midi_note": 43,
-          "velocity": 0.3,
-          "pan": 0.0
-        },
-        {
-          "id": "232b0a88-c1e9-4f5e-88ae-8ce8b593de9f",
-          "start_beat": 30.0,
-          "duration_beats": 0.42,
-          "midi_note": 43,
-          "velocity": 0.3,
-          "pan": 0.0
-        },
-        {
-          "id": "b00fe5a5-0320-46d3-8b3a-9c8d0a9884ba",
-          "start_beat": 32.0,
-          "duration_beats": 0.42,
-          "midi_note": 45,
-          "velocity": 0.3,
-          "pan": 0.0
-        },
-        {
-          "id": "37d232ea-366d-4da1-a591-d7321ea76297",
-          "start_beat": 34.0,
-          "duration_beats": 0.42,
-          "midi_note": 45,
-          "velocity": 0.3,
-          "pan": 0.0
-        },
-        {
-          "id": "8a96fd47-aa64-48b9-b45a-f91105c0edfd",
-          "start_beat": 36.0,
-          "duration_beats": 0.42,
-          "midi_note": 41,
-          "velocity": 0.3,
-          "pan": 0.0
-        },
-        {
-          "id": "9dc2e198-a796-46a3-ac3a-59b97815070c",
-          "start_beat": 38.0,
-          "duration_beats": 0.42,
-          "midi_note": 41,
-          "velocity": 0.3,
-          "pan": 0.0
-        },
-        {
-          "id": "e938dd09-7b1f-480d-b5a4-43c70d11dd00",
-          "start_beat": 40.0,
-          "duration_beats": 0.42,
-          "midi_note": 48,
-          "velocity": 0.3,
-          "pan": 0.0
-        },
-        {
-          "id": "ecc06435-58c0-436c-8abe-732f1bab10b4",
-          "start_beat": 42.0,
-          "duration_beats": 0.42,
-          "midi_note": 48,
-          "velocity": 0.3,
-          "pan": 0.0
-        },
-        {
-          "id": "760413b8-4461-48b7-bcdc-9add64665f5f",
-          "start_beat": 44.0,
-          "duration_beats": 0.42,
-          "midi_note": 43,
-          "velocity": 0.3,
-          "pan": 0.0
-        },
-        {
-          "id": "d496c825-feab-4ed7-8b12-75e3df5fbca9",
-          "start_beat": 46.0,
-          "duration_beats": 0.42,
-          "midi_note": 43,
-          "velocity": 0.3,
-          "pan": 0.0
-        },
-        {
-          "id": "8910b9ff-1fa7-459a-bb85-0a4edb6c0d70",
-          "start_beat": 48.0,
-          "duration_beats": 0.42,
-          "midi_note": 45,
-          "velocity": 0.3,
-          "pan": 0.0
-        },
-        {
-          "id": "08a16f49-20a5-497f-b46a-487e5a5435bf",
-          "start_beat": 50.0,
-          "duration_beats": 0.42,
-          "midi_note": 45,
-          "velocity": 0.3,
-          "pan": 0.0
-        },
-        {
-          "id": "6b6fbea1-e754-43ae-9b91-225ef84438c2",
-          "start_beat": 52.0,
-          "duration_beats": 0.42,
-          "midi_note": 41,
-          "velocity": 0.3,
-          "pan": 0.0
-        },
-        {
-          "id": "a2ca077c-f575-4625-b2e1-3eede5e17b6d",
-          "start_beat": 54.0,
-          "duration_beats": 0.42,
-          "midi_note": 41,
-          "velocity": 0.3,
-          "pan": 0.0
-        },
-        {
-          "id": "250fd2d1-0bf5-4af6-8a23-32f589d96972",
-          "start_beat": 56.0,
-          "duration_beats": 0.42,
-          "midi_note": 48,
-          "velocity": 0.3,
-          "pan": 0.0
-        },
-        {
-          "id": "f2483367-7bfe-4f63-bfc6-b02be484e7ce",
-          "start_beat": 58.0,
-          "duration_beats": 0.42,
-          "midi_note": 48,
-          "velocity": 0.3,
-          "pan": 0.0
-        }
-      ],
-      "name": "Pattern 2",
-      "color": "#7fb3d5"
-    },
-    {
-      "id": "7cbcaec4-a91c-42ae-ae7d-4d33209aa103",
-      "track_id": "bc0f4f11-fac7-4d89-b4f0-48789a667103",
-      "events": [
-        {
-          "id": "d3ee0c28-e388-4663-b989-c5c0bf3a21da",
-          "start_beat": 0,
-          "duration_beats": 4.8,
-          "midi_note": 57,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "52f4f593-6787-490f-9811-7a621037746c",
-          "start_beat": 0,
-          "duration_beats": 4.8,
-          "midi_note": 60,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "bdc13c28-6902-436b-9e44-cb5c814f95ff",
-          "start_beat": 0,
-          "duration_beats": 4.8,
-          "midi_note": 64,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "4dc8d682-afe5-4c1c-a1d9-f656613425cb",
-          "start_beat": 4,
-          "duration_beats": 4.8,
-          "midi_note": 53,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "89ef0eda-15b5-45dd-8739-2d283edc4af3",
-          "start_beat": 4,
-          "duration_beats": 4.8,
-          "midi_note": 56,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "4cbb9315-64d5-4014-a77e-9e117f253639",
-          "start_beat": 4,
-          "duration_beats": 4.8,
-          "midi_note": 60,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "b7a091de-f382-49bc-8eef-3aae59b4a082",
-          "start_beat": 8,
-          "duration_beats": 4.8,
-          "midi_note": 60,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "24564e45-381c-4fef-938d-3bef6e17ba8d",
-          "start_beat": 8,
-          "duration_beats": 4.8,
-          "midi_note": 63,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "d3a0452f-ed69-4194-b5d5-c9891ffd2ba9",
-          "start_beat": 8,
-          "duration_beats": 4.8,
-          "midi_note": 67,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "cc8771c0-2a7d-49e8-b8ca-26f3dc67dab4",
-          "start_beat": 12,
-          "duration_beats": 4.8,
-          "midi_note": 55,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "d7a0a6af-6bc0-4ed5-9236-ca2cb335e282",
-          "start_beat": 12,
-          "duration_beats": 4.8,
-          "midi_note": 58,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "bdb1f8b2-0966-4c9e-bcaf-5d1e4bab00f3",
-          "start_beat": 12,
-          "duration_beats": 4.8,
-          "midi_note": 62,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "d2d49341-4001-4711-a393-0cea535d29f1",
-          "start_beat": 16,
-          "duration_beats": 4.8,
-          "midi_note": 57,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "eca53c44-9f3f-4065-8703-0da0d41db34d",
-          "start_beat": 16,
-          "duration_beats": 4.8,
-          "midi_note": 60,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "213a48ad-5d3d-4224-8493-91a90322d8ac",
-          "start_beat": 16,
-          "duration_beats": 4.8,
-          "midi_note": 64,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "69b6f054-e14a-4a09-a7b5-71f51103e7dc",
-          "start_beat": 20,
-          "duration_beats": 4.8,
-          "midi_note": 53,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "8dcd34c8-2a39-409c-a053-1330365683eb",
-          "start_beat": 20,
-          "duration_beats": 4.8,
-          "midi_note": 56,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "3b0fd236-3607-4347-a6a1-364229398a65",
-          "start_beat": 20,
-          "duration_beats": 4.8,
-          "midi_note": 60,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "90346298-d3b4-422a-9ec5-9b66b98faaf8",
-          "start_beat": 24,
-          "duration_beats": 4.8,
-          "midi_note": 60,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "21b40478-dcfa-4800-afcf-06c9a09df013",
-          "start_beat": 24,
-          "duration_beats": 4.8,
-          "midi_note": 63,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "e40f7bd4-39f5-41c1-b825-f62f88116ff8",
-          "start_beat": 24,
-          "duration_beats": 4.8,
-          "midi_note": 67,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "469cd76b-86ab-46eb-89a6-a3cf6dee4f13",
-          "start_beat": 28,
-          "duration_beats": 4.8,
-          "midi_note": 55,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "4d45c7e7-58be-439f-8725-40e57c1f1b91",
-          "start_beat": 28,
-          "duration_beats": 4.8,
-          "midi_note": 58,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "6808100a-82ff-42aa-bacc-d89fac77562d",
-          "start_beat": 28,
-          "duration_beats": 4.8,
-          "midi_note": 62,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "4e1fef87-fd9f-4a1d-9634-d9e2a99fe8ff",
-          "start_beat": 32,
-          "duration_beats": 4.8,
-          "midi_note": 57,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "df088225-fc5c-4b25-a22a-08bf0f5d2d6f",
-          "start_beat": 32,
-          "duration_beats": 4.8,
-          "midi_note": 60,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "6612c680-3315-4566-b814-8d6f2ddd7b3e",
-          "start_beat": 32,
-          "duration_beats": 4.8,
-          "midi_note": 64,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "89d8e876-2a3d-4ed7-bb82-55090abb1489",
-          "start_beat": 36,
-          "duration_beats": 4.8,
-          "midi_note": 53,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "9e63ec58-4f96-4881-a84c-1baa034551ed",
-          "start_beat": 36,
-          "duration_beats": 4.8,
-          "midi_note": 56,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "7f5772a2-d1d9-4331-9e47-64a1478d4266",
-          "start_beat": 36,
-          "duration_beats": 4.8,
-          "midi_note": 60,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "d457a055-a930-4259-b9f5-d9878662e93c",
-          "start_beat": 40,
-          "duration_beats": 4.8,
-          "midi_note": 60,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "3cc95133-be93-4bd0-998c-728595244d49",
-          "start_beat": 40,
-          "duration_beats": 4.8,
-          "midi_note": 63,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "1245c46a-45a8-4e51-a7e5-386961a76ff1",
-          "start_beat": 40,
-          "duration_beats": 4.8,
-          "midi_note": 67,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "7fd90ba0-8cdf-4907-b9bb-58f0dfc05aa4",
-          "start_beat": 44,
-          "duration_beats": 4.8,
-          "midi_note": 55,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "44bf3d81-4ba9-48dd-a9e7-b9ce5d210705",
-          "start_beat": 44,
-          "duration_beats": 4.8,
-          "midi_note": 58,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "a3217437-5df2-4d31-a52d-8b9e90a7b65d",
-          "start_beat": 44,
-          "duration_beats": 4.8,
-          "midi_note": 62,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "59f40a6c-b3fc-43ef-bebb-659935476d2c",
-          "start_beat": 48,
-          "duration_beats": 4.8,
-          "midi_note": 57,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "c87a23ed-4e4f-4951-8515-1516b07ed87f",
-          "start_beat": 48,
-          "duration_beats": 4.8,
-          "midi_note": 60,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "27926f21-c165-4e4d-b6f4-be1de4a97e8f",
-          "start_beat": 48,
-          "duration_beats": 4.8,
-          "midi_note": 64,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "8ca17463-1c3d-4b94-90ae-e8d6864a89b7",
-          "start_beat": 52,
-          "duration_beats": 4.8,
-          "midi_note": 53,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "34ed7418-4b01-4cc9-a749-886cef1f520a",
-          "start_beat": 52,
-          "duration_beats": 4.8,
-          "midi_note": 56,
-          "velocity": 0.12,
-          "pan": 0.0
-        },
-        {
-          "id": "948b62f4-9e20-4195-b9cd-1e8d68aaf42d",
-          "start_beat": 52,
-          "duration_beats": 4.8,
-          "midi_note": 60,
-          "velocity": 0.12,
-          "pan": 0.0
-        }
-      ],
-      "name": "Pattern 3",
-      "color": "#9bb87f"
-    },
-    {
-      "id": "7cbcaec4-a91c-42ae-ae7d-4d33209aa104",
-      "track_id": "bc0f4f11-fac7-4d89-b4f0-48789a667104",
-      "events": [
-        {
-          "id": "18e6fa09-18bd-46e4-aa09-425040ea21cd",
-          "start_beat": 24.0,
-          "duration_beats": 0.42,
-          "midi_note": 60,
-          "velocity": 0.23,
-          "pan": -0.42
-        },
-        {
-          "id": "c0e235d0-4527-496a-ac83-adb0ce506e15",
-          "start_beat": 24.5,
-          "duration_beats": 0.42,
-          "midi_note": 67,
-          "velocity": 0.23,
-          "pan": 0.42
-        },
-        {
-          "id": "34307530-3e12-4e6d-9a13-d7ceb39feaca",
-          "start_beat": 25.0,
-          "duration_beats": 0.42,
-          "midi_note": 63,
-          "velocity": 0.23,
-          "pan": -0.42
-        },
-        {
-          "id": "d56fc226-632a-4460-86e3-c2c73de9118f",
-          "start_beat": 25.5,
-          "duration_beats": 0.42,
-          "midi_note": 70,
-          "velocity": 0.23,
-          "pan": 0.42
-        },
-        {
-          "id": "62b7afd7-0e70-43bf-afc3-d7cc6d532475",
-          "start_beat": 26.0,
-          "duration_beats": 0.42,
-          "midi_note": 67,
-          "velocity": 0.23,
-          "pan": -0.42
-        },
-        {
-          "id": "f052229c-c70e-4055-9a33-5ada6d14f086",
-          "start_beat": 26.5,
-          "duration_beats": 0.42,
-          "midi_note": 63,
-          "velocity": 0.23,
-          "pan": 0.42
-        },
-        {
-          "id": "6f134779-51ce-4aa6-b5ce-f3bf4cf948c7",
-          "start_beat": 27.0,
-          "duration_beats": 0.42,
-          "midi_note": 60,
-          "velocity": 0.23,
-          "pan": -0.42
-        },
-        {
-          "id": "c7660873-0b06-46bc-a6a4-2c94fcc7b597",
-          "start_beat": 27.5,
-          "duration_beats": 0.42,
-          "midi_note": 63,
-          "velocity": 0.23,
-          "pan": 0.42
-        },
-        {
-          "id": "2b08763b-946b-45f2-920a-0d78e949d54c",
-          "start_beat": 28.0,
-          "duration_beats": 0.42,
-          "midi_note": 55,
-          "velocity": 0.23,
-          "pan": -0.42
-        },
-        {
-          "id": "f0c4c396-afe7-41e0-b840-e1442fd353b1",
-          "start_beat": 28.5,
-          "duration_beats": 0.42,
-          "midi_note": 62,
-          "velocity": 0.23,
-          "pan": 0.42
-        },
-        {
-          "id": "b13358c3-7556-4c41-bd09-cc1d032cc34e",
-          "start_beat": 29.0,
-          "duration_beats": 0.42,
-          "midi_note": 58,
-          "velocity": 0.23,
-          "pan": -0.42
-        },
-        {
-          "id": "47ce3d5b-9e40-457c-b9ec-d06734078483",
-          "start_beat": 29.5,
-          "duration_beats": 0.42,
-          "midi_note": 65,
-          "velocity": 0.23,
-          "pan": 0.42
-        },
-        {
-          "id": "866fa225-b459-4511-aa83-9dfccb072877",
-          "start_beat": 30.0,
-          "duration_beats": 0.42,
-          "midi_note": 62,
-          "velocity": 0.23,
-          "pan": -0.42
-        },
-        {
-          "id": "cece7296-b8ea-4f6f-8dc0-a4773159f51c",
-          "start_beat": 30.5,
-          "duration_beats": 0.42,
-          "midi_note": 58,
-          "velocity": 0.23,
-          "pan": 0.42
-        },
-        {
-          "id": "4c846ef4-ab59-4927-88a8-b3c2883d27a3",
-          "start_beat": 31.0,
-          "duration_beats": 0.42,
-          "midi_note": 55,
-          "velocity": 0.23,
-          "pan": -0.42
-        },
-        {
-          "id": "bc83697e-51df-4f21-a7cf-ed3e7d70f8ce",
-          "start_beat": 31.5,
-          "duration_beats": 0.42,
-          "midi_note": 58,
-          "velocity": 0.23,
-          "pan": 0.42
-        },
-        {
-          "id": "bd54d3ac-db21-4ef2-af71-1d465b2226ef",
-          "start_beat": 32.0,
-          "duration_beats": 0.42,
-          "midi_note": 57,
-          "velocity": 0.23,
-          "pan": -0.42
-        },
-        {
-          "id": "8de92e47-8085-409a-9a40-1f7cbb66f115",
-          "start_beat": 32.5,
-          "duration_beats": 0.42,
-          "midi_note": 64,
-          "velocity": 0.23,
-          "pan": 0.42
-        },
-        {
-          "id": "dd3a9569-c4dd-49ff-8230-d57908e65e29",
-          "start_beat": 33.0,
-          "duration_beats": 0.42,
-          "midi_note": 60,
-          "velocity": 0.23,
-          "pan": -0.42
-        },
-        {
-          "id": "eea7384c-7761-47ed-9667-c251e349b044",
-          "start_beat": 33.5,
-          "duration_beats": 0.42,
-          "midi_note": 67,
-          "velocity": 0.23,
-          "pan": 0.42
-        },
-        {
-          "id": "01243f32-e3eb-4fc9-8e79-3ea9da09c8b4",
-          "start_beat": 34.0,
-          "duration_beats": 0.42,
-          "midi_note": 64,
-          "velocity": 0.23,
-          "pan": -0.42
-        },
-        {
-          "id": "5c709d6a-6fc9-4a9e-af83-1dd2e76a81b7",
-          "start_beat": 34.5,
-          "duration_beats": 0.42,
-          "midi_note": 60,
-          "velocity": 0.23,
-          "pan": 0.42
-        },
-        {
-          "id": "06a06d3a-d4a7-4dc7-8786-1364fc84dd73",
-          "start_beat": 35.0,
-          "duration_beats": 0.42,
-          "midi_note": 57,
-          "velocity": 0.23,
-          "pan": -0.42
-        },
-        {
-          "id": "493dc4bb-72e2-4c3d-a3e3-619a81b5569a",
-          "start_beat": 35.5,
-          "duration_beats": 0.42,
-          "midi_note": 60,
-          "velocity": 0.23,
-          "pan": 0.42
-        },
-        {
-          "id": "9e9726f0-647c-48c5-b4a8-9d2797d34a55",
-          "start_beat": 36.0,
-          "duration_beats": 0.42,
-          "midi_note": 53,
-          "velocity": 0.23,
-          "pan": -0.42
-        },
-        {
-          "id": "921fe5c4-91de-42d3-9e5f-bbebed1cedc6",
-          "start_beat": 36.5,
-          "duration_beats": 0.42,
-          "midi_note": 60,
-          "velocity": 0.23,
-          "pan": 0.42
-        },
-        {
-          "id": "55fb8897-22f6-40b7-9297-0a3f65353606",
-          "start_beat": 37.0,
-          "duration_beats": 0.42,
-          "midi_note": 56,
-          "velocity": 0.23,
-          "pan": -0.42
-        },
-        {
-          "id": "234d2e91-5abd-4056-9588-5b68a7f31fe4",
-          "start_beat": 37.5,
-          "duration_beats": 0.42,
-          "midi_note": 63,
-          "velocity": 0.23,
-          "pan": 0.42
-        },
-        {
-          "id": "a5825bc9-f372-4d01-893d-68e4203b347c",
-          "start_beat": 38.0,
-          "duration_beats": 0.42,
-          "midi_note": 60,
-          "velocity": 0.23,
-          "pan": -0.42
-        },
-        {
-          "id": "00fe315c-72e1-45ad-aff7-000c5092f8b0",
-          "start_beat": 38.5,
-          "duration_beats": 0.42,
-          "midi_note": 56,
-          "velocity": 0.23,
-          "pan": 0.42
-        },
-        {
-          "id": "b515dce3-ab9f-467e-8f4a-c0f9d84d210b",
-          "start_beat": 39.0,
-          "duration_beats": 0.42,
-          "midi_note": 53,
-          "velocity": 0.23,
-          "pan": -0.42
-        },
-        {
-          "id": "f93a7eb3-347d-493a-8ccb-e931ba7a6614",
-          "start_beat": 39.5,
-          "duration_beats": 0.42,
-          "midi_note": 56,
-          "velocity": 0.23,
-          "pan": 0.42
-        },
-        {
-          "id": "209d8d1f-2c8f-49c2-b429-21e9334a76b9",
-          "start_beat": 40.0,
-          "duration_beats": 0.42,
-          "midi_note": 60,
-          "velocity": 0.23,
-          "pan": -0.42
-        },
-        {
-          "id": "3f4ecafc-8cf8-4b0d-9bd0-3f905a5c6549",
-          "start_beat": 40.5,
-          "duration_beats": 0.42,
-          "midi_note": 67,
-          "velocity": 0.23,
-          "pan": 0.42
-        },
-        {
-          "id": "72752a8c-4d73-4ce3-8452-256bef989f89",
-          "start_beat": 41.0,
-          "duration_beats": 0.42,
-          "midi_note": 63,
-          "velocity": 0.23,
-          "pan": -0.42
-        },
-        {
-          "id": "b3cb9537-490a-43bb-b9dd-1bc7624c89de",
-          "start_beat": 41.5,
-          "duration_beats": 0.42,
-          "midi_note": 70,
-          "velocity": 0.23,
-          "pan": 0.42
-        },
-        {
-          "id": "c7263499-12f9-4502-83e1-e6f5da25daf3",
-          "start_beat": 42.0,
-          "duration_beats": 0.42,
-          "midi_note": 67,
-          "velocity": 0.23,
-          "pan": -0.42
-        },
-        {
-          "id": "76d6dd07-1f3d-4600-9626-94e02df443b9",
-          "start_beat": 42.5,
-          "duration_beats": 0.42,
-          "midi_note": 63,
-          "velocity": 0.23,
-          "pan": 0.42
-        },
-        {
-          "id": "6e936fcc-bf57-488d-8db1-6617410d4591",
-          "start_beat": 43.0,
-          "duration_beats": 0.42,
-          "midi_note": 60,
-          "velocity": 0.23,
-          "pan": -0.42
-        },
-        {
-          "id": "170b07c2-85f8-4410-b7f0-2cd572bf6f0e",
-          "start_beat": 43.5,
-          "duration_beats": 0.42,
-          "midi_note": 63,
-          "velocity": 0.23,
-          "pan": 0.42
-        },
-        {
-          "id": "cdb66fb8-0254-459b-92db-b3f7a68ea774",
-          "start_beat": 44.0,
-          "duration_beats": 0.42,
-          "midi_note": 55,
-          "velocity": 0.23,
-          "pan": -0.42
-        },
-        {
-          "id": "db17375c-a254-410f-82e4-bd968c625689",
-          "start_beat": 44.5,
-          "duration_beats": 0.42,
-          "midi_note": 62,
-          "velocity": 0.23,
-          "pan": 0.42
-        },
-        {
-          "id": "de2c834d-f94b-44c3-9729-57cdf23ec95d",
-          "start_beat": 45.0,
-          "duration_beats": 0.42,
-          "midi_note": 58,
-          "velocity": 0.23,
-          "pan": -0.42
-        },
-        {
-          "id": "ae23cbfe-512b-4613-98cc-bb530939b289",
-          "start_beat": 45.5,
-          "duration_beats": 0.42,
-          "midi_note": 65,
-          "velocity": 0.23,
-          "pan": 0.42
-        },
-        {
-          "id": "4b37f430-e6b6-4d3b-bbd9-3aaec9c4e688",
-          "start_beat": 46.0,
-          "duration_beats": 0.42,
-          "midi_note": 62,
-          "velocity": 0.23,
-          "pan": -0.42
-        },
-        {
-          "id": "4223f783-8be8-4396-bb5b-5984c1657753",
-          "start_beat": 46.5,
-          "duration_beats": 0.42,
-          "midi_note": 58,
-          "velocity": 0.23,
-          "pan": 0.42
-        },
-        {
-          "id": "f534354b-39d1-4590-afb4-fcd5e67a52fc",
-          "start_beat": 47.0,
-          "duration_beats": 0.42,
-          "midi_note": 55,
-          "velocity": 0.23,
-          "pan": -0.42
-        },
-        {
-          "id": "37b30090-d349-4947-ac15-94e384f8cb51",
-          "start_beat": 47.5,
-          "duration_beats": 0.42,
-          "midi_note": 58,
-          "velocity": 0.23,
-          "pan": 0.42
-        },
-        {
-          "id": "d5346da3-d660-4d30-a937-6f915ab2bd85",
-          "start_beat": 48.0,
-          "duration_beats": 0.42,
-          "midi_note": 57,
-          "velocity": 0.23,
-          "pan": -0.42
-        },
-        {
-          "id": "50230c2f-e2a4-40d9-9d67-9c660075f0e5",
-          "start_beat": 48.5,
-          "duration_beats": 0.42,
-          "midi_note": 64,
-          "velocity": 0.23,
-          "pan": 0.42
-        },
-        {
-          "id": "53463c23-f6bd-4d24-8bd4-64fd3557baca",
-          "start_beat": 49.0,
-          "duration_beats": 0.42,
-          "midi_note": 60,
-          "velocity": 0.23,
-          "pan": -0.42
-        },
-        {
-          "id": "a96e9389-ed0c-4b23-83c4-22a614803fb9",
-          "start_beat": 49.5,
-          "duration_beats": 0.42,
-          "midi_note": 67,
-          "velocity": 0.23,
-          "pan": 0.42
-        },
-        {
-          "id": "dba6046c-0101-4e3b-994a-a055c9d05789",
-          "start_beat": 50.0,
-          "duration_beats": 0.42,
-          "midi_note": 64,
-          "velocity": 0.23,
-          "pan": -0.42
-        },
-        {
-          "id": "a6b28872-bd9b-447c-a681-3406cb0df0f0",
-          "start_beat": 50.5,
-          "duration_beats": 0.42,
-          "midi_note": 60,
-          "velocity": 0.23,
-          "pan": 0.42
-        },
-        {
-          "id": "e14491f6-397c-4173-85d1-f8b56ebedce6",
-          "start_beat": 51.0,
-          "duration_beats": 0.42,
-          "midi_note": 57,
-          "velocity": 0.23,
-          "pan": -0.42
-        },
-        {
-          "id": "7d747cca-b242-4153-b148-419c95c97dc1",
-          "start_beat": 51.5,
-          "duration_beats": 0.42,
-          "midi_note": 60,
-          "velocity": 0.23,
-          "pan": 0.42
-        },
-        {
-          "id": "4d7c5e96-73d0-46f2-8a89-60357f63cdc3",
-          "start_beat": 52.0,
-          "duration_beats": 0.42,
-          "midi_note": 53,
-          "velocity": 0.23,
-          "pan": -0.42
-        },
-        {
-          "id": "b1d4702a-fed1-4150-9d50-9903ad4d3422",
-          "start_beat": 52.5,
-          "duration_beats": 0.42,
-          "midi_note": 60,
-          "velocity": 0.23,
-          "pan": 0.42
-        },
-        {
-          "id": "25f7cdcf-1f73-45a8-aaf4-871b23f0e15e",
-          "start_beat": 53.0,
-          "duration_beats": 0.42,
-          "midi_note": 56,
-          "velocity": 0.23,
-          "pan": -0.42
-        },
-        {
-          "id": "9338c8d5-c683-4199-8830-a1446155e791",
-          "start_beat": 53.5,
-          "duration_beats": 0.42,
-          "midi_note": 63,
-          "velocity": 0.23,
-          "pan": 0.42
-        },
-        {
-          "id": "78f9ecf4-c7e1-4d4f-9a26-720d8313ea98",
-          "start_beat": 54.0,
-          "duration_beats": 0.42,
-          "midi_note": 60,
-          "velocity": 0.23,
-          "pan": -0.42
-        },
-        {
-          "id": "869411cc-6a79-47fd-b3b7-159b7c7fa50e",
-          "start_beat": 54.5,
-          "duration_beats": 0.42,
-          "midi_note": 56,
-          "velocity": 0.23,
-          "pan": 0.42
-        },
-        {
-          "id": "8c171eaf-2c05-4d75-9b8f-22aec25806f5",
-          "start_beat": 55.0,
-          "duration_beats": 0.42,
-          "midi_note": 53,
-          "velocity": 0.23,
-          "pan": -0.42
-        },
-        {
-          "id": "e8f0ec1e-898c-48b4-a770-ef4905e3ca80",
-          "start_beat": 55.5,
-          "duration_beats": 0.42,
-          "midi_note": 56,
-          "velocity": 0.23,
-          "pan": 0.42
-        },
-        {
-          "id": "a67a4da0-697f-4206-b6ff-4ced69ba295f",
-          "start_beat": 56.0,
-          "duration_beats": 0.42,
-          "midi_note": 60,
-          "velocity": 0.23,
-          "pan": -0.42
-        },
-        {
-          "id": "16131c65-5335-4adf-9ecf-d469ce985cc1",
-          "start_beat": 56.5,
-          "duration_beats": 0.42,
-          "midi_note": 67,
-          "velocity": 0.23,
-          "pan": 0.42
-        },
-        {
-          "id": "56b5caad-7712-4341-b239-4bafc0f216fe",
-          "start_beat": 57.0,
-          "duration_beats": 0.42,
-          "midi_note": 63,
-          "velocity": 0.23,
-          "pan": -0.42
-        },
-        {
-          "id": "5ccd2e24-f4b1-440b-86f7-dfe787121db2",
-          "start_beat": 57.5,
-          "duration_beats": 0.42,
-          "midi_note": 70,
-          "velocity": 0.23,
-          "pan": 0.42
-        },
-        {
-          "id": "615df132-f83a-4ccd-8e69-18044df7d5d9",
-          "start_beat": 58.0,
-          "duration_beats": 0.42,
-          "midi_note": 67,
-          "velocity": 0.23,
-          "pan": -0.42
-        },
-        {
-          "id": "ba54533e-dca7-4f5e-ad0c-78881d8daf4c",
-          "start_beat": 58.5,
-          "duration_beats": 0.42,
-          "midi_note": 63,
-          "velocity": 0.23,
-          "pan": 0.42
-        },
-        {
-          "id": "8fd94ee7-f4e8-45ba-9906-1c3bba0f6879",
-          "start_beat": 59.0,
-          "duration_beats": 0.42,
-          "midi_note": 60,
-          "velocity": 0.23,
-          "pan": -0.42
-        },
-        {
-          "id": "16291e5d-e6be-4d91-aa11-b9cd5367690b",
-          "start_beat": 59.5,
-          "duration_beats": 0.42,
-          "midi_note": 63,
-          "velocity": 0.23,
-          "pan": 0.42
-        }
-      ],
-      "name": "Pattern 4",
-      "color": "#c98bb8"
-    },
-    {
-      "id": "7cbcaec4-a91c-42ae-ae7d-4d33209aa105",
-      "track_id": "bc0f4f11-fac7-4d89-b4f0-48789a667105",
-      "events": [
-        {
-          "id": "616f69ad-9c12-4692-b6c2-70600cde5ac1",
-          "start_beat": 10.0,
-          "duration_beats": 0.56,
-          "midi_note": 69,
-          "velocity": 0.19,
-          "pan": -0.12
-        },
-        {
-          "id": "46a1930b-486c-4047-b802-20af4e46fe1f",
-          "start_beat": 10.75,
-          "duration_beats": 0.56,
-          "midi_note": 72,
-          "velocity": 0.19,
-          "pan": -0.12
-        },
-        {
-          "id": "61bd7cae-9aca-4def-bd4a-f5edc0647959",
-          "start_beat": 11.5,
-          "duration_beats": 0.56,
-          "midi_note": 76,
-          "velocity": 0.19,
-          "pan": -0.12
-        },
-        {
-          "id": "5acade3a-4952-401e-87bc-4019d2e90f15",
-          "start_beat": 12.5,
-          "duration_beats": 0.56,
-          "midi_note": 74,
-          "velocity": 0.19,
-          "pan": -0.12
-        },
-        {
-          "id": "b5068080-8ca5-4329-8199-345fe120d3d9",
-          "start_beat": 13.0,
-          "duration_beats": 0.56,
-          "midi_note": 72,
-          "velocity": 0.19,
-          "pan": -0.12
-        },
-        {
-          "id": "f29bc648-6981-4ac8-9aa0-926edf3d6a1f",
-          "start_beat": 13.75,
-          "duration_beats": 0.56,
-          "midi_note": 69,
-          "velocity": 0.19,
-          "pan": -0.12
-        },
-        {
-          "id": "49121dbb-c370-4c3c-ad4b-923f9b9f0179",
-          "start_beat": 14.5,
-          "duration_beats": 0.56,
-          "midi_note": 72,
-          "velocity": 0.19,
-          "pan": -0.12
-        },
-        {
-          "id": "d5225fbc-a459-4d49-8926-2e6d263d9c01",
-          "start_beat": 15.0,
-          "duration_beats": 0.56,
-          "midi_note": 77,
-          "velocity": 0.19,
-          "pan": -0.12
-        },
-        {
-          "id": "93cac52b-a492-4721-81e7-e150a20b89ad",
-          "start_beat": 15.75,
-          "duration_beats": 0.56,
-          "midi_note": 76,
-          "velocity": 0.19,
-          "pan": -0.12
-        },
-        {
-          "id": "b17e2d2c-230f-4138-886a-66c0d33509c0",
-          "start_beat": 16.5,
-          "duration_beats": 0.56,
-          "midi_note": 72,
-          "velocity": 0.19,
-          "pan": -0.12
-        },
-        {
-          "id": "45651678-4850-445f-89ae-367dda0282e2",
-          "start_beat": 17.0,
-          "duration_beats": 0.56,
-          "midi_note": 69,
-          "velocity": 0.19,
-          "pan": -0.12
-        },
-        {
-          "id": "ac2ad82d-05f8-4589-b19c-9f8df144c4bb",
-          "start_beat": 18.0,
-          "duration_beats": 0.56,
-          "midi_note": 72,
-          "velocity": 0.19,
-          "pan": -0.12
-        },
-        {
-          "id": "1165f503-9cd5-4109-92d9-5e4af291fed8",
-          "start_beat": 19.0,
-          "duration_beats": 0.56,
-          "midi_note": 76,
-          "velocity": 0.19,
-          "pan": -0.12
-        },
-        {
-          "id": "6fa5fddd-aa2d-4e24-84f0-ae4e42fa2abd",
-          "start_beat": 20.0,
-          "duration_beats": 0.56,
-          "midi_note": 79,
-          "velocity": 0.19,
-          "pan": -0.12
-        },
-        {
-          "id": "756d32c9-bbea-4eda-aa98-d4df1e57c506",
-          "start_beat": 21.0,
-          "duration_beats": 0.56,
-          "midi_note": 76,
-          "velocity": 0.19,
-          "pan": -0.12
-        },
-        {
-          "id": "ae518e4e-7add-465f-a788-d2ef0996de9f",
-          "start_beat": 22.0,
-          "duration_beats": 0.56,
-          "midi_note": 74,
-          "velocity": 0.19,
-          "pan": -0.12
-        },
-        {
-          "id": "c617e67c-8444-4514-b2e4-47218d2ec855",
-          "start_beat": 23.0,
-          "duration_beats": 0.56,
-          "midi_note": 72,
-          "velocity": 0.19,
-          "pan": -0.12
-        },
-        {
-          "id": "8bdb1e93-2153-4f2e-b2bf-3b55ef7fc5b2",
-          "start_beat": 24.0,
-          "duration_beats": 0.56,
-          "midi_note": 69,
-          "velocity": 0.19,
-          "pan": -0.12
-        },
-        {
-          "id": "7b234a1f-33de-48d9-a82d-e9ab1c786282",
-          "start_beat": 25.0,
-          "duration_beats": 0.56,
-          "midi_note": 72,
-          "velocity": 0.19,
-          "pan": -0.12
-        },
-        {
-          "id": "b9f3532e-36af-415e-a016-0f86f1d053d7",
-          "start_beat": 26.0,
-          "duration_beats": 0.56,
-          "midi_note": 76,
-          "velocity": 0.19,
-          "pan": -0.12
-        },
-        {
-          "id": "08d243b8-f721-4eb3-862b-5c073aa31f1d",
-          "start_beat": 27.0,
-          "duration_beats": 0.56,
-          "midi_note": 74,
-          "velocity": 0.19,
-          "pan": -0.12
-        }
-      ],
-      "name": "Pattern 5",
-      "color": "#e58d7f"
-    }
-  ],
-  "clips": [
-    {
-      "id": "8d9f21ad-9d4f-4c40-8a10-01a122e1e101",
-      "pattern_id": "7cbcaec4-a91c-42ae-ae7d-4d33209aa101",
-      "start_beat": 0,
-      "length_beats": 60
-    },
-    {
-      "id": "8d9f21ad-9d4f-4c40-8a10-01a122e1e102",
-      "pattern_id": "7cbcaec4-a91c-42ae-ae7d-4d33209aa102",
-      "start_beat": 0,
-      "length_beats": 60
-    },
-    {
-      "id": "8d9f21ad-9d4f-4c40-8a10-01a122e1e103",
-      "pattern_id": "7cbcaec4-a91c-42ae-ae7d-4d33209aa103",
-      "start_beat": 0,
-      "length_beats": 60
-    },
-    {
-      "id": "8d9f21ad-9d4f-4c40-8a10-01a122e1e104",
-      "pattern_id": "7cbcaec4-a91c-42ae-ae7d-4d33209aa104",
-      "start_beat": 0,
-      "length_beats": 60
-    },
-    {
-      "id": "8d9f21ad-9d4f-4c40-8a10-01a122e1e105",
-      "pattern_id": "7cbcaec4-a91c-42ae-ae7d-4d33209aa105",
-      "start_beat": 0,
-      "length_beats": 60
-    }
-  ],
-  "render_settings": {
-    "duration_seconds": 30,
-    "format": "wav_pcm24",
-    "channels": 2
+   },
+   "processors": []
   },
-  "master_channel": {
-    "id": "16ccbe68-0a41-4231-982d-f8be8c1afbe0",
-    "track_id": null,
-    "gain": 1.16,
-    "pan": 0,
-    "mute": false,
-    "solo": false,
-    "output": "master",
-    "sends": {},
-    "effects": [
-      {
-        "id": "4b85d581-85af-4f65-b11f-705206330f9a",
-        "kind": "reverb",
-        "bypass": false,
-        "parameters": {
-          "send_tracks": [
-            "bc0f4f11-fac7-4d89-b4f0-48789a667103",
-            "bc0f4f11-fac7-4d89-b4f0-48789a667104",
-            "bc0f4f11-fac7-4d89-b4f0-48789a667105"
-          ],
-          "taps": [
-            [
-              0.073,
-              0.28,
-              -0.32
-            ],
-            [
-              0.113,
-              0.22,
-              0.25
-            ],
-            [
-              0.167,
-              0.17,
-              -0.18
-            ],
-            [
-              0.241,
-              0.12,
-              0.16
-            ]
-          ]
-        }
-      },
-      {
-        "id": "d2c68ab5-20e1-4af1-b548-601ff186b10f",
-        "kind": "limiter",
-        "bypass": false,
-        "parameters": {
-          "normalization_peak": 0.89,
-          "fade_seconds": 0.035
-        }
-      }
-    ]
+  {
+   "id": "bc0f4f11-fac7-4d89-b4f0-48789a667102",
+   "name": "bass",
+   "kind": "bass",
+   "gain": 0.7,
+   "pan": 0,
+   "instrument": {
+    "oscillators": [
+     {
+      "ratio": 1,
+      "gain": 1
+     },
+     {
+      "ratio": 2,
+      "gain": 0.33
+     },
+     {
+      "ratio": 3,
+      "gain": 0.12
+     }
+    ],
+    "lowpass_hz": 620,
+    "envelope": {
+     "attack": 0.008,
+     "decay": 0.12,
+     "sustain": 0.72,
+     "release": 0.07
+    }
+   },
+   "processors": []
+  },
+  {
+   "id": "bc0f4f11-fac7-4d89-b4f0-48789a667103",
+   "name": "pad",
+   "kind": "pad",
+   "gain": 0.36,
+   "pan": 0,
+   "instrument": {
+    "oscillators": [
+     {
+      "detune_semitones": -0.004,
+      "gain": 0.18
+     },
+     {
+      "detune_semitones": 0,
+      "gain": 0.3
+     },
+     {
+      "detune_semitones": 0.003,
+      "gain": 0.18
+     },
+     {
+      "ratio": 2,
+      "gain": 0.16
+     }
+    ],
+    "lowpass_hz": 2400,
+    "envelope": {
+     "attack": 0.65,
+     "decay": 1.2,
+     "sustain": 0.7,
+     "release": 0.8
+    }
+   },
+   "processors": []
+  },
+  {
+   "id": "bc0f4f11-fac7-4d89-b4f0-48789a667104",
+   "name": "arp",
+   "kind": "arp",
+   "gain": 0.48,
+   "pan": 0,
+   "instrument": {
+    "oscillators": [
+     {
+      "ratio": 1,
+      "gain": 1
+     },
+     {
+      "ratio": 2,
+      "gain": 0.34
+     },
+     {
+      "ratio": 3,
+      "gain": 0.14
+     }
+    ],
+    "decay": 4.5,
+    "envelope": {
+     "attack": 0.006,
+     "decay": 0.11,
+     "sustain": 0.4,
+     "release": 0.22
+    }
+   },
+   "processors": []
+  },
+  {
+   "id": "bc0f4f11-fac7-4d89-b4f0-48789a667105",
+   "name": "lead",
+   "kind": "lead",
+   "gain": 0.38,
+   "pan": 0,
+   "instrument": {
+    "vibrato": {
+     "depth_semitones": 0.004,
+     "rate_hz": 5.2
+    },
+    "oscillators": [
+     {
+      "ratio": 1,
+      "gain": 1
+     },
+     {
+      "ratio": 2,
+      "gain": 0.23
+     },
+     {
+      "ratio": 3,
+      "gain": 0.07
+     }
+    ],
+    "envelope": {
+     "attack": 0.025,
+     "decay": 0.18,
+     "sustain": 0.68,
+     "release": 0.2
+    }
+   },
+   "processors": []
   }
+ ],
+ "patterns": [
+  {
+   "id": "7cbcaec4-a91c-42ae-ae7d-4d33209aa101",
+   "track_id": "bc0f4f11-fac7-4d89-b4f0-48789a667101",
+   "events": [
+    {
+     "id": "fb08ed8f-d592-4895-ab9a-65f562837e7e",
+     "start_beat": 8.0,
+     "duration_beats": 0.25,
+     "midi_note": 36,
+     "velocity": 0.72,
+     "pan": 0.0
+    },
+    {
+     "id": "52a464c0-3f2b-4670-b78d-7f547cea2b15",
+     "start_beat": 9.0,
+     "duration_beats": 0.25,
+     "midi_note": 39,
+     "velocity": 0.23,
+     "pan": 0.0
+    },
+    {
+     "id": "22db4e97-c361-4f4a-9a57-d7123d57ccb8",
+     "start_beat": 10.0,
+     "duration_beats": 0.25,
+     "midi_note": 36,
+     "velocity": 0.72,
+     "pan": 0.0
+    },
+    {
+     "id": "ef95181c-1b33-40f4-acbb-3a756dc3d563",
+     "start_beat": 11.0,
+     "duration_beats": 0.25,
+     "midi_note": 39,
+     "velocity": 0.23,
+     "pan": 0.0
+    },
+    {
+     "id": "1a4ad9b5-57cf-445a-9e04-6c85b91085bb",
+     "start_beat": 12.0,
+     "duration_beats": 0.25,
+     "midi_note": 36,
+     "velocity": 0.72,
+     "pan": 0.0
+    },
+    {
+     "id": "8c77a40c-bf45-495d-b390-7ca9f3e90121",
+     "start_beat": 13.0,
+     "duration_beats": 0.25,
+     "midi_note": 39,
+     "velocity": 0.23,
+     "pan": 0.0
+    },
+    {
+     "id": "25749165-01ed-4495-93a9-55d4e869ad11",
+     "start_beat": 14.0,
+     "duration_beats": 0.25,
+     "midi_note": 36,
+     "velocity": 0.72,
+     "pan": 0.0
+    },
+    {
+     "id": "9e57aa3e-72e3-4d35-956d-1e9ac330f554",
+     "start_beat": 15.0,
+     "duration_beats": 0.25,
+     "midi_note": 39,
+     "velocity": 0.23,
+     "pan": 0.0
+    },
+    {
+     "id": "b972a12b-32c9-4ff5-b5be-8884937c0512",
+     "start_beat": 16.0,
+     "duration_beats": 0.25,
+     "midi_note": 36,
+     "velocity": 0.72,
+     "pan": 0.0
+    },
+    {
+     "id": "4c0efcf2-bbbf-4c7d-a9a7-c40ba069be77",
+     "start_beat": 16.5,
+     "duration_beats": 0.25,
+     "midi_note": 42,
+     "velocity": 0.075,
+     "pan": -0.28
+    },
+    {
+     "id": "449aeb64-998f-4248-bf4e-dc8761cb3dc8",
+     "start_beat": 17.0,
+     "duration_beats": 0.25,
+     "midi_note": 39,
+     "velocity": 0.23,
+     "pan": 0.0
+    },
+    {
+     "id": "5f55307e-4e42-4180-b2c5-a58265d1f8eb",
+     "start_beat": 17.5,
+     "duration_beats": 0.25,
+     "midi_note": 42,
+     "velocity": 0.075,
+     "pan": 0.28
+    },
+    {
+     "id": "1b4b557f-3b05-4b1e-b74a-72a3fd24c28f",
+     "start_beat": 18.0,
+     "duration_beats": 0.25,
+     "midi_note": 36,
+     "velocity": 0.72,
+     "pan": 0.0
+    },
+    {
+     "id": "6344dfc9-0264-4f00-9f7f-7010fec542f3",
+     "start_beat": 19.0,
+     "duration_beats": 0.25,
+     "midi_note": 39,
+     "velocity": 0.23,
+     "pan": 0.0
+    },
+    {
+     "id": "c9fff809-1690-4b66-b73b-0086023454de",
+     "start_beat": 20.0,
+     "duration_beats": 0.25,
+     "midi_note": 36,
+     "velocity": 0.72,
+     "pan": 0.0
+    },
+    {
+     "id": "701df8dc-2481-4b92-9350-3707ba280e49",
+     "start_beat": 20.5,
+     "duration_beats": 0.25,
+     "midi_note": 42,
+     "velocity": 0.075,
+     "pan": -0.28
+    },
+    {
+     "id": "3e4c540c-b175-4087-b601-48863193c76e",
+     "start_beat": 21.0,
+     "duration_beats": 0.25,
+     "midi_note": 39,
+     "velocity": 0.23,
+     "pan": 0.0
+    },
+    {
+     "id": "ba04da92-8491-4a7e-a0a4-fa53b9ba77b5",
+     "start_beat": 21.5,
+     "duration_beats": 0.25,
+     "midi_note": 42,
+     "velocity": 0.075,
+     "pan": 0.28
+    },
+    {
+     "id": "b3b42ce6-6226-46cf-9927-01d102062fab",
+     "start_beat": 22.0,
+     "duration_beats": 0.25,
+     "midi_note": 36,
+     "velocity": 0.72,
+     "pan": 0.0
+    },
+    {
+     "id": "70b59c3e-507e-4ddd-8e14-7ebbd5f18144",
+     "start_beat": 23.0,
+     "duration_beats": 0.25,
+     "midi_note": 39,
+     "velocity": 0.23,
+     "pan": 0.0
+    },
+    {
+     "id": "572e158f-c891-4933-80b7-9621763d71a3",
+     "start_beat": 24.0,
+     "duration_beats": 0.25,
+     "midi_note": 36,
+     "velocity": 0.72,
+     "pan": 0.0
+    },
+    {
+     "id": "2d6bfb4f-9b3a-4cbf-a6bf-195f86eae70d",
+     "start_beat": 24.5,
+     "duration_beats": 0.25,
+     "midi_note": 42,
+     "velocity": 0.075,
+     "pan": -0.28
+    },
+    {
+     "id": "d616b842-6b2c-41ae-a96a-aa43b18232b6",
+     "start_beat": 25.0,
+     "duration_beats": 0.25,
+     "midi_note": 39,
+     "velocity": 0.23,
+     "pan": 0.0
+    },
+    {
+     "id": "4d5c08b1-0f8f-4969-a860-5c90065258e7",
+     "start_beat": 25.5,
+     "duration_beats": 0.25,
+     "midi_note": 42,
+     "velocity": 0.075,
+     "pan": 0.28
+    },
+    {
+     "id": "61855fd6-dc53-4de6-9872-55f77ba490df",
+     "start_beat": 26.0,
+     "duration_beats": 0.25,
+     "midi_note": 36,
+     "velocity": 0.72,
+     "pan": 0.0
+    },
+    {
+     "id": "16ca1c56-6b02-43ac-a813-5108f26ea613",
+     "start_beat": 27.0,
+     "duration_beats": 0.25,
+     "midi_note": 39,
+     "velocity": 0.23,
+     "pan": 0.0
+    },
+    {
+     "id": "44ed679c-825a-43c4-ac36-6503bf935ac7",
+     "start_beat": 28.0,
+     "duration_beats": 0.25,
+     "midi_note": 36,
+     "velocity": 0.72,
+     "pan": 0.0
+    },
+    {
+     "id": "47d7e939-6679-4f74-bab0-1a3b8ecee113",
+     "start_beat": 28.5,
+     "duration_beats": 0.25,
+     "midi_note": 42,
+     "velocity": 0.075,
+     "pan": -0.28
+    },
+    {
+     "id": "0fcfdaa5-29bb-4f50-a3f3-9cc6b8ebbad4",
+     "start_beat": 29.0,
+     "duration_beats": 0.25,
+     "midi_note": 39,
+     "velocity": 0.23,
+     "pan": 0.0
+    },
+    {
+     "id": "dd236da9-bf23-47fe-84c3-0582d3497352",
+     "start_beat": 29.5,
+     "duration_beats": 0.25,
+     "midi_note": 42,
+     "velocity": 0.075,
+     "pan": 0.28
+    },
+    {
+     "id": "d0d3c17d-3ad8-4b40-be7f-64c549ea4fb8",
+     "start_beat": 30.0,
+     "duration_beats": 0.25,
+     "midi_note": 36,
+     "velocity": 0.72,
+     "pan": 0.0
+    },
+    {
+     "id": "9abd640f-eb42-4acf-9acf-361a534b6d98",
+     "start_beat": 31.0,
+     "duration_beats": 0.25,
+     "midi_note": 39,
+     "velocity": 0.23,
+     "pan": 0.0
+    },
+    {
+     "id": "561d39af-422d-4c69-ac63-5cd817a15734",
+     "start_beat": 32.0,
+     "duration_beats": 0.25,
+     "midi_note": 36,
+     "velocity": 0.72,
+     "pan": 0.0
+    },
+    {
+     "id": "6159111b-f14d-4f78-8f29-c7f6fc573b24",
+     "start_beat": 32.5,
+     "duration_beats": 0.25,
+     "midi_note": 42,
+     "velocity": 0.075,
+     "pan": -0.28
+    },
+    {
+     "id": "2fb7fd57-e1b4-4bf3-b01d-c3c850202766",
+     "start_beat": 33.0,
+     "duration_beats": 0.25,
+     "midi_note": 39,
+     "velocity": 0.23,
+     "pan": 0.0
+    },
+    {
+     "id": "2d6670d9-85d6-477e-9e9c-0d1ca6920fcb",
+     "start_beat": 33.5,
+     "duration_beats": 0.25,
+     "midi_note": 42,
+     "velocity": 0.075,
+     "pan": 0.28
+    },
+    {
+     "id": "2fbcf381-0b2f-4cb8-abcd-0cccded216fb",
+     "start_beat": 34.0,
+     "duration_beats": 0.25,
+     "midi_note": 36,
+     "velocity": 0.72,
+     "pan": 0.0
+    },
+    {
+     "id": "dd71af53-2e07-493d-ad0d-151efff18040",
+     "start_beat": 35.0,
+     "duration_beats": 0.25,
+     "midi_note": 39,
+     "velocity": 0.23,
+     "pan": 0.0
+    },
+    {
+     "id": "0c22ffc0-8df4-4dcb-9325-9f6937294557",
+     "start_beat": 36.0,
+     "duration_beats": 0.25,
+     "midi_note": 36,
+     "velocity": 0.72,
+     "pan": 0.0
+    },
+    {
+     "id": "85f1bf2b-41c9-4156-9060-d2ccfb2e07a9",
+     "start_beat": 36.5,
+     "duration_beats": 0.25,
+     "midi_note": 42,
+     "velocity": 0.075,
+     "pan": -0.28
+    },
+    {
+     "id": "d1cf2d2c-8aa5-4dfa-aa39-d33db8cffca8",
+     "start_beat": 37.0,
+     "duration_beats": 0.25,
+     "midi_note": 39,
+     "velocity": 0.23,
+     "pan": 0.0
+    },
+    {
+     "id": "6e48d00b-4891-432f-b899-cf08fee0c5f5",
+     "start_beat": 37.5,
+     "duration_beats": 0.25,
+     "midi_note": 42,
+     "velocity": 0.075,
+     "pan": 0.28
+    },
+    {
+     "id": "c51db527-724d-4033-88bc-febfa2d8db5e",
+     "start_beat": 38.0,
+     "duration_beats": 0.25,
+     "midi_note": 36,
+     "velocity": 0.72,
+     "pan": 0.0
+    },
+    {
+     "id": "ea21731b-2ba6-4600-b5d3-a9f2ed1414f4",
+     "start_beat": 39.0,
+     "duration_beats": 0.25,
+     "midi_note": 39,
+     "velocity": 0.23,
+     "pan": 0.0
+    },
+    {
+     "id": "edf2d3df-d581-46d0-b8a6-998753e88fed",
+     "start_beat": 40.0,
+     "duration_beats": 0.25,
+     "midi_note": 36,
+     "velocity": 0.72,
+     "pan": 0.0
+    },
+    {
+     "id": "56e397d5-3d21-451c-ba5a-415dcd7b7e71",
+     "start_beat": 40.5,
+     "duration_beats": 0.25,
+     "midi_note": 42,
+     "velocity": 0.075,
+     "pan": -0.28
+    },
+    {
+     "id": "19102af0-470e-4440-a821-ab4e8c3ed125",
+     "start_beat": 41.0,
+     "duration_beats": 0.25,
+     "midi_note": 39,
+     "velocity": 0.23,
+     "pan": 0.0
+    },
+    {
+     "id": "f6e35eaa-7bd6-4339-b852-86cd62d335a1",
+     "start_beat": 41.5,
+     "duration_beats": 0.25,
+     "midi_note": 42,
+     "velocity": 0.075,
+     "pan": 0.28
+    },
+    {
+     "id": "db2a1236-1003-4979-b2ae-ada130d12dcb",
+     "start_beat": 42.0,
+     "duration_beats": 0.25,
+     "midi_note": 36,
+     "velocity": 0.72,
+     "pan": 0.0
+    },
+    {
+     "id": "e7d777cb-4d72-416e-8021-51bee94624cb",
+     "start_beat": 43.0,
+     "duration_beats": 0.25,
+     "midi_note": 39,
+     "velocity": 0.23,
+     "pan": 0.0
+    },
+    {
+     "id": "770068c0-e497-42b5-98bb-b136cf3a5c34",
+     "start_beat": 44.0,
+     "duration_beats": 0.25,
+     "midi_note": 36,
+     "velocity": 0.72,
+     "pan": 0.0
+    },
+    {
+     "id": "b7f1ed45-ea56-4e93-b8c0-5ccc41c13441",
+     "start_beat": 44.5,
+     "duration_beats": 0.25,
+     "midi_note": 42,
+     "velocity": 0.075,
+     "pan": -0.28
+    },
+    {
+     "id": "882ff367-58c0-4336-968d-2aaec5a83a82",
+     "start_beat": 45.0,
+     "duration_beats": 0.25,
+     "midi_note": 39,
+     "velocity": 0.23,
+     "pan": 0.0
+    },
+    {
+     "id": "d9f1e5e2-251d-477f-9c3d-8a67cbfae05c",
+     "start_beat": 45.5,
+     "duration_beats": 0.25,
+     "midi_note": 42,
+     "velocity": 0.075,
+     "pan": 0.28
+    },
+    {
+     "id": "78cbde69-9fac-4399-bd7e-e21f39c4bbc4",
+     "start_beat": 46.0,
+     "duration_beats": 0.25,
+     "midi_note": 36,
+     "velocity": 0.72,
+     "pan": 0.0
+    },
+    {
+     "id": "36598562-a647-426a-9f36-765762cb4eb0",
+     "start_beat": 47.0,
+     "duration_beats": 0.25,
+     "midi_note": 39,
+     "velocity": 0.23,
+     "pan": 0.0
+    },
+    {
+     "id": "9afebf4a-69ad-48ba-b917-df638e887e9b",
+     "start_beat": 48.0,
+     "duration_beats": 0.25,
+     "midi_note": 36,
+     "velocity": 0.72,
+     "pan": 0.0
+    },
+    {
+     "id": "23117c20-88a9-41df-9953-ed2edfb8b5c2",
+     "start_beat": 48.5,
+     "duration_beats": 0.25,
+     "midi_note": 42,
+     "velocity": 0.075,
+     "pan": -0.28
+    },
+    {
+     "id": "cb17d1d0-00b9-44ba-bcc1-82c1fe5387a0",
+     "start_beat": 49.0,
+     "duration_beats": 0.25,
+     "midi_note": 39,
+     "velocity": 0.23,
+     "pan": 0.0
+    },
+    {
+     "id": "f45def1c-5ab1-445d-adbb-34e39dcc605f",
+     "start_beat": 49.5,
+     "duration_beats": 0.25,
+     "midi_note": 42,
+     "velocity": 0.075,
+     "pan": 0.28
+    },
+    {
+     "id": "d4f5189d-0be0-44c4-8a4a-540c76206015",
+     "start_beat": 50.0,
+     "duration_beats": 0.25,
+     "midi_note": 36,
+     "velocity": 0.72,
+     "pan": 0.0
+    },
+    {
+     "id": "a706173d-29e4-457c-a2f8-ecab8345c4b0",
+     "start_beat": 51.0,
+     "duration_beats": 0.25,
+     "midi_note": 39,
+     "velocity": 0.23,
+     "pan": 0.0
+    },
+    {
+     "id": "c4dfa887-eddd-481d-ba33-0c64aa523138",
+     "start_beat": 52.0,
+     "duration_beats": 0.25,
+     "midi_note": 36,
+     "velocity": 0.72,
+     "pan": 0.0
+    },
+    {
+     "id": "50bf18ed-ad7d-4322-b3cc-0078037fd4a9",
+     "start_beat": 52.5,
+     "duration_beats": 0.25,
+     "midi_note": 42,
+     "velocity": 0.075,
+     "pan": -0.28
+    },
+    {
+     "id": "6d6d1622-e301-45d3-bdbd-44d0e9c6f060",
+     "start_beat": 53.0,
+     "duration_beats": 0.25,
+     "midi_note": 39,
+     "velocity": 0.23,
+     "pan": 0.0
+    },
+    {
+     "id": "731104b6-a474-4e3b-b5b8-75ba40cade75",
+     "start_beat": 53.5,
+     "duration_beats": 0.25,
+     "midi_note": 42,
+     "velocity": 0.075,
+     "pan": 0.28
+    },
+    {
+     "id": "2e96e9dd-abe9-4408-8784-0bb24d709fc6",
+     "start_beat": 54.0,
+     "duration_beats": 0.25,
+     "midi_note": 36,
+     "velocity": 0.72,
+     "pan": 0.0
+    },
+    {
+     "id": "1ac38170-9f0d-4117-852d-817fcdfc90fb",
+     "start_beat": 55.0,
+     "duration_beats": 0.25,
+     "midi_note": 39,
+     "velocity": 0.23,
+     "pan": 0.0
+    },
+    {
+     "id": "6cbca99e-febb-43e0-9aad-fa4acefce9b8",
+     "start_beat": 56.0,
+     "duration_beats": 0.25,
+     "midi_note": 36,
+     "velocity": 0.72,
+     "pan": 0.0
+    },
+    {
+     "id": "3ad78685-fc7d-4e1d-96a5-32c3b33cc37d",
+     "start_beat": 56.5,
+     "duration_beats": 0.25,
+     "midi_note": 42,
+     "velocity": 0.075,
+     "pan": -0.28
+    },
+    {
+     "id": "c7e2e08e-39ef-496f-bb94-3585c692ed07",
+     "start_beat": 57.0,
+     "duration_beats": 0.25,
+     "midi_note": 39,
+     "velocity": 0.23,
+     "pan": 0.0
+    },
+    {
+     "id": "e1b3ce93-664e-4a98-b6f3-581a67514909",
+     "start_beat": 57.5,
+     "duration_beats": 0.25,
+     "midi_note": 42,
+     "velocity": 0.075,
+     "pan": 0.28
+    },
+    {
+     "id": "a187df0c-6311-4c64-ba29-900e98774a38",
+     "start_beat": 58.0,
+     "duration_beats": 0.25,
+     "midi_note": 36,
+     "velocity": 0.72,
+     "pan": 0.0
+    },
+    {
+     "id": "8e5aa68b-3c88-4951-9204-df172148dd39",
+     "start_beat": 59.0,
+     "duration_beats": 0.25,
+     "midi_note": 39,
+     "velocity": 0.23,
+     "pan": 0.0
+    }
+   ],
+   "name": "Pattern 1",
+   "color": "#e0a458"
+  },
+  {
+   "id": "7cbcaec4-a91c-42ae-ae7d-4d33209aa102",
+   "track_id": "bc0f4f11-fac7-4d89-b4f0-48789a667102",
+   "events": [
+    {
+     "id": "8dac5dbc-7e9c-499c-bec8-bc36a49dae57",
+     "start_beat": 16.0,
+     "duration_beats": 0.42,
+     "midi_note": 45,
+     "velocity": 0.3,
+     "pan": 0.0
+    },
+    {
+     "id": "a37416a6-9d0d-466b-80a9-14608644b32e",
+     "start_beat": 18.0,
+     "duration_beats": 0.42,
+     "midi_note": 45,
+     "velocity": 0.3,
+     "pan": 0.0
+    },
+    {
+     "id": "54c5c13f-4481-4ea1-98a2-95cbdde94ad9",
+     "start_beat": 20.0,
+     "duration_beats": 0.42,
+     "midi_note": 41,
+     "velocity": 0.3,
+     "pan": 0.0
+    },
+    {
+     "id": "1dfbb395-9aee-4c93-a36e-8d692d0cb8ad",
+     "start_beat": 22.0,
+     "duration_beats": 0.42,
+     "midi_note": 41,
+     "velocity": 0.3,
+     "pan": 0.0
+    },
+    {
+     "id": "a115580e-8c3b-4e48-bc5e-497f0d234e56",
+     "start_beat": 24.0,
+     "duration_beats": 0.42,
+     "midi_note": 48,
+     "velocity": 0.3,
+     "pan": 0.0
+    },
+    {
+     "id": "dda4d007-376b-43b8-a999-c321e297d104",
+     "start_beat": 26.0,
+     "duration_beats": 0.42,
+     "midi_note": 48,
+     "velocity": 0.3,
+     "pan": 0.0
+    },
+    {
+     "id": "542916b6-339f-4c4d-8b60-5e9aa27a4282",
+     "start_beat": 28.0,
+     "duration_beats": 0.42,
+     "midi_note": 43,
+     "velocity": 0.3,
+     "pan": 0.0
+    },
+    {
+     "id": "232b0a88-c1e9-4f5e-88ae-8ce8b593de9f",
+     "start_beat": 30.0,
+     "duration_beats": 0.42,
+     "midi_note": 43,
+     "velocity": 0.3,
+     "pan": 0.0
+    },
+    {
+     "id": "b00fe5a5-0320-46d3-8b3a-9c8d0a9884ba",
+     "start_beat": 32.0,
+     "duration_beats": 0.42,
+     "midi_note": 45,
+     "velocity": 0.3,
+     "pan": 0.0
+    },
+    {
+     "id": "37d232ea-366d-4da1-a591-d7321ea76297",
+     "start_beat": 34.0,
+     "duration_beats": 0.42,
+     "midi_note": 45,
+     "velocity": 0.3,
+     "pan": 0.0
+    },
+    {
+     "id": "8a96fd47-aa64-48b9-b45a-f91105c0edfd",
+     "start_beat": 36.0,
+     "duration_beats": 0.42,
+     "midi_note": 41,
+     "velocity": 0.3,
+     "pan": 0.0
+    },
+    {
+     "id": "9dc2e198-a796-46a3-ac3a-59b97815070c",
+     "start_beat": 38.0,
+     "duration_beats": 0.42,
+     "midi_note": 41,
+     "velocity": 0.3,
+     "pan": 0.0
+    },
+    {
+     "id": "e938dd09-7b1f-480d-b5a4-43c70d11dd00",
+     "start_beat": 40.0,
+     "duration_beats": 0.42,
+     "midi_note": 48,
+     "velocity": 0.3,
+     "pan": 0.0
+    },
+    {
+     "id": "ecc06435-58c0-436c-8abe-732f1bab10b4",
+     "start_beat": 42.0,
+     "duration_beats": 0.42,
+     "midi_note": 48,
+     "velocity": 0.3,
+     "pan": 0.0
+    },
+    {
+     "id": "760413b8-4461-48b7-bcdc-9add64665f5f",
+     "start_beat": 44.0,
+     "duration_beats": 0.42,
+     "midi_note": 43,
+     "velocity": 0.3,
+     "pan": 0.0
+    },
+    {
+     "id": "d496c825-feab-4ed7-8b12-75e3df5fbca9",
+     "start_beat": 46.0,
+     "duration_beats": 0.42,
+     "midi_note": 43,
+     "velocity": 0.3,
+     "pan": 0.0
+    },
+    {
+     "id": "8910b9ff-1fa7-459a-bb85-0a4edb6c0d70",
+     "start_beat": 48.0,
+     "duration_beats": 0.42,
+     "midi_note": 45,
+     "velocity": 0.3,
+     "pan": 0.0
+    },
+    {
+     "id": "08a16f49-20a5-497f-b46a-487e5a5435bf",
+     "start_beat": 50.0,
+     "duration_beats": 0.42,
+     "midi_note": 45,
+     "velocity": 0.3,
+     "pan": 0.0
+    },
+    {
+     "id": "6b6fbea1-e754-43ae-9b91-225ef84438c2",
+     "start_beat": 52.0,
+     "duration_beats": 0.42,
+     "midi_note": 41,
+     "velocity": 0.3,
+     "pan": 0.0
+    },
+    {
+     "id": "a2ca077c-f575-4625-b2e1-3eede5e17b6d",
+     "start_beat": 54.0,
+     "duration_beats": 0.42,
+     "midi_note": 41,
+     "velocity": 0.3,
+     "pan": 0.0
+    },
+    {
+     "id": "250fd2d1-0bf5-4af6-8a23-32f589d96972",
+     "start_beat": 56.0,
+     "duration_beats": 0.42,
+     "midi_note": 48,
+     "velocity": 0.3,
+     "pan": 0.0
+    },
+    {
+     "id": "f2483367-7bfe-4f63-bfc6-b02be484e7ce",
+     "start_beat": 58.0,
+     "duration_beats": 0.42,
+     "midi_note": 48,
+     "velocity": 0.3,
+     "pan": 0.0
+    }
+   ],
+   "name": "Pattern 2",
+   "color": "#7fb3d5"
+  },
+  {
+   "id": "7cbcaec4-a91c-42ae-ae7d-4d33209aa103",
+   "track_id": "bc0f4f11-fac7-4d89-b4f0-48789a667103",
+   "events": [
+    {
+     "id": "d3ee0c28-e388-4663-b989-c5c0bf3a21da",
+     "start_beat": 0,
+     "duration_beats": 4.8,
+     "midi_note": 57,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "52f4f593-6787-490f-9811-7a621037746c",
+     "start_beat": 0,
+     "duration_beats": 4.8,
+     "midi_note": 60,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "bdc13c28-6902-436b-9e44-cb5c814f95ff",
+     "start_beat": 0,
+     "duration_beats": 4.8,
+     "midi_note": 64,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "4dc8d682-afe5-4c1c-a1d9-f656613425cb",
+     "start_beat": 4,
+     "duration_beats": 4.8,
+     "midi_note": 53,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "89ef0eda-15b5-45dd-8739-2d283edc4af3",
+     "start_beat": 4,
+     "duration_beats": 4.8,
+     "midi_note": 56,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "4cbb9315-64d5-4014-a77e-9e117f253639",
+     "start_beat": 4,
+     "duration_beats": 4.8,
+     "midi_note": 60,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "b7a091de-f382-49bc-8eef-3aae59b4a082",
+     "start_beat": 8,
+     "duration_beats": 4.8,
+     "midi_note": 60,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "24564e45-381c-4fef-938d-3bef6e17ba8d",
+     "start_beat": 8,
+     "duration_beats": 4.8,
+     "midi_note": 63,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "d3a0452f-ed69-4194-b5d5-c9891ffd2ba9",
+     "start_beat": 8,
+     "duration_beats": 4.8,
+     "midi_note": 67,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "cc8771c0-2a7d-49e8-b8ca-26f3dc67dab4",
+     "start_beat": 12,
+     "duration_beats": 4.8,
+     "midi_note": 55,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "d7a0a6af-6bc0-4ed5-9236-ca2cb335e282",
+     "start_beat": 12,
+     "duration_beats": 4.8,
+     "midi_note": 58,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "bdb1f8b2-0966-4c9e-bcaf-5d1e4bab00f3",
+     "start_beat": 12,
+     "duration_beats": 4.8,
+     "midi_note": 62,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "d2d49341-4001-4711-a393-0cea535d29f1",
+     "start_beat": 16,
+     "duration_beats": 4.8,
+     "midi_note": 57,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "eca53c44-9f3f-4065-8703-0da0d41db34d",
+     "start_beat": 16,
+     "duration_beats": 4.8,
+     "midi_note": 60,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "213a48ad-5d3d-4224-8493-91a90322d8ac",
+     "start_beat": 16,
+     "duration_beats": 4.8,
+     "midi_note": 64,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "69b6f054-e14a-4a09-a7b5-71f51103e7dc",
+     "start_beat": 20,
+     "duration_beats": 4.8,
+     "midi_note": 53,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "8dcd34c8-2a39-409c-a053-1330365683eb",
+     "start_beat": 20,
+     "duration_beats": 4.8,
+     "midi_note": 56,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "3b0fd236-3607-4347-a6a1-364229398a65",
+     "start_beat": 20,
+     "duration_beats": 4.8,
+     "midi_note": 60,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "90346298-d3b4-422a-9ec5-9b66b98faaf8",
+     "start_beat": 24,
+     "duration_beats": 4.8,
+     "midi_note": 60,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "21b40478-dcfa-4800-afcf-06c9a09df013",
+     "start_beat": 24,
+     "duration_beats": 4.8,
+     "midi_note": 63,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "e40f7bd4-39f5-41c1-b825-f62f88116ff8",
+     "start_beat": 24,
+     "duration_beats": 4.8,
+     "midi_note": 67,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "469cd76b-86ab-46eb-89a6-a3cf6dee4f13",
+     "start_beat": 28,
+     "duration_beats": 4.8,
+     "midi_note": 55,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "4d45c7e7-58be-439f-8725-40e57c1f1b91",
+     "start_beat": 28,
+     "duration_beats": 4.8,
+     "midi_note": 58,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "6808100a-82ff-42aa-bacc-d89fac77562d",
+     "start_beat": 28,
+     "duration_beats": 4.8,
+     "midi_note": 62,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "4e1fef87-fd9f-4a1d-9634-d9e2a99fe8ff",
+     "start_beat": 32,
+     "duration_beats": 4.8,
+     "midi_note": 57,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "df088225-fc5c-4b25-a22a-08bf0f5d2d6f",
+     "start_beat": 32,
+     "duration_beats": 4.8,
+     "midi_note": 60,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "6612c680-3315-4566-b814-8d6f2ddd7b3e",
+     "start_beat": 32,
+     "duration_beats": 4.8,
+     "midi_note": 64,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "89d8e876-2a3d-4ed7-bb82-55090abb1489",
+     "start_beat": 36,
+     "duration_beats": 4.8,
+     "midi_note": 53,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "9e63ec58-4f96-4881-a84c-1baa034551ed",
+     "start_beat": 36,
+     "duration_beats": 4.8,
+     "midi_note": 56,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "7f5772a2-d1d9-4331-9e47-64a1478d4266",
+     "start_beat": 36,
+     "duration_beats": 4.8,
+     "midi_note": 60,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "d457a055-a930-4259-b9f5-d9878662e93c",
+     "start_beat": 40,
+     "duration_beats": 4.8,
+     "midi_note": 60,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "3cc95133-be93-4bd0-998c-728595244d49",
+     "start_beat": 40,
+     "duration_beats": 4.8,
+     "midi_note": 63,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "1245c46a-45a8-4e51-a7e5-386961a76ff1",
+     "start_beat": 40,
+     "duration_beats": 4.8,
+     "midi_note": 67,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "7fd90ba0-8cdf-4907-b9bb-58f0dfc05aa4",
+     "start_beat": 44,
+     "duration_beats": 4.8,
+     "midi_note": 55,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "44bf3d81-4ba9-48dd-a9e7-b9ce5d210705",
+     "start_beat": 44,
+     "duration_beats": 4.8,
+     "midi_note": 58,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "a3217437-5df2-4d31-a52d-8b9e90a7b65d",
+     "start_beat": 44,
+     "duration_beats": 4.8,
+     "midi_note": 62,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "59f40a6c-b3fc-43ef-bebb-659935476d2c",
+     "start_beat": 48,
+     "duration_beats": 4.8,
+     "midi_note": 57,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "c87a23ed-4e4f-4951-8515-1516b07ed87f",
+     "start_beat": 48,
+     "duration_beats": 4.8,
+     "midi_note": 60,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "27926f21-c165-4e4d-b6f4-be1de4a97e8f",
+     "start_beat": 48,
+     "duration_beats": 4.8,
+     "midi_note": 64,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "8ca17463-1c3d-4b94-90ae-e8d6864a89b7",
+     "start_beat": 52,
+     "duration_beats": 4.8,
+     "midi_note": 53,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "34ed7418-4b01-4cc9-a749-886cef1f520a",
+     "start_beat": 52,
+     "duration_beats": 4.8,
+     "midi_note": 56,
+     "velocity": 0.12,
+     "pan": 0.0
+    },
+    {
+     "id": "948b62f4-9e20-4195-b9cd-1e8d68aaf42d",
+     "start_beat": 52,
+     "duration_beats": 4.8,
+     "midi_note": 60,
+     "velocity": 0.12,
+     "pan": 0.0
+    }
+   ],
+   "name": "Pattern 3",
+   "color": "#9bb87f"
+  },
+  {
+   "id": "7cbcaec4-a91c-42ae-ae7d-4d33209aa104",
+   "track_id": "bc0f4f11-fac7-4d89-b4f0-48789a667104",
+   "events": [
+    {
+     "id": "18e6fa09-18bd-46e4-aa09-425040ea21cd",
+     "start_beat": 24.0,
+     "duration_beats": 0.42,
+     "midi_note": 60,
+     "velocity": 0.23,
+     "pan": -0.42
+    },
+    {
+     "id": "c0e235d0-4527-496a-ac83-adb0ce506e15",
+     "start_beat": 24.5,
+     "duration_beats": 0.42,
+     "midi_note": 67,
+     "velocity": 0.23,
+     "pan": 0.42
+    },
+    {
+     "id": "34307530-3e12-4e6d-9a13-d7ceb39feaca",
+     "start_beat": 25.0,
+     "duration_beats": 0.42,
+     "midi_note": 63,
+     "velocity": 0.23,
+     "pan": -0.42
+    },
+    {
+     "id": "d56fc226-632a-4460-86e3-c2c73de9118f",
+     "start_beat": 25.5,
+     "duration_beats": 0.42,
+     "midi_note": 70,
+     "velocity": 0.23,
+     "pan": 0.42
+    },
+    {
+     "id": "62b7afd7-0e70-43bf-afc3-d7cc6d532475",
+     "start_beat": 26.0,
+     "duration_beats": 0.42,
+     "midi_note": 67,
+     "velocity": 0.23,
+     "pan": -0.42
+    },
+    {
+     "id": "f052229c-c70e-4055-9a33-5ada6d14f086",
+     "start_beat": 26.5,
+     "duration_beats": 0.42,
+     "midi_note": 63,
+     "velocity": 0.23,
+     "pan": 0.42
+    },
+    {
+     "id": "6f134779-51ce-4aa6-b5ce-f3bf4cf948c7",
+     "start_beat": 27.0,
+     "duration_beats": 0.42,
+     "midi_note": 60,
+     "velocity": 0.23,
+     "pan": -0.42
+    },
+    {
+     "id": "c7660873-0b06-46bc-a6a4-2c94fcc7b597",
+     "start_beat": 27.5,
+     "duration_beats": 0.42,
+     "midi_note": 63,
+     "velocity": 0.23,
+     "pan": 0.42
+    },
+    {
+     "id": "2b08763b-946b-45f2-920a-0d78e949d54c",
+     "start_beat": 28.0,
+     "duration_beats": 0.42,
+     "midi_note": 55,
+     "velocity": 0.23,
+     "pan": -0.42
+    },
+    {
+     "id": "f0c4c396-afe7-41e0-b840-e1442fd353b1",
+     "start_beat": 28.5,
+     "duration_beats": 0.42,
+     "midi_note": 62,
+     "velocity": 0.23,
+     "pan": 0.42
+    },
+    {
+     "id": "b13358c3-7556-4c41-bd09-cc1d032cc34e",
+     "start_beat": 29.0,
+     "duration_beats": 0.42,
+     "midi_note": 58,
+     "velocity": 0.23,
+     "pan": -0.42
+    },
+    {
+     "id": "47ce3d5b-9e40-457c-b9ec-d06734078483",
+     "start_beat": 29.5,
+     "duration_beats": 0.42,
+     "midi_note": 65,
+     "velocity": 0.23,
+     "pan": 0.42
+    },
+    {
+     "id": "866fa225-b459-4511-aa83-9dfccb072877",
+     "start_beat": 30.0,
+     "duration_beats": 0.42,
+     "midi_note": 62,
+     "velocity": 0.23,
+     "pan": -0.42
+    },
+    {
+     "id": "cece7296-b8ea-4f6f-8dc0-a4773159f51c",
+     "start_beat": 30.5,
+     "duration_beats": 0.42,
+     "midi_note": 58,
+     "velocity": 0.23,
+     "pan": 0.42
+    },
+    {
+     "id": "4c846ef4-ab59-4927-88a8-b3c2883d27a3",
+     "start_beat": 31.0,
+     "duration_beats": 0.42,
+     "midi_note": 55,
+     "velocity": 0.23,
+     "pan": -0.42
+    },
+    {
+     "id": "bc83697e-51df-4f21-a7cf-ed3e7d70f8ce",
+     "start_beat": 31.5,
+     "duration_beats": 0.42,
+     "midi_note": 58,
+     "velocity": 0.23,
+     "pan": 0.42
+    },
+    {
+     "id": "bd54d3ac-db21-4ef2-af71-1d465b2226ef",
+     "start_beat": 32.0,
+     "duration_beats": 0.42,
+     "midi_note": 57,
+     "velocity": 0.23,
+     "pan": -0.42
+    },
+    {
+     "id": "8de92e47-8085-409a-9a40-1f7cbb66f115",
+     "start_beat": 32.5,
+     "duration_beats": 0.42,
+     "midi_note": 64,
+     "velocity": 0.23,
+     "pan": 0.42
+    },
+    {
+     "id": "dd3a9569-c4dd-49ff-8230-d57908e65e29",
+     "start_beat": 33.0,
+     "duration_beats": 0.42,
+     "midi_note": 60,
+     "velocity": 0.23,
+     "pan": -0.42
+    },
+    {
+     "id": "eea7384c-7761-47ed-9667-c251e349b044",
+     "start_beat": 33.5,
+     "duration_beats": 0.42,
+     "midi_note": 67,
+     "velocity": 0.23,
+     "pan": 0.42
+    },
+    {
+     "id": "01243f32-e3eb-4fc9-8e79-3ea9da09c8b4",
+     "start_beat": 34.0,
+     "duration_beats": 0.42,
+     "midi_note": 64,
+     "velocity": 0.23,
+     "pan": -0.42
+    },
+    {
+     "id": "5c709d6a-6fc9-4a9e-af83-1dd2e76a81b7",
+     "start_beat": 34.5,
+     "duration_beats": 0.42,
+     "midi_note": 60,
+     "velocity": 0.23,
+     "pan": 0.42
+    },
+    {
+     "id": "06a06d3a-d4a7-4dc7-8786-1364fc84dd73",
+     "start_beat": 35.0,
+     "duration_beats": 0.42,
+     "midi_note": 57,
+     "velocity": 0.23,
+     "pan": -0.42
+    },
+    {
+     "id": "493dc4bb-72e2-4c3d-a3e3-619a81b5569a",
+     "start_beat": 35.5,
+     "duration_beats": 0.42,
+     "midi_note": 60,
+     "velocity": 0.23,
+     "pan": 0.42
+    },
+    {
+     "id": "9e9726f0-647c-48c5-b4a8-9d2797d34a55",
+     "start_beat": 36.0,
+     "duration_beats": 0.42,
+     "midi_note": 53,
+     "velocity": 0.23,
+     "pan": -0.42
+    },
+    {
+     "id": "921fe5c4-91de-42d3-9e5f-bbebed1cedc6",
+     "start_beat": 36.5,
+     "duration_beats": 0.42,
+     "midi_note": 60,
+     "velocity": 0.23,
+     "pan": 0.42
+    },
+    {
+     "id": "55fb8897-22f6-40b7-9297-0a3f65353606",
+     "start_beat": 37.0,
+     "duration_beats": 0.42,
+     "midi_note": 56,
+     "velocity": 0.23,
+     "pan": -0.42
+    },
+    {
+     "id": "234d2e91-5abd-4056-9588-5b68a7f31fe4",
+     "start_beat": 37.5,
+     "duration_beats": 0.42,
+     "midi_note": 63,
+     "velocity": 0.23,
+     "pan": 0.42
+    },
+    {
+     "id": "a5825bc9-f372-4d01-893d-68e4203b347c",
+     "start_beat": 38.0,
+     "duration_beats": 0.42,
+     "midi_note": 60,
+     "velocity": 0.23,
+     "pan": -0.42
+    },
+    {
+     "id": "00fe315c-72e1-45ad-aff7-000c5092f8b0",
+     "start_beat": 38.5,
+     "duration_beats": 0.42,
+     "midi_note": 56,
+     "velocity": 0.23,
+     "pan": 0.42
+    },
+    {
+     "id": "b515dce3-ab9f-467e-8f4a-c0f9d84d210b",
+     "start_beat": 39.0,
+     "duration_beats": 0.42,
+     "midi_note": 53,
+     "velocity": 0.23,
+     "pan": -0.42
+    },
+    {
+     "id": "f93a7eb3-347d-493a-8ccb-e931ba7a6614",
+     "start_beat": 39.5,
+     "duration_beats": 0.42,
+     "midi_note": 56,
+     "velocity": 0.23,
+     "pan": 0.42
+    },
+    {
+     "id": "209d8d1f-2c8f-49c2-b429-21e9334a76b9",
+     "start_beat": 40.0,
+     "duration_beats": 0.42,
+     "midi_note": 60,
+     "velocity": 0.23,
+     "pan": -0.42
+    },
+    {
+     "id": "3f4ecafc-8cf8-4b0d-9bd0-3f905a5c6549",
+     "start_beat": 40.5,
+     "duration_beats": 0.42,
+     "midi_note": 67,
+     "velocity": 0.23,
+     "pan": 0.42
+    },
+    {
+     "id": "72752a8c-4d73-4ce3-8452-256bef989f89",
+     "start_beat": 41.0,
+     "duration_beats": 0.42,
+     "midi_note": 63,
+     "velocity": 0.23,
+     "pan": -0.42
+    },
+    {
+     "id": "b3cb9537-490a-43bb-b9dd-1bc7624c89de",
+     "start_beat": 41.5,
+     "duration_beats": 0.42,
+     "midi_note": 70,
+     "velocity": 0.23,
+     "pan": 0.42
+    },
+    {
+     "id": "c7263499-12f9-4502-83e1-e6f5da25daf3",
+     "start_beat": 42.0,
+     "duration_beats": 0.42,
+     "midi_note": 67,
+     "velocity": 0.23,
+     "pan": -0.42
+    },
+    {
+     "id": "76d6dd07-1f3d-4600-9626-94e02df443b9",
+     "start_beat": 42.5,
+     "duration_beats": 0.42,
+     "midi_note": 63,
+     "velocity": 0.23,
+     "pan": 0.42
+    },
+    {
+     "id": "6e936fcc-bf57-488d-8db1-6617410d4591",
+     "start_beat": 43.0,
+     "duration_beats": 0.42,
+     "midi_note": 60,
+     "velocity": 0.23,
+     "pan": -0.42
+    },
+    {
+     "id": "170b07c2-85f8-4410-b7f0-2cd572bf6f0e",
+     "start_beat": 43.5,
+     "duration_beats": 0.42,
+     "midi_note": 63,
+     "velocity": 0.23,
+     "pan": 0.42
+    },
+    {
+     "id": "cdb66fb8-0254-459b-92db-b3f7a68ea774",
+     "start_beat": 44.0,
+     "duration_beats": 0.42,
+     "midi_note": 55,
+     "velocity": 0.23,
+     "pan": -0.42
+    },
+    {
+     "id": "db17375c-a254-410f-82e4-bd968c625689",
+     "start_beat": 44.5,
+     "duration_beats": 0.42,
+     "midi_note": 62,
+     "velocity": 0.23,
+     "pan": 0.42
+    },
+    {
+     "id": "de2c834d-f94b-44c3-9729-57cdf23ec95d",
+     "start_beat": 45.0,
+     "duration_beats": 0.42,
+     "midi_note": 58,
+     "velocity": 0.23,
+     "pan": -0.42
+    },
+    {
+     "id": "ae23cbfe-512b-4613-98cc-bb530939b289",
+     "start_beat": 45.5,
+     "duration_beats": 0.42,
+     "midi_note": 65,
+     "velocity": 0.23,
+     "pan": 0.42
+    },
+    {
+     "id": "4b37f430-e6b6-4d3b-bbd9-3aaec9c4e688",
+     "start_beat": 46.0,
+     "duration_beats": 0.42,
+     "midi_note": 62,
+     "velocity": 0.23,
+     "pan": -0.42
+    },
+    {
+     "id": "4223f783-8be8-4396-bb5b-5984c1657753",
+     "start_beat": 46.5,
+     "duration_beats": 0.42,
+     "midi_note": 58,
+     "velocity": 0.23,
+     "pan": 0.42
+    },
+    {
+     "id": "f534354b-39d1-4590-afb4-fcd5e67a52fc",
+     "start_beat": 47.0,
+     "duration_beats": 0.42,
+     "midi_note": 55,
+     "velocity": 0.23,
+     "pan": -0.42
+    },
+    {
+     "id": "37b30090-d349-4947-ac15-94e384f8cb51",
+     "start_beat": 47.5,
+     "duration_beats": 0.42,
+     "midi_note": 58,
+     "velocity": 0.23,
+     "pan": 0.42
+    },
+    {
+     "id": "d5346da3-d660-4d30-a937-6f915ab2bd85",
+     "start_beat": 48.0,
+     "duration_beats": 0.42,
+     "midi_note": 57,
+     "velocity": 0.23,
+     "pan": -0.42
+    },
+    {
+     "id": "50230c2f-e2a4-40d9-9d67-9c660075f0e5",
+     "start_beat": 48.5,
+     "duration_beats": 0.42,
+     "midi_note": 64,
+     "velocity": 0.23,
+     "pan": 0.42
+    },
+    {
+     "id": "53463c23-f6bd-4d24-8bd4-64fd3557baca",
+     "start_beat": 49.0,
+     "duration_beats": 0.42,
+     "midi_note": 60,
+     "velocity": 0.23,
+     "pan": -0.42
+    },
+    {
+     "id": "a96e9389-ed0c-4b23-83c4-22a614803fb9",
+     "start_beat": 49.5,
+     "duration_beats": 0.42,
+     "midi_note": 67,
+     "velocity": 0.23,
+     "pan": 0.42
+    },
+    {
+     "id": "dba6046c-0101-4e3b-994a-a055c9d05789",
+     "start_beat": 50.0,
+     "duration_beats": 0.42,
+     "midi_note": 64,
+     "velocity": 0.23,
+     "pan": -0.42
+    },
+    {
+     "id": "a6b28872-bd9b-447c-a681-3406cb0df0f0",
+     "start_beat": 50.5,
+     "duration_beats": 0.42,
+     "midi_note": 60,
+     "velocity": 0.23,
+     "pan": 0.42
+    },
+    {
+     "id": "e14491f6-397c-4173-85d1-f8b56ebedce6",
+     "start_beat": 51.0,
+     "duration_beats": 0.42,
+     "midi_note": 57,
+     "velocity": 0.23,
+     "pan": -0.42
+    },
+    {
+     "id": "7d747cca-b242-4153-b148-419c95c97dc1",
+     "start_beat": 51.5,
+     "duration_beats": 0.42,
+     "midi_note": 60,
+     "velocity": 0.23,
+     "pan": 0.42
+    },
+    {
+     "id": "4d7c5e96-73d0-46f2-8a89-60357f63cdc3",
+     "start_beat": 52.0,
+     "duration_beats": 0.42,
+     "midi_note": 53,
+     "velocity": 0.23,
+     "pan": -0.42
+    },
+    {
+     "id": "b1d4702a-fed1-4150-9d50-9903ad4d3422",
+     "start_beat": 52.5,
+     "duration_beats": 0.42,
+     "midi_note": 60,
+     "velocity": 0.23,
+     "pan": 0.42
+    },
+    {
+     "id": "25f7cdcf-1f73-45a8-aaf4-871b23f0e15e",
+     "start_beat": 53.0,
+     "duration_beats": 0.42,
+     "midi_note": 56,
+     "velocity": 0.23,
+     "pan": -0.42
+    },
+    {
+     "id": "9338c8d5-c683-4199-8830-a1446155e791",
+     "start_beat": 53.5,
+     "duration_beats": 0.42,
+     "midi_note": 63,
+     "velocity": 0.23,
+     "pan": 0.42
+    },
+    {
+     "id": "78f9ecf4-c7e1-4d4f-9a26-720d8313ea98",
+     "start_beat": 54.0,
+     "duration_beats": 0.42,
+     "midi_note": 60,
+     "velocity": 0.23,
+     "pan": -0.42
+    },
+    {
+     "id": "869411cc-6a79-47fd-b3b7-159b7c7fa50e",
+     "start_beat": 54.5,
+     "duration_beats": 0.42,
+     "midi_note": 56,
+     "velocity": 0.23,
+     "pan": 0.42
+    },
+    {
+     "id": "8c171eaf-2c05-4d75-9b8f-22aec25806f5",
+     "start_beat": 55.0,
+     "duration_beats": 0.42,
+     "midi_note": 53,
+     "velocity": 0.23,
+     "pan": -0.42
+    },
+    {
+     "id": "e8f0ec1e-898c-48b4-a770-ef4905e3ca80",
+     "start_beat": 55.5,
+     "duration_beats": 0.42,
+     "midi_note": 56,
+     "velocity": 0.23,
+     "pan": 0.42
+    },
+    {
+     "id": "a67a4da0-697f-4206-b6ff-4ced69ba295f",
+     "start_beat": 56.0,
+     "duration_beats": 0.42,
+     "midi_note": 60,
+     "velocity": 0.23,
+     "pan": -0.42
+    },
+    {
+     "id": "16131c65-5335-4adf-9ecf-d469ce985cc1",
+     "start_beat": 56.5,
+     "duration_beats": 0.42,
+     "midi_note": 67,
+     "velocity": 0.23,
+     "pan": 0.42
+    },
+    {
+     "id": "56b5caad-7712-4341-b239-4bafc0f216fe",
+     "start_beat": 57.0,
+     "duration_beats": 0.42,
+     "midi_note": 63,
+     "velocity": 0.23,
+     "pan": -0.42
+    },
+    {
+     "id": "5ccd2e24-f4b1-440b-86f7-dfe787121db2",
+     "start_beat": 57.5,
+     "duration_beats": 0.42,
+     "midi_note": 70,
+     "velocity": 0.23,
+     "pan": 0.42
+    },
+    {
+     "id": "615df132-f83a-4ccd-8e69-18044df7d5d9",
+     "start_beat": 58.0,
+     "duration_beats": 0.42,
+     "midi_note": 67,
+     "velocity": 0.23,
+     "pan": -0.42
+    },
+    {
+     "id": "ba54533e-dca7-4f5e-ad0c-78881d8daf4c",
+     "start_beat": 58.5,
+     "duration_beats": 0.42,
+     "midi_note": 63,
+     "velocity": 0.23,
+     "pan": 0.42
+    },
+    {
+     "id": "8fd94ee7-f4e8-45ba-9906-1c3bba0f6879",
+     "start_beat": 59.0,
+     "duration_beats": 0.42,
+     "midi_note": 60,
+     "velocity": 0.23,
+     "pan": -0.42
+    },
+    {
+     "id": "16291e5d-e6be-4d91-aa11-b9cd5367690b",
+     "start_beat": 59.5,
+     "duration_beats": 0.42,
+     "midi_note": 63,
+     "velocity": 0.23,
+     "pan": 0.42
+    }
+   ],
+   "name": "Pattern 4",
+   "color": "#c98bb8"
+  },
+  {
+   "id": "7cbcaec4-a91c-42ae-ae7d-4d33209aa105",
+   "track_id": "bc0f4f11-fac7-4d89-b4f0-48789a667105",
+   "events": [
+    {
+     "id": "616f69ad-9c12-4692-b6c2-70600cde5ac1",
+     "start_beat": 10.0,
+     "duration_beats": 0.56,
+     "midi_note": 69,
+     "velocity": 0.19,
+     "pan": -0.12
+    },
+    {
+     "id": "46a1930b-486c-4047-b802-20af4e46fe1f",
+     "start_beat": 10.75,
+     "duration_beats": 0.56,
+     "midi_note": 72,
+     "velocity": 0.19,
+     "pan": -0.12
+    },
+    {
+     "id": "61bd7cae-9aca-4def-bd4a-f5edc0647959",
+     "start_beat": 11.5,
+     "duration_beats": 0.56,
+     "midi_note": 76,
+     "velocity": 0.19,
+     "pan": -0.12
+    },
+    {
+     "id": "5acade3a-4952-401e-87bc-4019d2e90f15",
+     "start_beat": 12.5,
+     "duration_beats": 0.56,
+     "midi_note": 74,
+     "velocity": 0.19,
+     "pan": -0.12
+    },
+    {
+     "id": "b5068080-8ca5-4329-8199-345fe120d3d9",
+     "start_beat": 13.0,
+     "duration_beats": 0.56,
+     "midi_note": 72,
+     "velocity": 0.19,
+     "pan": -0.12
+    },
+    {
+     "id": "f29bc648-6981-4ac8-9aa0-926edf3d6a1f",
+     "start_beat": 13.75,
+     "duration_beats": 0.56,
+     "midi_note": 69,
+     "velocity": 0.19,
+     "pan": -0.12
+    },
+    {
+     "id": "49121dbb-c370-4c3c-ad4b-923f9b9f0179",
+     "start_beat": 14.5,
+     "duration_beats": 0.56,
+     "midi_note": 72,
+     "velocity": 0.19,
+     "pan": -0.12
+    },
+    {
+     "id": "d5225fbc-a459-4d49-8926-2e6d263d9c01",
+     "start_beat": 15.0,
+     "duration_beats": 0.56,
+     "midi_note": 77,
+     "velocity": 0.19,
+     "pan": -0.12
+    },
+    {
+     "id": "93cac52b-a492-4721-81e7-e150a20b89ad",
+     "start_beat": 15.75,
+     "duration_beats": 0.56,
+     "midi_note": 76,
+     "velocity": 0.19,
+     "pan": -0.12
+    },
+    {
+     "id": "b17e2d2c-230f-4138-886a-66c0d33509c0",
+     "start_beat": 16.5,
+     "duration_beats": 0.56,
+     "midi_note": 72,
+     "velocity": 0.19,
+     "pan": -0.12
+    },
+    {
+     "id": "45651678-4850-445f-89ae-367dda0282e2",
+     "start_beat": 17.0,
+     "duration_beats": 0.56,
+     "midi_note": 69,
+     "velocity": 0.19,
+     "pan": -0.12
+    },
+    {
+     "id": "ac2ad82d-05f8-4589-b19c-9f8df144c4bb",
+     "start_beat": 18.0,
+     "duration_beats": 0.56,
+     "midi_note": 72,
+     "velocity": 0.19,
+     "pan": -0.12
+    },
+    {
+     "id": "1165f503-9cd5-4109-92d9-5e4af291fed8",
+     "start_beat": 19.0,
+     "duration_beats": 0.56,
+     "midi_note": 76,
+     "velocity": 0.19,
+     "pan": -0.12
+    },
+    {
+     "id": "6fa5fddd-aa2d-4e24-84f0-ae4e42fa2abd",
+     "start_beat": 20.0,
+     "duration_beats": 0.56,
+     "midi_note": 79,
+     "velocity": 0.19,
+     "pan": -0.12
+    },
+    {
+     "id": "756d32c9-bbea-4eda-aa98-d4df1e57c506",
+     "start_beat": 21.0,
+     "duration_beats": 0.56,
+     "midi_note": 76,
+     "velocity": 0.19,
+     "pan": -0.12
+    },
+    {
+     "id": "ae518e4e-7add-465f-a788-d2ef0996de9f",
+     "start_beat": 22.0,
+     "duration_beats": 0.56,
+     "midi_note": 74,
+     "velocity": 0.19,
+     "pan": -0.12
+    },
+    {
+     "id": "c617e67c-8444-4514-b2e4-47218d2ec855",
+     "start_beat": 23.0,
+     "duration_beats": 0.56,
+     "midi_note": 72,
+     "velocity": 0.19,
+     "pan": -0.12
+    },
+    {
+     "id": "8bdb1e93-2153-4f2e-b2bf-3b55ef7fc5b2",
+     "start_beat": 24.0,
+     "duration_beats": 0.56,
+     "midi_note": 69,
+     "velocity": 0.19,
+     "pan": -0.12
+    },
+    {
+     "id": "7b234a1f-33de-48d9-a82d-e9ab1c786282",
+     "start_beat": 25.0,
+     "duration_beats": 0.56,
+     "midi_note": 72,
+     "velocity": 0.19,
+     "pan": -0.12
+    },
+    {
+     "id": "b9f3532e-36af-415e-a016-0f86f1d053d7",
+     "start_beat": 26.0,
+     "duration_beats": 0.56,
+     "midi_note": 76,
+     "velocity": 0.19,
+     "pan": -0.12
+    },
+    {
+     "id": "08d243b8-f721-4eb3-862b-5c073aa31f1d",
+     "start_beat": 27.0,
+     "duration_beats": 0.56,
+     "midi_note": 74,
+     "velocity": 0.19,
+     "pan": -0.12
+    }
+   ],
+   "name": "Pattern 5",
+   "color": "#e58d7f"
+  }
+ ],
+ "clips": [
+  {
+   "id": "8d9f21ad-9d4f-4c40-8a10-01a122e1e101",
+   "pattern_id": "7cbcaec4-a91c-42ae-ae7d-4d33209aa101",
+   "start_beat": 0,
+   "length_beats": 60
+  },
+  {
+   "id": "8d9f21ad-9d4f-4c40-8a10-01a122e1e102",
+   "pattern_id": "7cbcaec4-a91c-42ae-ae7d-4d33209aa102",
+   "start_beat": 0,
+   "length_beats": 60
+  },
+  {
+   "id": "8d9f21ad-9d4f-4c40-8a10-01a122e1e103",
+   "pattern_id": "7cbcaec4-a91c-42ae-ae7d-4d33209aa103",
+   "start_beat": 0,
+   "length_beats": 60
+  },
+  {
+   "id": "8d9f21ad-9d4f-4c40-8a10-01a122e1e104",
+   "pattern_id": "7cbcaec4-a91c-42ae-ae7d-4d33209aa104",
+   "start_beat": 0,
+   "length_beats": 60
+  },
+  {
+   "id": "8d9f21ad-9d4f-4c40-8a10-01a122e1e105",
+   "pattern_id": "7cbcaec4-a91c-42ae-ae7d-4d33209aa105",
+   "start_beat": 0,
+   "length_beats": 60
+  }
+ ],
+ "render_settings": {
+  "duration_seconds": 30,
+  "format": "wav_pcm24",
+  "channels": 2
+ },
+ "master_channel": {
+  "id": "16ccbe68-0a41-4231-982d-f8be8c1afbe0",
+  "track_id": null,
+  "gain": 1.16,
+  "pan": 0,
+  "mute": false,
+  "solo": false,
+  "output": "master",
+  "sends": {},
+  "effects": [
+   {
+    "id": "4b85d581-85af-4f65-b11f-705206330f9a",
+    "kind": "reverb",
+    "bypass": false,
+    "parameters": {
+     "send_tracks": [
+      "bc0f4f11-fac7-4d89-b4f0-48789a667103",
+      "bc0f4f11-fac7-4d89-b4f0-48789a667104",
+      "bc0f4f11-fac7-4d89-b4f0-48789a667105"
+     ],
+     "taps": [
+      [
+       0.073,
+       0.28,
+       -0.32
+      ],
+      [
+       0.113,
+       0.22,
+       0.25
+      ],
+      [
+       0.167,
+       0.17,
+       -0.18
+      ],
+      [
+       0.241,
+       0.12,
+       0.16
+      ]
+     ]
+    }
+   },
+   {
+    "id": "d2c68ab5-20e1-4af1-b548-601ff186b10f",
+    "kind": "limiter",
+    "bypass": false,
+    "parameters": {
+     "normalization_peak": 0.89,
+     "fade_seconds": 0.035
+    }
+   }
+  ]
+ },
+ "markers": [
+  {
+   "id": "51d9e59d-14c3-4317-b90b-56b44d35a175",
+   "beat": 0,
+   "label": "intro"
+  },
+  {
+   "id": "8d3566b1-8451-459e-898e-20abdd0fa797",
+   "beat": 8,
+   "label": "groove"
+  },
+  {
+   "id": "e524bcfe-f8c6-451a-a6a9-80db922f5c6f",
+   "beat": 16,
+   "label": "montée"
+  },
+  {
+   "id": "96954bae-6c04-4cb8-a65a-df71b8f4760a",
+   "beat": 24,
+   "label": "climax"
+  },
+  {
+   "id": "93418764-9c5a-4a58-9087-9280347ae147",
+   "beat": 48,
+   "label": "outro"
+  }
+ ]
 }

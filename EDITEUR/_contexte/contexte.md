@@ -27,17 +27,18 @@ Music Composer, Adaptive Lab, Analyse & Export) et son backend de rendu, permett
   Csound réel restant avant de poursuivre la roadmap applicative.
 
 ## État actuel (réécrit intégralement à chaque /close)
-Phases 7 et V7 closes [FAIT] : lanes vélocité/probabilité/micro-décalage/pan, ghost notes hors
-drums, édition souris qualifiée (e2e sauvegarde/rechargement), gamme/tonalité non bloquante, fix
-accélération des drags, preuve backend note→rendu par hash ; runner vert final
-(`v1-20260805-191709.json`). Réserves : comparaison audio post-édition hors Chromium, snapshot
-visuel shell seul. Phase 8 (Playlist, arrangement et marqueurs) ouverte [EN COURS].
+Phase 8 en cours : Playlist multipiste livrée (composant autonome, lanes synchronisées au Channel
+Rack, clips déplacement/resize/split/ripple, insert/delete time, mute/lock, marqueurs éditables,
+pistes ↑/↓, chevauchements `is-obscured`, alerte densité 300), 17 tests composant + 194 unitaires
+éditeur verts, typecheck/lint propres. Qualification V8 e2e ROUGE : le drag ripple déplace le clip
+ajouté à 70 beats (6720 px) au lieu de 68 (6528 px) — debug en cours. Phase 8 [EN COURS], V8 [TODO].
 
 ## Décisions structurantes (append only — 10 entrées max, 5 lignes max/entrée, archiver au-delà)
-- 2026-08-02 : golden `EDITEUR/fixtures/lignes_de_nuit.golden.json` régénéré (root cause : golden
-  désynchronisé par un changement du renderer `explo`, pas une régression éditeur) ; décision actée
-  avec confirmation explicite de l'utilisateur, car régénérer un golden touche un gate de
-  déterminisme.
+- 2026-08-06 : Playlist livrée comme composant autonome (`Playlist.tsx`) avec 19 callbacks câblés au
+  store, drag à deltas incrémentés + snap, poignées de resize en vrais boutons accessibles ; le drag
+  e2e pilote le défilement horizontal par `scrollLeft` explicite (`scrollIntoViewIfNeeded` fait
+  passer le contenu sous le side sticky 220 px ou hors viewport). Test e2e V8 encore rouge
+  (nth(1) = 6720 px vs 6528 px attendu).
 - 2026-08-04 : Phase V1 close [FAIT] — propriétés Hypothesis (round-trip `Composition` + validation
   des références) ajoutées via stratégies composites respectant le graphe de références ; le point
   mutations reste bloqué et documenté (LIM-001). Phase V2 ouverte.

@@ -9,7 +9,7 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-CURRENT_SCHEMA_VERSION = 3
+CURRENT_SCHEMA_VERSION = 4
 
 PATTERN_DEFAULT_COLORS = (
     "#e0a458",
@@ -246,6 +246,21 @@ class Clip(IdentifiedModel):
     length_beats: float = Field(gt=0, le=100_000)
     repeat_count: int = Field(default=1, ge=1, le=10_000)
     transposition: int = Field(default=0, ge=-48, le=48)
+    mute: bool = False
+    locked: bool = False
+    group: str | None = Field(default=None, min_length=1, max_length=80)
+
+    @field_validator("group")
+    @classmethod
+    def validate_group(cls, value: str | None) -> str | None:
+        return None if value is None else _safe_name(value)
+
+
+class Marker(IdentifiedModel):
+    beat: float = Field(ge=0, le=100_000)
+    label: str = Field(min_length=1, max_length=80)
+
+    _normalize_label = field_validator("label")(_safe_name)
 
 
 class AutomationPoint(DomainModel):
@@ -299,7 +314,7 @@ class RenderSettings(DomainModel):
 
 
 class Composition(SeededModel):
-    schema_version: Literal[2, 3] = 3
+    schema_version: Literal[2, 3, 4] = 4
     revision: int = Field(default=0, ge=0)
     title: str = Field(min_length=1, max_length=160)
     sample_rate: Literal[44_100, 48_000, 88_200, 96_000] = 48_000
@@ -308,6 +323,7 @@ class Composition(SeededModel):
     tracks: list[Track] = Field(min_length=1, max_length=256)
     patterns: list[Pattern] = Field(default_factory=list, max_length=4_096)
     clips: list[Clip] = Field(default_factory=list, max_length=16_384)
+    markers: list[Marker] = Field(default_factory=list, max_length=512)
     master_channel: MixerChannel = Field(default_factory=MixerChannel)
     mixer_channels: list[MixerChannel] = Field(default_factory=list, max_length=512)
     automation_lanes: list[AutomationLane] = Field(default_factory=list, max_length=4_096)
@@ -326,8 +342,11 @@ class Composition(SeededModel):
     def validate_references(self) -> Composition:
         track_ids = {track.id for track in self.tracks}
         pattern_ids = {pattern.id for pattern in self.patterns}
+        marker_ids = {marker.id for marker in self.markers}
         if len(track_ids) != len(self.tracks) or len(pattern_ids) != len(self.patterns):
             raise ValueError("composition identifiers must be unique")
+        if len(marker_ids) != len(self.markers):
+            raise ValueError("marker identifiers must be unique")
         if any(pattern.track_id not in track_ids for pattern in self.patterns):
             raise ValueError("patterns must reference a track")
         if any(clip.pattern_id not in pattern_ids for clip in self.clips):
@@ -469,6 +488,15 @@ def migrate_project_payload(payload: dict[str, Any]) -> dict[str, Any]:
                     )
                 composition["schema_version"] = 3
             version = 3
+        elif version == 3:
+            for composition in data.get("compositions", []):
+                composition.setdefault("markers", [])
+                for clip in composition.get("clips", []):
+                    clip.setdefault("mute", False)
+                    clip.setdefault("locked", False)
+                    clip.setdefault("group", None)
+                composition["schema_version"] = 4
+            version = 4
         else:
             raise SchemaMigrationError(f"no migration is available from schema version {version}")
     data["schema_version"] = version

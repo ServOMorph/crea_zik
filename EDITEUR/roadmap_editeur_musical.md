@@ -745,13 +745,15 @@ Gate :
 
 But : construire et restructurer le morceau sur une timeline multipiste.
 
-Constat de session (2026-08-05, ouverture par /close) : rien de livré pour l'instant — la
-session de clôture de la Phase 7 n'a fait qu'ouvrir la phase. Règles à retenir : le drag-and-drop
-natif relève de cette phase (Playlist) ; la structure de `Lignes de nuit`
-(intro/groove/montée/climax/outro) est représentée par des marqueurs éditables ; le store
-d'édition fournit déjà la sélection, la duplication, le couper/copier/coller et la suppression
-des clips via les commandes génériques (`duplicateSelection`, `paste`, `selectRectangle`,
-suppression en cascade), mais pas encore de déplacement direct de clip.
+Constat de session (2026-08-06) : Playlist multipiste livrée (`Playlist.tsx` : lanes synchronisées
+au Channel Rack, clips déplacement/resize/split, insert/delete time, ripple, mute/lock, marqueurs
+éditables intro/groove/montée/climax/outro, pistes ↑/↓, chevauchements `is-obscured`, alerte densité
+300 ; 17 tests composant + 194 unitaires éditeur verts, typecheck/lint propres) ; qualification V8
+e2e en cours — le test drag-and-drop Playwright est encore rouge (le clip ajouté par le ripple finit
+à 70 beats au lieu de 68). Le store fournit déjà la sélection, la duplication, le couper/copier/
+coller et la suppression des clips via les commandes génériques (`duplicateSelection`, `paste`,
+`selectRectangle`, suppression en cascade), le déplacement direct de clip étant câblé via la
+Playlist.
 
 Tâches :
 
