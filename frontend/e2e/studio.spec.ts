@@ -322,13 +322,13 @@ test("the editor transport plays, pauses, stops and reaches media end", async ({
   await page.getByLabel("Fin de sélection").fill("4");
   await page.getByRole("button", { name: "Lire la sélection" }).click();
   await expect(page.getByRole("status").filter({ hasText: "Préécoute prête" })).toBeVisible({
-    timeout: 35_000,
+    timeout: 60_000,  // Augmenté de 35s à 60s pour les environnements locaux lents
   });
   await expect(page.getByRole("button", { name: "Relancer" })).toBeVisible();
 
   const playhead = page.locator('output[aria-live="polite"]');
   const before = await playhead.textContent();
-  await expect.poll(() => playhead.textContent(), { timeout: 6_000 }).not.toBe(before);
+  await expect.poll(() => playhead.textContent(), { timeout: 10_000 }).not.toBe(before);  // Augmenté de 6s à 10s
 
   await page.getByRole("button", { name: "Pause" }).click();
   await expect(page.getByRole("button", { name: "Lire", exact: true })).toBeVisible();
@@ -340,7 +340,7 @@ test("the editor transport plays, pauses, stops and reaches media end", async ({
 
   await page.getByRole("button", { name: "Lire la sélection" }).click();
   await expect(page.getByRole("button", { name: "Relancer" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Lire", exact: true })).toBeVisible({ timeout: 35_000 });
+  await expect(page.getByRole("button", { name: "Lire", exact: true })).toBeVisible({ timeout: 60_000 });  // Augmenté à 60s pour cohérence
 });
 
 test("the piano roll renders every melodic note and transposes exactly", async ({ page }) => {

@@ -192,6 +192,10 @@ export function TransportBar({
         if (!response.ok) throw new Error("Fichier de préécoute inaccessible.");
         const context = contextRef.current || new AudioContext();
         contextRef.current = context;
+        // Résumer le contexte audio immédiatement si suspendu (nécessaire en local)
+        if (context.state === "suspended") {
+          await context.resume();
+        }
         const buffer = await context.decodeAudioData(await response.arrayBuffer());
         const source = context.createBufferSource();
         const gain = gainRef.current || context.createGain();
@@ -210,7 +214,16 @@ export function TransportBar({
           source.loopStart = (transport.loop.range.startBeat - range.startBeat) * (60 / composition.tempo_bpm);
           source.loopEnd = (transport.loop.range.endBeat - range.startBeat) * (60 / composition.tempo_bpm);
         }
-        await context.resume();
+        // Résumer à nouveau si nécessaire (certains navigateurs suspendent après decodeAudioData)
+        if (context.state === "suspended") {
+          await context.resume().catch(() => {
+            // Si resume échoue, on tente de recréer le contexte
+            contextRef.current = new AudioContext();
+            return contextRef.current.resume().catch(() => {
+              throw new Error("Impossible de démarrer le contexte audio. Vérifiez que le navigateur autorise la lecture audio.");
+            });
+          });
+        }
         const playback: Playback = { source, range, startedAt: context.currentTime, startBeat };
         playbackRef.current = playback;
         source.onended = () => {

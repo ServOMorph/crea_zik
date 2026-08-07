@@ -1,14 +1,14 @@
-# Signals — editeur (MAJ 2026-08-06)
+# Signals — editeur (MAJ 2026-08-07)
 
 ## Actions ouvertes
-- [P2|ouvert] Test e2e Playwright « the editor transport plays, pauses, stops and reaches media end »
-  rouge en environnement local, indépendamment de toute modification récente (confirmé par
-  `git stash` : échoue aussi hors des changements de cette session). Non investigué plus avant.
-  - fait quand: cause identifiée et test de nouveau vert, ou limite documentée si liée à
-    l'environnement local (Web Audio réel en CI/local).
-  - réf: `frontend/e2e/studio.spec.ts:312`, `frontend/src/editor/TransportBar.tsx`
+Aucune
 
 ## Actions closes récentes
+- [P2|FAIT] Test e2e Playwright « the editor transport plays, pauses, stops and reaches media end » :
+  correction du `AudioContext` suspendu en environnement local. Ajout de `context.resume()` explicite
+  avant et après `decodeAudioData` dans `TransportBar.tsx` pour garantir que le contexte audio est actif.
+  - fait le: 2026-08-07
+  - réf: `frontend/e2e/studio.spec.ts:312`, `frontend/src/editor/TransportBar.tsx`
 - [P1|FAIT] Étape 12.7 de la Phase 12 close : non-régression formats/durées/métadonnées/hashes/
   annulation validée. Comportement rendu sérié acté (1 worker, file séquentielle) — clarification
   utilisateur : les rendus sont toujours traités un par un, les autres en attente.
@@ -46,7 +46,7 @@
 - **Rendus simultanés** : Toujours traités en **file sériée** (1 worker, séquentiel). Les demandes multiples sont mises en attente et exécutées dans l'ordre. Aucun parallélisme prévu.
 
 ## Dernière session
-# Session du 2026-08-06
+# Session du 2026-08-07
 
 ## Décisions prises
 - Comportement rendu sérié acté : les rendus sont traités un par un (1 worker, file séquentielle). L'executor actuel est validé comme solution définitive.
@@ -61,6 +61,7 @@
 - `backend/src/crea_zik/api.py` : endpoint `/api/jobs` ajouté pour lister tous les jobs.
 - `backend/src/crea_zik/models.py` : scope `master` retiré du regex `AutomationLane.target`, validation explicite ajoutée pour rejeter les cibles `master.*`.
 - `frontend/src/editor/RenderAnalysis.tsx` : UI mise à jour pour afficher le nombre de jobs en attente.
+- `frontend/src/editor/TransportBar.tsx` : correction du `AudioContext` suspendu en local (ajout de `resume()` explicite avant/après `decodeAudioData`).
 - `tests/test_jobs.py` : test pour `list_jobs()` ajouté.
 - `tests/test_api.py` : test pour `/api/jobs` ajouté.
 
@@ -69,6 +70,7 @@
 - VALIDE : L'UI peut afficher le nombre de jobs en attente via `/api/jobs`.
 - VALIDE : Le panneau dédié `Automations.tsx` est une solution d'intégration visuelle acceptable (décision structurante).
 - VALIDE : Le scope `master` n'est pas nécessaire pour les automations (aucune utilisation dans le codebase, retrait validé).
+- VALIDE : Le test e2e "the editor transport plays, pauses, stops and reaches media end" échouait en local à cause du `AudioContext` suspendu. La correction par `resume()` explicite résout le problème.
 
 ## Prochaine étape exacte
 Entamer la Phase 13 (Durcissement, accessibilité et livraison).

@@ -89,9 +89,11 @@ La Phase 12 (Rendu final, QA et export) est close [FAIT] : les sept étapes (12.
 livrées — true peak/LUFS, modèle de rendu étendu (boucle, sélection de clips) et manifeste enrichi,
 détection des rendus périmés, gate de promotion master avec dérogation tracée, écran « Analyse & Export »
 (portée du rendu, format, annulation, waveform, métriques QA nommées, état périmé/à jour, testé en Playwright),
-téléchargement et bundle d'export groupant master, stems, manifeste et rapport QA, non-régression validée
-et comportement rendu sérié acté (1 worker, file séquentielle).
+téléchargement et bundle d'export groupant master, stems, manifeste et rapport QA, non-régression validée,
+et comportement rendu sérié acté (1 worker, file séquentielle). Correction du `AudioContext` suspendu en local
+pour le test e2e du transport (ajout de `resume()` explicite dans `TransportBar.tsx`).
 Le gate de déterminisme Csound réel de la phase 1 (roadmap studio audio procédural) est validee (trois rendus indépendants, même SHA-256 du WAV).
+La Phase 13 (Durcissement, accessibilité et livraison) est ouverte.
 La phase 2 de `roadmap_studio_audio_procedural.md` a été réauditée et close [FAIT] : le code réel
 dépasse largement sa description initiale. Les phases 3 (bibliothèque DSP/Sound Designer) et 4
 (Composition/Music Composer) ont été réauditées le 2026-08-02 et restent [TODO] : un socle réel

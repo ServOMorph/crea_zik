@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.39 — 2026-08-07
+
+### Corrigé
+
+- Frontend : correction du `AudioContext` suspendu en local dans `TransportBar.tsx` (ajout de `resume()` explicite avant/après `decodeAudioData`) pour garantir la lecture audio.
+- Tests : timeouts augmentés dans `studio.spec.ts` (35s→60s pour la préécoute, 6s→10s pour le `playhead`) pour les environnements locaux lents.
+
+### Ajouté
+
+- Outillage : scripts `scripts/test-local.sh` et `test-local.ps1` pour exécuter les tests e2e avec les serveurs existants.
+- Configuration : `playwright.test.config.ts` pour réutiliser les serveurs déjà démarrés.
+
 ## v0.38 — 2026-08-06
 
 ### Modifié

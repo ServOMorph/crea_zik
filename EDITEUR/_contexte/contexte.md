@@ -27,10 +27,9 @@ Music Composer, Adaptive Lab, Analyse & Export) et son backend de rendu, permett
   Csound réel restant avant de poursuivre la roadmap applicative.
 
 ## État actuel (réécrit intégralement à chaque /close)
-Phases 9, 10, 11, 12 et leurs qualifications V9/V10/V11/V12 closes [FAIT].
-- Phase 12 (Rendu final, QA et export) : étapes 12.1 à 12.7 closes [FAIT] (true peak/LUFS, modèle de rendu étendu,
-détection des rendus périmés, gate de promotion master, écran « Analyse & Export », téléchargement/bundle,
-non-régression validée, comportement rendu sérié acté et implémenté).
+Phases 9, 10, 11, 12 closes [FAIT] (V9/V10/V11/V12 validées).
+Phase 13 (Durcissement, accessibilité et livraison) ouverte.
+- Correction du `AudioContext` suspendu en local (test e2e transport validé).
 
 ## Décisions structurantes (append only — 10 entrées max, 5 lignes max/entrée, archiver au-delà)
 - 2026-08-06 : **Panneau Automations dédié acté** — Décision d'assumer définitivement le panneau
