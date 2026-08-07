@@ -15,6 +15,7 @@ export default mergeConfig(
           "**/*.config.{js,ts,mjs}",
           "dist/**",
           "e2e/**",
+          ".stryker-tmp/**",
           "src/main.tsx",
         ],
         // Seuil temporaire (2026-07-30) : TransportBar.tsx et EditorLanding.tsx ne sont

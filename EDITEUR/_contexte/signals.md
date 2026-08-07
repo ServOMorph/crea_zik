@@ -60,8 +60,11 @@ Aucune
 - `backend/src/crea_zik/jobs.py` : commentaire ajouté pour documenter `max_workers=1`, méthode `list_jobs()` ajoutée.
 - `backend/src/crea_zik/api.py` : endpoint `/api/jobs` ajouté pour lister tous les jobs.
 - `backend/src/crea_zik/models.py` : scope `master` retiré du regex `AutomationLane.target`, validation explicite ajoutée pour rejeter les cibles `master.*`.
-- `frontend/src/editor/RenderAnalysis.tsx` : UI mise à jour pour afficher le nombre de jobs en attente.
+- `frontend/src/editor/RenderAnalysis.tsx` : UI mise à jour pour afficher le nombre de jobs en attente + correction des types TypeScript pour supporter les issues QA structurées.
 - `frontend/src/editor/TransportBar.tsx` : correction du `AudioContext` suspendu en local (ajout de `resume()` explicite avant/après `decodeAudioData`).
+- `frontend/e2e/studio.spec.ts` : correction du regex invalide à la ligne 567 (`/-/editor` → `\/editor`).
+- `frontend/eslint.config.js` : ajout de `.stryker-tmp` dans les ignores pour exclure les fichiers générés.
+- `frontend/vitest.config.ts` : ajout de `.stryker-tmp/**` dans les excludes de couverture.
 - `tests/test_jobs.py` : test pour `list_jobs()` ajouté.
 - `tests/test_api.py` : test pour `/api/jobs` ajouté.
 
@@ -73,10 +76,10 @@ Aucune
 - VALIDE : Le test e2e "the editor transport plays, pauses, stops and reaches media end" échouait en local à cause du `AudioContext` suspendu. La correction par `resume()` explicite résout le problème.
 
 ## Prochaine étape exacte
-Entamer la Phase 13 (Durcissement, accessibilité et livraison).
+Entamer la Phase 13 (Durcissement, accessibilité et livraison). Résoudre le problème de mutation Stryker bloquant la gate frontend-mutation.
 
 ## Question bloquante pour la session suivante
-Aucune
+La gate frontend-mutation échoue à cause d'un test Stryker sur stepSequencer.test.ts dans le sandbox généré. Investiguer et corriger.
 
 ## Décisions récentes
 - 2026-08-06 : Comportement des rendus simultanés acté comme **file sériée** (1 rendu à la fois, les autres en attente).

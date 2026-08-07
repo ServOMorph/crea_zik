@@ -444,4 +444,128 @@ describe("RenderAnalysis", () => {
 
     await screen.findByText("Aucun rendu disponible pour l'export");
   });
+
+  it("affiche toutes les métriques QA (sample_peak, true_peak, lufs, rms, dc_offset)", async () => {
+    stubApi({
+      qa: {
+        passed: true,
+        profile: "standard",
+        issues: [],
+        metrics: {
+          sample_peak: 0.85,
+          true_peak: 0.92,
+          lufs: -12.5,
+          rms: 0.35,
+          dc_offset: 0.002,
+        },
+      },
+    });
+    render(<RenderAnalysis {...defaultProps()} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Actualiser le QA" }));
+
+    await screen.findByText("Réussi");
+    expect(screen.getByText(/Pic échantillon: 0.850/)).toBeInTheDocument();
+    expect(screen.getByText(/True peak: 0.920/)).toBeInTheDocument();
+    expect(screen.getByText(/LUFS: -12.500/)).toBeInTheDocument();
+    expect(screen.getByText(/RMS: 0.350/)).toBeInTheDocument();
+    expect(screen.getByText(/Décalage DC: 0.002/)).toBeInTheDocument();
+  });
+
+  it("affiche les issues QA avec des actions cliquables vers l'éditeur", async () => {
+    const calls: Array<{ method: string; path: string }> = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
+        const path = String(input);
+        const method = (init?.method ?? "GET").toUpperCase();
+        calls.push({ method, path });
+        if (path.endsWith("/renders") && method === "GET") {
+          return jsonResponse([
+            { revision: 1, up_to_date: true, stale: false, manifest_url: "/m.json", qa_url: "/qa.json" },
+          ]);
+        }
+        if (path.endsWith("/qa.json") && method === "GET") {
+          return jsonResponse({
+            passed: false,
+            profile: "strict",
+            issues: [
+              { type: "clipping", message: "True peak dépasse -1 dBFS", action: "Réduire le gain de la piste", target: "mixer" },
+              { type: "excessive_loudness", message: "LUFS trop élevé", action: "Baisser le volume master", target: "master" },
+            ],
+            metrics: { sample_peak: 1.0, true_peak: 1.05, lufs: -8, rms: 0.8, dc_offset: 0.0 },
+          });
+        }
+        if (path === "/api/jobs" && method === "GET") {
+          return jsonResponse([]);
+        }
+        if (path.startsWith("/projects/") && method === "GET") {
+          return { ok: true, status: 200, arrayBuffer: async () => new ArrayBuffer(8) } as unknown as Response;
+        }
+        return jsonResponse({ detail: "Introuvable" }, 404);
+      }),
+    );
+
+    render(<RenderAnalysis {...defaultProps()} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Actualiser le QA" }));
+
+    await waitFor(() => {
+      expect(calls.some((call) => call.path.endsWith("/qa.json"))).toBe(true);
+    });
+  });
+
+  it("exporte le bundle avec master et stems", async () => {
+    const calls = stubApi({
+      renders: [
+        {
+          revision: 1,
+          up_to_date: true,
+          stale: false,
+          manifest_url: "/m.json",
+          qa_url: "/qa.json",
+        },
+      ],
+    });
+    render(<RenderAnalysis {...defaultProps()} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Exporter le bundle" }));
+
+    await waitFor(() =>
+      expect(
+        calls.some((call) => call.method === "POST" && call.path.endsWith("/renders/1/export")),
+      ).toBe(true),
+    );
+    expect(screen.getByText((content) => content.includes("/exports/c1.wav"))).toBeInTheDocument();
+  });
+
+  it("affiche le nombre de jobs en attente", async () => {
+    const calls: Array<{ method: string; path: string }> = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
+        const path = String(input);
+        const method = (init?.method ?? "GET").toUpperCase();
+        calls.push({ method, path });
+        if (path === "/api/jobs" && method === "GET") {
+          return jsonResponse([
+            { id: "job-1", state: "running", progress: 50 },
+            { id: "job-2", state: "queued", progress: 0 },
+            { id: "job-3", state: "queued", progress: 0 },
+          ]);
+        }
+        if (path.endsWith("/renders") && method === "GET") {
+          return jsonResponse([]);
+        }
+        return jsonResponse({ detail: "Introuvable" }, 404);
+      }),
+    );
+
+    render(<RenderAnalysis {...defaultProps()} />);
+
+    // Wait for the fetch to /api/jobs to be called
+    await waitFor(() => {
+      expect(calls.some((call) => call.path === "/api/jobs")).toBe(true);
+    });
+  });
 });

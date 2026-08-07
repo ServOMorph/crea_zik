@@ -1,9 +1,12 @@
 # Changelog
 
-## v0.39 — 2026-08-07
+## v0.40 — 2026-08-07
 
 ### Corrigé
 
+- Frontend : correction du regex invalide dans `studio.spec.ts:567` (`/-/editor` → `\/editor`) pour la détection d'URL.
+- Frontend : correction des types TypeScript dans `RenderAnalysis.tsx` pour supporter les issues QA structurées (objets avec `message` et `action` en plus des strings).
+- Frontend : exclusion de `.stryker-tmp` des vérifications ESLint et de la couverture de code Vitest.
 - Frontend : correction du `AudioContext` suspendu en local dans `TransportBar.tsx` (ajout de `resume()` explicite avant/après `decodeAudioData`) pour garantir la lecture audio.
 - Tests : timeouts augmentés dans `studio.spec.ts` (35s→60s pour la préécoute, 6s→10s pour le `playhead`) pour les environnements locaux lents.
 
@@ -11,6 +14,8 @@
 
 - Outillage : scripts `scripts/test-local.sh` et `test-local.ps1` pour exécuter les tests e2e avec les serveurs existants.
 - Configuration : `playwright.test.config.ts` pour réutiliser les serveurs déjà démarrés.
+
+## v0.39 — 2026-08-07
 
 ## v0.38 — 2026-08-06
 

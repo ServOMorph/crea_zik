@@ -5,7 +5,8 @@ import type { EditableComposition, Track } from "./editorStore";
 
 type JobResponse = { id: string; state: string; progress: number };
 type JobState = { id: string; state: string; progress: number; error?: string };
-type QaReport = { passed: boolean; profile: string; issues: string[]; metrics: Record<string, number> };
+type QaIssue = string | { type: string; message: string; action?: string; target?: string };
+type QaReport = { passed: boolean; profile: string; issues: QaIssue[]; metrics: Record<string, number> };
 type ExportResponse = { wav: string; manifest: string };
 type RenderFormat = "wav_pcm24" | "wav_pcm16" | "wav_float32";
 type RenderScope = "full" | "tracks" | "clips" | "loop";
@@ -134,17 +135,6 @@ export function RenderAnalysis({
     });
   }, [waveform]);
 
-  // Rafraîchir le nombre de jobs en attente périodiquement
-  useEffect(() => {
-    const interval = window.setInterval(refreshQueuedJobs, 2000);
-    return () => window.clearInterval(interval);
-  }, [refreshQueuedJobs]);
-
-  // Rafraîchir aussi quand le job courant change (pour réinitialiser le compte)
-  useEffect(() => {
-    void refreshQueuedJobs();
-  }, [job, refreshQueuedJobs]);
-
   const refreshRenders = useCallback(async (): Promise<RenderInfo[]> => {
     return apiRequest<RenderInfo[]>(`/api/projects/${projectId}/compositions/${compositionId}/renders`);
   }, [compositionId, projectId]);
@@ -158,6 +148,17 @@ export function RenderAnalysis({
       // Si l'endpoint n'est pas disponible, on ignore (comportement dégradé)
     }
   }, []);
+
+  // Rafraîchir le nombre de jobs en attente périodiquement
+  useEffect(() => {
+    const interval = window.setInterval(refreshQueuedJobs, 2000);
+    return () => window.clearInterval(interval);
+  }, [refreshQueuedJobs]);
+
+  // Rafraîchir aussi quand le job courant change (pour réinitialiser le compte)
+  useEffect(() => {
+    void refreshQueuedJobs();
+  }, [job, refreshQueuedJobs]);
 
   const render = useCallback(async () => {
     if (disabled) return;
@@ -391,10 +392,10 @@ export function RenderAnalysis({
         <p>
           Rendu #<strong>{job.id}</strong> : <em>{job.state}</em> ({job.progress}%)
           {queuedJobsCount > 0 && job.state !== "queued" && (
-            <>, <strong>{queuedJobsCount} rendu{queuedJobsCount > 1 ? "s" : ""} en attente</strong>
+            <span>, <strong>{queuedJobsCount} rendu{queuedJobsCount > 1 ? "s" : ""} en attente</strong></span>
           )}
           {job.state === "queued" && queuedJobsCount > 1 && (
-            <>, <strong>position {queuedJobsCount} dans la file</strong>
+            <span>, <strong>position {queuedJobsCount} dans la file</strong></span>
           )}
         </p>
       )}
@@ -421,9 +422,24 @@ export function RenderAnalysis({
               <dt>Problèmes</dt>
               <dd>
                 <ul>
-                  {qa.issues.map((issue) => (
-                    <li key={issue}>{issue}</li>
-                  ))}
+                  {qa.issues.map((issue, index) => {
+                    const isIssueObject = typeof issue !== "string";
+                    const issueMessage = isIssueObject ? issue.message : issue;
+                    const issueAction = isIssueObject ? issue.action : undefined;
+                    return (
+                      <li key={isIssueObject ? index : issue}>
+                        {issueMessage}
+                        {issueAction && (
+                          <>
+                            {" - "}
+                            <button onClick={() => { /* TODO: Navigate to editor */ }}>
+                              {issueAction}
+                            </button>
+                          </>
+                        )}
+                      </li>
+                    );
+                  })}
                 </ul>
               </dd>
             </>

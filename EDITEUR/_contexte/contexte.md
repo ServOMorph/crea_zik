@@ -30,6 +30,8 @@ Music Composer, Adaptive Lab, Analyse & Export) et son backend de rendu, permett
 Phases 9, 10, 11, 12 closes [FAIT] (V9/V10/V11/V12 validées).
 Phase 13 (Durcissement, accessibilité et livraison) ouverte.
 - Correction du `AudioContext` suspendu en local (test e2e transport validé).
+- Correction du regex invalide dans `studio.spec.ts:567` et des types TypeScript dans `RenderAnalysis.tsx`.
+- Exclusion de `.stryker-tmp` des vérifications ESLint et de la couverture de code.
 
 ## Décisions structurantes (append only — 10 entrées max, 5 lignes max/entrée, archiver au-delà)
 - 2026-08-06 : **Panneau Automations dédié acté** — Décision d'assumer définitivement le panneau

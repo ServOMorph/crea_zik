@@ -556,3 +556,39 @@ test("the render analysis screen renders a loop, shows QA metrics and exports th
   await expect(page.getByText(/WAV : /)).toBeVisible({ timeout: 5_000 });
   await expect(page.getByText(/Manifeste : /)).toBeVisible();
 });
+
+test("the render analysis screen exports master and all stems", async ({ page }) => {
+  const projectName = `E2E stems ${Date.now()}`;
+  await page.goto("/");
+  await page.getByRole("textbox", { name: "Name", exact: true }).fill(projectName);
+  await page.getByRole("button", { name: "Create", exact: true }).click();
+  await page.getByRole("link", { name: "Éditeur musical" }).click();
+  await page.getByRole("button", { name: "Créer une copie éditable" }).click();
+  await expect(page).toHaveURL(/\/editor\?project=.*&composition=.*/);
+  await expect(page.getByRole("heading", { name: "Lignes de nuit" })).toBeVisible();
+
+  const renderHeading = page.getByRole("heading", { name: "Rendu & Export" });
+  await renderHeading.scrollIntoViewIfNeeded();
+
+  // Select all tracks for stems export
+  await page.getByRole("radio", { name: "Pistes choisies" }).check();
+  const checkboxes = page.getByRole("checkbox");
+  for (const checkbox of await checkboxes.all()) {
+    await checkbox.check();
+  }
+
+  await page.getByRole("button", { name: "Lancer le rendu" }).click();
+  await expect(page.getByText(/: completed \(100%\)/)).toBeVisible({ timeout: 30_000 });
+
+  await page.getByRole("button", { name: "Exporter le bundle" }).click();
+  await expect(page.getByText(/WAV : /)).toBeVisible({ timeout: 5_000 });
+  await expect(page.getByText(/Manifeste : /)).toBeVisible();
+  
+  // Verify all stems are included in the export
+  await expect(page.getByText(/master/)).toBeVisible();
+  await expect(page.getByText(/drums/)).toBeVisible();
+  await expect(page.getByText(/bass/)).toBeVisible();
+  await expect(page.getByText(/pad/)).toBeVisible();
+  await expect(page.getByText(/arp/)).toBeVisible();
+  await expect(page.getByText(/lead/)).toBeVisible();
+});
