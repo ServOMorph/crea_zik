@@ -104,3 +104,4 @@ mixer, stems) mais les gates de phase ne sont pas remplis. Le volet UI de la pha
 validé dans un navigateur réel, et le plugin kick est promu sur le moteur de composition via des
 paramètres d’instrument opt-in, sans copie de fichiers vers un dossier plugins applicatif séparé.
 Une zone `DOCUMENTATION/` et une zone `WORKFLOW/` ont été créées pour bâtir en parallèle l’inventaire des styles musicaux (modèle de fiche défini) et l’agent de création de musique associé ; voir `roadmap_creation_musique.md`.
+`EXPLO/roadmap_kick_live.md` a été créée : nouveau plugin `kick_live` temps réel (déclenchement en boucle, paramètres audibles en direct façon FL Studio), moteur DSP unique en Rust compilé WASM pour l’AudioWorklet navigateur et lié en Python via PyO3 pour l’offline, sans toucher au plugin `kick` existant. Phase 1 non démarrée.

@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.41 — 2026-08-08
+
+### Ajouté
+
+- Explo : `roadmap_kick_live.md` — roadmap du plugin `kick_live` (temps réel, boucle et paramètres audibles en direct), moteur DSP unique en Rust (WASM pour l'AudioWorklet navigateur, liaison PyO3 pour l'offline), `plugins/kick/` non affecté.
+
 ## v0.40 — 2026-08-07
 
 ### Corrigé

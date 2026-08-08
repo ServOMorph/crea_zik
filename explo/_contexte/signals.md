@@ -1,6 +1,11 @@
-# Signals — explo   (MAJ 2026-08-01)
+# Signals — explo   (MAJ 2026-08-08)
 
 ## Actions ouvertes
+- [P2|ouvert] Démarrer la phase 1 de roadmap_kick_live.md (toolchain Rust, moteur en générateur
+  par blocs avec état persistant pour le futur plugin `kick_live`, distinct de `kick`).
+  fait quand: le crate Rust rend, en mode batch, les presets de référence avec la tolérance
+  définie en phase 1, sans discontinuité de bloc ni clic sur changement de paramètre.
+  réf: roadmap_kick_live.md, plugins/kick/engine.py, plugins/_common/dsp.py
 - [P2|ouvert] Trois réglages de punch du kick différés (phase 5 de roadmap_plugins.md) :
   duck du corps/sub sur l'attaque, transitoire dédié sur le sub, saturation par couche
   (sub/corps séparés au lieu d'un drive global post-mix).
@@ -26,27 +31,26 @@
   de composition (`backend/src/crea_zik/composition_dsp.py`, `_plugin_voice`) avec équivalence
   bit-à-bit vérifiée contre le rendu direct.
 
-## Dernière session (2026-08-01)
+## Dernière session (2026-08-08)
 <!-- Écrasé intégralement par /close. Synthèse < 25 lignes. -->
-# Session du 2026-08-01
+# Session du 2026-08-08
 
 ## Décisions prises
-- Le rendu de `morceau_electro` utilise désormais le plugin kick par manifeste et preset `techno` ; la
-  synthèse locale a été retirée.
+- Nouveau plugin `kick_live` (temps réel, boucle + paramètres audibles en direct) : moteur DSP
+  unique en Rust, compilé WASM pour AudioWorklet navigateur et lié en Python via PyO3 pour le
+  rendu offline — pas de réimplémentation JS dupliquée. `plugins/kick/` reste intact.
 
 ## Livrables produits ou modifiés
-- `morceau_electro/render.py` : chargement mis en cache du plugin, du preset et du moteur déclaré.
-- `morceau_electro/spec.json` : kick déclaré par `plugin_id`, `plugin_preset` et `plugin_overrides`.
-- `morceau_electro/test_render.py` : test d'égalité entre le stem kick et le moteur de plugin.
+- `roadmap_kick_live.md` : créé, 5 phases [TODO] (moteur Rust par blocs, liaison PyO3, WASM/
+  AudioWorklet, exposition backend, banc de test temps réel).
 
 ## Hypothèses validées / invalidées
-- VALIDE : le rendu déterministe appelle le moteur kick avec le preset configuré.
-- VALIDE : le rendu 30 s est fini, sans clipping ; stems et rapport QA sont produits.
-- EN ATTENTE : évaluer à l'écoute le sweep de hauteur sur le sub.
+- EN ATTENTE : latence réelle changement de paramètre → audible avec l'architecture Rust/WASM
+  (cible à fixer en phase 3, aucune mesure encore prise).
 
 ## Prochaine étape exacte
-Implémenter et mesurer les trois réglages de punch ouverts de la phase 5 : duck d'attaque,
-transitoire sub et saturation par couche.
+Démarrer la phase 1 de `roadmap_kick_live.md` (toolchain Rust, portage du moteur kick en
+générateur par blocs avec état persistant).
 
 ## Question bloquante pour la session suivante
 Aucune.

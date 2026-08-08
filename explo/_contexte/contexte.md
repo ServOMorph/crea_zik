@@ -23,6 +23,7 @@ Le premier morceau est archivé sous `archives/morceaux/lignes-de-nuit/versions/
 Le rendu de `morceau_electro` appelle le plugin kick par manifeste, preset `techno` et moteur déclaré ; le kick local est retiré.
 `roadmap_plugins.md` : phases 1 à 4 terminées, phase 5 en cours ; les trois réglages de punch restent à traiter.
 L'ancienne roadmap `roadmap_archivage_morceaux.md` est terminée ; les suites sont transférées dans `roadmap_plugins.md`.
+`roadmap_kick_live.md` créée : nouveau plugin `kick_live` (temps réel, moteur Rust partagé WASM/PyO3), phase 1 non démarrée ; `plugins/kick/` non affecté.
 
 ## Décisions structurantes (append only — 10 entrées max, 5 lignes max/entrée, archiver au-delà)
 - 2026-07-30 : Création de l'agent explo via /create_agent.
@@ -40,3 +41,6 @@ L'ancienne roadmap `roadmap_archivage_morceaux.md` est terminée ; les suites so
   par couche) différés et documentés en phase 5 de `roadmap_plugins.md`.
 - 2026-08-01 : `morceau_electro` consomme un plugin one-shot par `plugin_id`, `plugin_preset` et
   `plugin_overrides` ; le manifeste choisit le moteur et le plan de rendu impose durée et panoramique.
+- 2026-08-08 : Nouveau plugin `kick_live` (temps réel façon FL Studio) plutôt qu'une évolution du
+  plugin `kick` : moteur DSP unique en Rust, WASM pour l'AudioWorklet navigateur, liaison PyO3
+  pour l'offline. Choix retenu contre une réimplémentation JS dupliquée pour éviter la dérive.
