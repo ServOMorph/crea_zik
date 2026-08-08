@@ -286,7 +286,7 @@ describe("séquenceur — propriétés", () => {
           for (const step of removes) state = setStep(state, "pattern-1", kick, step, 4, false);
           for (let index = 0; index < steps.length + removes.length; index += 1) state = undo(state);
           expect(state.composition.patterns[0].events).toEqual([]);
-          expect(state.undoStack).toHaveLength(0);
+          expect(state.undoStack).toEqual([]);
         },
       ),
       { numRuns: 100 },

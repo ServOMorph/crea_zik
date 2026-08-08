@@ -46,12 +46,13 @@ Aucune
 - **Rendus simultanés** : Toujours traités en **file sériée** (1 worker, séquentiel). Les demandes multiples sont mises en attente et exécutées dans l'ordre. Aucun parallélisme prévu.
 
 ## Dernière session
-# Session du 2026-08-07
+# Session du 2026-08-08
 
 ## Décisions prises
 - Comportement rendu sérié acté : les rendus sont traités un par un (1 worker, file séquentielle). L'executor actuel est validé comme solution définitive.
 - **Intégration visuelle des automations** : Décision structurante d'assumer définitivement le panneau dédié `Automations.tsx` plutôt que des lanes dans la timeline `Playlist.tsx`. Justification : implémentation déjà complète et testée, alignement avec l'architecture modulaire, réduction des risques pour la Phase 13.
 - **Scope `master` des automations** : Décision structurante de retirer le scope `master` du schéma de validation (`AutomationLane.target`). Le scope était accepté par Pydantic mais jamais implémenté dans le moteur de rendu. Aucune lane existante n'utilisait ce scope.
+- **Tests résistants aux mutations** : Remplacement systématique de `.toHaveLength(0)` par `.toEqual([])` pour les stacks d'historique (`undoStack`, `redoStack`) afin de tuer les mutants Stryker.
 
 ## Livrables produits ou modifiés
 - `EDITEUR/_contexte/signals.md` : question bloquante résolue, étape 12.7 et Phase 12 closes [FAIT]. P2#1 et P2#2 résolues.
@@ -62,6 +63,8 @@ Aucune
 - `backend/src/crea_zik/models.py` : scope `master` retiré du regex `AutomationLane.target`, validation explicite ajoutée pour rejeter les cibles `master.*`.
 - `frontend/src/editor/RenderAnalysis.tsx` : UI mise à jour pour afficher le nombre de jobs en attente + correction des types TypeScript pour supporter les issues QA structurées.
 - `frontend/src/editor/TransportBar.tsx` : correction du `AudioContext` suspendu en local (ajout de `resume()` explicite avant/après `decodeAudioData`).
+- `frontend/src/editor/editorStore.test.ts` : correction des tests pour résister aux mutations Stryker (lignes 73-78).
+- `frontend/src/editor/stepSequencer.test.ts` : correction du test de propriété fast-check pour résister aux mutations Stryker (ligne 289).
 - `frontend/e2e/studio.spec.ts` : correction du regex invalide à la ligne 567 (`/-/editor` → `\/editor`).
 - `frontend/eslint.config.js` : ajout de `.stryker-tmp` dans les ignores pour exclure les fichiers générés.
 - `frontend/vitest.config.ts` : ajout de `.stryker-tmp/**` dans les excludes de couverture.
@@ -74,12 +77,13 @@ Aucune
 - VALIDE : Le panneau dédié `Automations.tsx` est une solution d'intégration visuelle acceptable (décision structurante).
 - VALIDE : Le scope `master` n'est pas nécessaire pour les automations (aucune utilisation dans le codebase, retrait validé).
 - VALIDE : Le test e2e "the editor transport plays, pauses, stops and reaches media end" échouait en local à cause du `AudioContext` suspendu. La correction par `resume()` explicite résout le problème.
+- VALIDE : Les tests utilisant `.toEqual([])` tuent les mutants Stryker là où `.toHaveLength(0)` échouait.
 
 ## Prochaine étape exacte
-Entamer la Phase 13 (Durcissement, accessibilité et livraison). Résoudre le problème de mutation Stryker bloquant la gate frontend-mutation.
+Entamer la Phase 13 (Durcissement, accessibilité et livraison). Vérifier que la gate frontend-mutation passe avec les corrections appliquées.
 
 ## Question bloquante pour la session suivante
-La gate frontend-mutation échoue à cause d'un test Stryker sur stepSequencer.test.ts dans le sandbox généré. Investiguer et corriger.
+Aucune.
 
 ## Décisions récentes
 - 2026-08-06 : Comportement des rendus simultanés acté comme **file sériée** (1 rendu à la fois, les autres en attente).

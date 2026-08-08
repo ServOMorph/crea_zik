@@ -70,12 +70,12 @@ describe("editorStore — historique", () => {
     expect(state.composition.tempo_bpm).toBe(220);
     for (let index = 0; index < 100; index += 1) state = undo(state);
     expect(state.composition).toEqual(composition);
-    expect(state.undoStack).toHaveLength(0);
-    expect(state.redoStack).toHaveLength(100);
+    expect(state.undoStack).toEqual([]);
+    expect(state.redoStack.length).toBe(100);
     for (let index = 0; index < 100; index += 1) state = redo(state);
     expect(state.composition.tempo_bpm).toBe(220);
-    expect(state.redoStack).toHaveLength(0);
-    expect(state.undoStack).toHaveLength(100);
+    expect(state.redoStack).toEqual([]);
+    expect(state.undoStack.length).toBe(100);
   });
 
   it("ne fait rien lorsqu'on undo ou redo sur une pile vide", () => {

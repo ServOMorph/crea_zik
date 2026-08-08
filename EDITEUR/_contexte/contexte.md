@@ -32,6 +32,7 @@ Phase 13 (Durcissement, accessibilité et livraison) ouverte.
 - Correction du `AudioContext` suspendu en local (test e2e transport validé).
 - Correction du regex invalide dans `studio.spec.ts:567` et des types TypeScript dans `RenderAnalysis.tsx`.
 - Exclusion de `.stryker-tmp` des vérifications ESLint et de la couverture de code.
+- Correction des tests `editorStore.test.ts` et `stepSequencer.test.ts` pour résister aux mutations Stryker (gate frontend-mutation).
 
 ## Décisions structurantes (append only — 10 entrées max, 5 lignes max/entrée, archiver au-delà)
 - 2026-08-06 : **Panneau Automations dédié acté** — Décision d'assumer définitivement le panneau
@@ -41,6 +42,9 @@ Phase 13 (Durcissement, accessibilité et livraison) ouverte.
 - 2026-08-06 : **Comportement rendu sérié acté** — les rendus sont toujours traités en file sériée
   (1 worker, séquentiel). L'executor actuel est validé comme solution définitive. UI mise à jour
   pour afficher le nombre de jobs en attente. Voir `jobs.py` et `api.py`.
+- 2026-08-08 : **Tests résistants aux mutations** — Remplacement de `.toHaveLength(0)` par `.toEqual([])`
+  pour les stacks d'historique (`undoStack`, `redoStack`) dans `editorStore.test.ts` et `stepSequencer.test.ts`
+  afin de tuer les mutants Stryker et passer la gate frontend-mutation.
 - 2026-08-06 : Étape 12.5 (écran « Analyse & Export ») close [FAIT] après reprise d'une session
   interrompue par une panne de crédits d'un agent tiers dont la livraison, malgré des tests verts,
   restait partielle au regard du gate (portée/format/annulation/état périmé absents). Le parcours

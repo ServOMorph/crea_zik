@@ -1,6 +1,10 @@
 # Changelog
 
-## v0.41 — 2026-08-08
+## v0.42 — 2026-08-08
+
+### Corrigé
+
+- Frontend : correction des tests `editorStore.test.ts` et `stepSequencer.test.ts` pour résister aux mutations Stryker (remplacement de `.toHaveLength(0)` par `.toEqual([])` pour `undoStack`/`redoStack`).
 
 ### Ajouté
 
